@@ -30,7 +30,7 @@ export async function registrar(estado: EstadoRegistro, dados: FormData): Promis
       acertos: inteiroOpcional(dados, "acertos"),
       anotacao: texto(dados, "anotacao"),
       conteudoLivre: texto(dados, "conteudoLivre"),
-    });
+    }, { cronometro: dados.get("cronometro") === "1" });
     revalidatePath("/", "layout");
     return {
       aviso: voltaFechada

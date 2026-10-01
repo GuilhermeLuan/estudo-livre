@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { sair } from "@/app/acoes-conta";
 import { Marca } from "@/app/marca";
-import { obterHome } from "@/casos-de-uso";
+import { obterCronometro, obterHome } from "@/casos-de-uso";
+import { Cronometro } from "@/app/cronometro";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
-  const { usuario } = await obterHome(obterDb(), await exigirUsuario());
+  const usuarioLogado = await exigirUsuario();
+  const [{ usuario, ciclos }, ativo] = await Promise.all([obterHome(obterDb(), usuarioLogado), obterCronometro(obterDb(), usuarioLogado)]);
+  const cicloDoCronometro = ativo ? (ciclos.find((c) => c.id === ativo.cicloId) ?? null) : null;
   return (
     <div className="min-h-screen">
       <nav
@@ -27,6 +30,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         </form>
       </nav>
       <main className="mx-auto max-w-[1220px] px-[clamp(16px,3vw,32px)] pt-7 pb-36">{children}</main>
+      <Cronometro ativo={ativo} ciclo={cicloDoCronometro} />
     </div>
   );
 }

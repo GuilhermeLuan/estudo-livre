@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import type { CicloDaHome } from "@/casos-de-uso";
+import { iniciar } from "./acoes-cronometro";
 import { Aviso } from "./aviso";
 import { DiscoDoCiclo } from "./disco-do-ciclo";
 import { FormularioDeRegistro } from "./formulario-de-registro";
@@ -17,6 +18,14 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
   const [materiaId, setMateriaId] = useState("");
   const [destaque, setDestaque] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [iniciando, iniciarTransicao] = useTransition();
+
+  function iniciarCronometro(alvo: { id: string; nome: string }) {
+    iniciarTransicao(async () => {
+      const { erro } = await iniciar(alvo.id);
+      setAviso(erro ?? `Cronômetro iniciado em ${alvo.nome}.`);
+    });
+  }
 
   function abrir(id?: string) {
     setMateriaId(id ?? proxima?.id ?? materias[0]?.id ?? "");
@@ -57,7 +66,10 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
               {tempo(proxima.feitoMinutos)} de {tempo(proxima.cargaMinutos)} nesta volta.
             </p>
             <div className="my-4 flex flex-wrap gap-2 border-b border-line pb-[18px]">
-              <button type="button" className="btn btn-primary" onClick={() => abrir()}>
+              <button type="button" className="btn btn-primary" disabled={iniciando} onClick={() => iniciarCronometro(proxima)}>
+                Iniciar cronômetro
+              </button>
+              <button type="button" className="btn" onClick={() => abrir()}>
                 Registrar estudo
               </button>
             </div>
