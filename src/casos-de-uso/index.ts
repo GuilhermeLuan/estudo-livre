@@ -14,4 +14,5 @@ export {
   reordenarMaterias,
   type CicloDetalhe,
 } from "./ciclos";
+export { instanteDoDia, registrarEstudo, type DadosDoEstudo } from "./estudo";
 export { NaoEncontradoError, ValidacaoError } from "./erros";
