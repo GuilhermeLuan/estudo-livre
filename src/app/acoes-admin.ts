@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { NaoAutorizadoError, redefinirSenha, SenhaInvalidaError } from "@/casos-de-uso";
+import { NaoAutorizadoError, redefinirSenha, SenhaInvalidaError, UsuarioNaoEncontradoError } from "@/casos-de-uso";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 
@@ -12,7 +12,7 @@ export async function redefinirSenhaDeUsuario(_: EstadoRedefinicao, dados: FormD
   try {
     await redefinirSenha(obterDb(), admin, String(dados.get("usuarioId") ?? ""), String(dados.get("senha") ?? ""));
   } catch (erro) {
-    if (erro instanceof NaoAutorizadoError || erro instanceof SenhaInvalidaError) return { erro: erro.message };
+    if (erro instanceof NaoAutorizadoError || erro instanceof SenhaInvalidaError || erro instanceof UsuarioNaoEncontradoError) return { erro: erro.message };
     throw erro;
   }
   revalidatePath("/usuarios");

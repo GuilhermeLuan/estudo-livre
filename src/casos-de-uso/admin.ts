@@ -16,6 +16,12 @@ export class SenhaInvalidaError extends Error {
   }
 }
 
+export class UsuarioNaoEncontradoError extends Error {
+  constructor() {
+    super("Usuário não encontrado.");
+  }
+}
+
 export type UsuarioListado = { id: string; nome: string; email: string; admin: boolean };
 
 async function exigirAdmin(db: Db, usuario: Usuario) {
@@ -42,7 +48,7 @@ export async function redefinirSenha(db: Db, admin: Usuario, usuarioId: string, 
       .set({ password: hash, updatedAt: new Date() })
       .where(and(eq(account.userId, usuarioId), eq(account.providerId, "credential")))
       .returning({ id: account.id });
-    if (atualizadas.length === 0) throw new Error("Usuário não encontrado");
+    if (atualizadas.length === 0) throw new UsuarioNaoEncontradoError();
     await tx.delete(session).where(eq(session.userId, usuarioId));
   });
 }

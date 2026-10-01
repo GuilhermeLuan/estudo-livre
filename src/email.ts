@@ -13,5 +13,5 @@ export async function enviarEmail(para: string, assunto: string, texto: string) 
     secure: porta === 465,
     auth: process.env.SMTP_USUARIO ? { user: process.env.SMTP_USUARIO, pass: process.env.SMTP_SENHA } : undefined,
   });
-  await transporte.sendMail({ from: process.env.SMTP_REMETENTE ?? process.env.SMTP_USUARIO, to: para, subject: assunto, text: texto });
+  await transporte.sendMail({ from: process.env.SMTP_REMETENTE ?? process.env.SMTP_USUARIO ?? `estudo-livre@${process.env.SMTP_HOST}`, to: para, subject: assunto, text: texto });
 }
