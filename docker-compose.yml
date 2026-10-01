@@ -1,0 +1,31 @@
+services:
+  app:
+    build: .
+    ports:
+      - "${PORTA:-3000}:3000"
+    environment:
+      DATABASE_URL: postgres://estudo:estudo@db:5432/estudo
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?defina BETTER_AUTH_SECRET no .env}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      CADASTRO_ABERTO: ${CADASTRO_ABERTO:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: estudo
+      POSTGRES_PASSWORD: estudo
+      POSTGRES_DB: estudo
+    volumes:
+      - dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U estudo"]
+      interval: 2s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  dados:

@@ -31,6 +31,7 @@ Definidos como variáveis CSS em `:root`. Em código (Tailwind), mapeie estes no
 | `--accent-soft` | `#172447` | `#E6EDFF` | Fundo de pílula azul, aba ativa, foco de input |
 | `--green` / `--green-soft` | `#34D27B` / `#12301F` | `#138A4B` / `#E2F5EA` | Matéria concluída na volta |
 | `--red` / `--red-soft` | `#FF6B6B` / `#3A1A1F` | `#C83A3A` / `#FBE7E7` | Revisão atrasada, erro, acerto baixo, nota "Errei" |
+| `--on-accent` | `#FFFFFF` | `#FFFFFF` | Texto e ícones sobre `--accent` |
 | `--focus` | `#6E9BFF` | `#2457E6` | Anel de foco |
 
 Texto sobre `--accent` é branco. Texto sobre `--red` sólido usa `--paper`. Contraste mínimo: 4.5:1 para texto, mire 7:1 no texto principal.
@@ -87,6 +88,12 @@ Rótulos 13px `--ink-2`, inputs 40px em `--paper`, foco com borda azul + halo `-
 
 ### Cronômetro
 Card flutuante no canto inferior direito (desktop) ou acima da navegação (mobile), borda azul e halo. Tempo em Geist Mono azul; matéria e ciclo ao lado; ações "Pausar/Retomar", "Parar e registrar" (primário), "Descartar" (discreto). Pausado: tempo com opacidade reduzida.
+
+### Telas de conta (Entrar, Criar conta)
+Sem barra de navegação. Marca no topo e um card (`--surface`, padding 22px) centralizado, largura máx. 400px, com título `h1`, campos no padrão do formulário e um único botão primário de largura total. Erro em `--red` 13px acima do botão (`role="alert"`). Link discreto para a outra tela no rodapé; "Criar conta" some quando o cadastro está fechado.
+
+### Estado vazio
+Painel com `h2` dizendo o que falta e uma linha em `--ink-2` dizendo o que fazer ("Nenhum ciclo ainda" / "Crie um ciclo…").
 
 ### Toast
 Topo central, `--surface-2` com borda; confirma a ação com o mesmo verbo do botão ("Estudo registrado.", "Cronômetro descartado. Nada foi registrado.").

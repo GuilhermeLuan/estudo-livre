@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/* Tokens do design system (docs/design-system.md). Escuro por padrão. */
+:root {
+  --paper: #0B0F19;
+  --surface: #121826;
+  --surface-2: #182033;
+  --ink: #F1F4F9;
+  --ink-2: #A7B0C0;
+  --line: #222B3D;
+  --accent: #2F6BFF;
+  --accent-ink: #6E9BFF;
+  --accent-soft: #172447;
+  --green: #34D27B;
+  --green-soft: #12301F;
+  --red: #FF6B6B;
+  --red-soft: #3A1A1F;
+  --focus: #6E9BFF;
+  --on-accent: #FFFFFF;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --paper: #F4F6FA; --surface: #FFFFFF; --surface-2: #F0F3F8; --ink: #0F172A; --ink-2: #4B5568;
+  --line: #E2E7EF; --accent: #2457E6; --accent-ink: #2457E6; --accent-soft: #E6EDFF;
+  --green: #138A4B; --green-soft: #E2F5EA; --red: #C83A3A; --red-soft: #FBE7E7; --focus: #2457E6;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-green: var(--green);
+  --color-green-soft: var(--green-soft);
+  --color-red: var(--red);
+  --color-red-soft: var(--red-soft);
+  --color-focus: var(--focus);
+  --color-on-accent: var(--on-accent);
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+@layer base {
+  body { background: var(--paper); color: var(--ink); font-size: 15px; line-height: 1.55; }
+  h1, h2, h3 { font-weight: 600; line-height: 1.2; letter-spacing: -0.015em; }
+  h1 { font-size: 1.375rem; }
+  h2 { font-size: 1rem; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-sm); }
+}
+
+@layer components {
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 38px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--surface-2); cursor: pointer; font-weight: 600; font-size: .875rem; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--ink-2); }
+  .btn:disabled { opacity: .6; cursor: wait; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); box-shadow: 0 6px 20px -6px color-mix(in srgb, var(--accent) 70%, transparent); }
+  .btn-primary:hover { border-color: var(--accent); filter: brightness(1.1); }
+  .btn-quiet { border-color: transparent; background: none; color: var(--accent-ink); padding: 0 4px; min-height: 0; font-weight: 500; }
+  .btn-quiet:hover { border-color: transparent; }
+  .input {
+    width: 100%; min-height: 40px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--paper); font-size: .875rem;
+  }
+  .input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 18px; }
+  @media (max-width: 760px) { .panel { padding: 14px; } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
