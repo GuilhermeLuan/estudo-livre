@@ -8,7 +8,7 @@ import {
   pararCronometro,
   pausarCronometro,
   retomarCronometro,
-  type SugestaoDeRegistro,
+  type CronometroParado,
   type Usuario,
   ValidacaoError,
 } from "@/casos-de-uso";
@@ -17,7 +17,7 @@ import { exigirUsuario } from "@/sessao";
 
 export type ResultadoDoCronometro =
   | { erro: string; parado?: undefined }
-  | { erro?: undefined; aviso?: string; /** Só em `parar`: a duração para preencher o registro. */ parado?: SugestaoDeRegistro };
+  | { erro?: undefined; aviso?: string; /** Só em `parar`: a duração para preencher o registro. */ parado?: CronometroParado };
 
 /** Executa a operação e traduz os erros esperados em mensagem; a tela se atualiza com o estado do servidor. */
 async function executar(operacao: (usuario: Usuario) => Promise<ResultadoDoCronometro | void>): Promise<ResultadoDoCronometro> {
@@ -54,8 +54,5 @@ export async function descartar() {
 }
 
 export async function parar() {
-  return executar(async (u) => {
-    const { duracaoMinutos, passouDoLimite } = await pararCronometro(obterDb(), u);
-    return { parado: { duracaoMinutos, passouDoLimite } };
-  });
+  return executar(async (u) => ({ parado: await pararCronometro(obterDb(), u) }));
 }

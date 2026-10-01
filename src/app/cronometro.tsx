@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import type { CicloDaHome, CronometroAtivo } from "@/casos-de-uso";
+import type { CronometroAtivo, CronometroParado } from "@/casos-de-uso";
 import { descartar, parar, pausar, retomar, type ResultadoDoCronometro } from "./acoes-cronometro";
 import { Aviso } from "./aviso";
-import { FormularioDeRegistro, type SessaoCronometrada } from "./formulario-de-registro";
+import { type CicloParaRegistro, FormularioDeRegistro } from "./formulario-de-registro";
 
 const INTERVALO_DE_ATUALIZACAO_MS = 15_000;
 
@@ -32,7 +32,7 @@ function Tempo({ segundos, rodando }: { segundos: number; rodando: boolean }) {
 type Props = {
   ativo: CronometroAtivo | null;
   /** O Ciclo da Matéria cronometrada, para o formulário de registro. */
-  ciclo: Pick<CicloDaHome, "id" | "nome" | "materias"> | null;
+  ciclo: CicloParaRegistro | null;
 };
 
 /** Cronômetro flutuante (global) e o diálogo de registro que "Parar e registrar" abre. */
@@ -43,7 +43,7 @@ export function Cronometro({ ativo, ciclo }: Props) {
   const [aviso, setAviso] = useState<string | null>(null);
   // A sessão guarda o que o formulário precisa: salvar consome o Cronômetro e o card some do servidor,
   // mas o diálogo precisa continuar montado até mostrar o aviso de sucesso.
-  const [sessao, setSessao] = useState<{ sugestao: SessaoCronometrada; materiaId: string; ciclo: NonNullable<Props["ciclo"]> } | null>(null);
+  const [sessao, setSessao] = useState<{ parado: CronometroParado; ciclo: CicloParaRegistro } | null>(null);
   const [aberturas, setAberturas] = useState(0);
 
   // O estado vive no servidor: relê ao voltar para a aba e, com a aba aberta, a cada poucos segundos,
@@ -72,10 +72,12 @@ export function Cronometro({ ativo, ciclo }: Props) {
   }
 
   function pararERegistrar() {
+    // Sem o Ciclo não há formulário para abrir: não pausa o Cronômetro à toa.
+    if (!ciclo) return setAviso("Não encontramos o ciclo deste cronômetro. Atualize a página.");
     executar(async () => {
       const resultado = await parar();
-      if (!resultado.parado || !ativo || !ciclo) return setAviso(resultado.erro ?? null);
-      setSessao({ sugestao: resultado.parado, materiaId: ativo.materiaId, ciclo });
+      if (!resultado.parado) return setAviso(resultado.erro ?? null);
+      setSessao({ parado: resultado.parado, ciclo });
       setAberturas((n) => n + 1);
     });
   }
@@ -109,8 +111,8 @@ export function Cronometro({ ativo, ciclo }: Props) {
             key={aberturas}
             idBase={`cronometro-${sessao.ciclo.id}`}
             ciclo={sessao.ciclo}
-            materiaInicial={sessao.materiaId}
-            sessaoCronometrada={sessao.sugestao}
+            materiaInicial={sessao.parado.materiaId}
+            sessaoCronometrada={sessao.parado}
             aoFechar={() => dialogo.current?.close()}
             aoSalvar={(texto) => {
               dialogo.current?.close();

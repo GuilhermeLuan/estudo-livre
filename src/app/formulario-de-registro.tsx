@@ -27,15 +27,16 @@ function CampoNumerico({ rotulo, id, ...resto }: React.InputHTMLAttributes<HTMLI
   );
 }
 
-/** Sessão cronometrada: a Matéria fica travada e o registro consome o Cronômetro ao salvar. */
-export type SessaoCronometrada = SugestaoDeRegistro;
+/** O que o formulário precisa do Ciclo: o nome e as Matérias para escolher. */
+export type CicloParaRegistro = Pick<CicloDaHome, "id" | "nome" | "materias">;
 
 type Props = {
   /** Prefixo dos ids dos campos: o painel e o cronômetro montam este formulário para o mesmo Ciclo. */
   idBase: string;
-  ciclo: Pick<CicloDaHome, "id" | "nome" | "materias">;
+  ciclo: CicloParaRegistro;
   materiaInicial: string;
-  sessaoCronometrada?: SessaoCronometrada;
+  /** Sessão cronometrada: a Matéria fica travada e o registro consome o Cronômetro ao salvar. */
+  sessaoCronometrada?: SugestaoDeRegistro;
   aoFechar: () => void;
   aoSalvar: (aviso: string) => void;
 };
