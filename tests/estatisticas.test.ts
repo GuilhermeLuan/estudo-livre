@@ -1,23 +1,14 @@
-import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { adicionarMateria, criarCiclo, NaoEncontradoError, obterEstatisticas, registrarEstudo } from "@/casos-de-uso";
-import { hojeEmBrasilia } from "@/dia";
+import { registroDeEstudo } from "@/db/schema";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
 const db = bancoDeTeste();
 beforeEach(() => limparBanco(db));
+afterEach(() => vi.useRealTimers());
 afterAll(() => db.$client.end());
 
 const estudo = { tipo: "Teoria" } as const;
-
-/** O dia de Brasília `dias` dias a partir de hoje (negativo = passado). */
-const diaDaquiA = (dias: number) => hojeEmBrasilia(new Date(Date.now() + dias * 24 * 3600_000));
-
-/** A segunda-feira (AAAA-MM-DD) da semana do dia informado. */
-function segundaDe(dia: string) {
-  const data = new Date(`${dia}T00:00:00Z`);
-  data.setUTCDate(data.getUTCDate() - ((data.getUTCDay() + 6) % 7));
-  return data.toISOString().slice(0, 10);
-}
 
 /** Ciclo com Matérias; as cargas são em minutos. */
 async function cicloCom(usuario: { id: string }, nome: string, cargas: Record<string, number>) {
@@ -58,23 +49,67 @@ describe("estatísticas", () => {
     expect(totalQuestoes).toBe(40);
   });
 
-  it("soma as horas das últimas 8 semanas (segunda a domingo), da mais antiga à atual, com a média", async () => {
+  describe("horas por semana", () => {
+    // Quinta-feira, 1/10/2026, 15h em Brasília: a semana atual começa na segunda 28/9 e a primeira das 8 em 10/8.
+    beforeEach(() => vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-10-01T15:00:00-03:00") }));
+
+    it("soma as horas das últimas 8 semanas (segunda a domingo), da mais antiga à atual, com a média", async () => {
+      const ana = await cadastrar(db, "ana@exemplo.com");
+      const { materias } = await cicloCom(ana, "TRF", { Português: 600, Direito: 600 });
+      await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 30 });
+      await registrarEstudo(db, ana, materias.Direito, { ...estudo, duracaoMinutos: 20, dia: "2026-09-24" });
+      await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 40, dia: "2026-09-21" });
+      await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 90, dia: "2026-08-05" }); // 9ª semana: fora
+
+      const { horasPorSemana, mediaSemanalMinutos } = await obterEstatisticas(db, ana);
+
+      expect(horasPorSemana.map((s) => [s.inicio, s.minutos])).toEqual([
+        ["2026-08-10", 0],
+        ["2026-08-17", 0],
+        ["2026-08-24", 0],
+        ["2026-08-31", 0],
+        ["2026-09-07", 0],
+        ["2026-09-14", 0],
+        ["2026-09-21", 60],
+        ["2026-09-28", 30],
+      ]);
+      expect(mediaSemanalMinutos).toBe(11); // 90 min em 8 semanas = 11,25
+    });
+
+    it("usa o fuso de Brasília nas viradas: domingo à noite é da semana que acaba, segunda de madrugada da que começa", async () => {
+      const ana = await cadastrar(db, "ana@exemplo.com");
+      const { materias } = await cicloCom(ana, "TRF", { Português: 600 });
+      const guardar = (dataHora: string, duracaoMinutos: number) =>
+        db.insert(registroDeEstudo).values({ materiaId: materias.Português, dataHora: new Date(dataHora), duracaoMinutos, tipo: "Teoria" });
+      await guardar("2026-09-27T23:30:00-03:00", 10); // domingo 23h30 (já segunda em UTC)
+      await guardar("2026-09-28T00:30:00-03:00", 20); // segunda 0h30
+      await guardar("2026-08-09T23:30:00-03:00", 40); // domingo antes da 1ª semana: fora
+      await guardar("2026-08-10T00:30:00-03:00", 80); // segunda da 1ª semana: dentro
+
+      const { horasPorSemana } = await obterEstatisticas(db, ana);
+
+      expect(horasPorSemana.map((s) => [s.inicio, s.minutos])).toEqual([
+        ["2026-08-10", 80],
+        ["2026-08-17", 0],
+        ["2026-08-24", 0],
+        ["2026-08-31", 0],
+        ["2026-09-07", 0],
+        ["2026-09-14", 0],
+        ["2026-09-21", 10],
+        ["2026-09-28", 20],
+      ]);
+    });
+  });
+
+  it("conta como 0 acerto o registro com questões e sem acertos informados", async () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
-    const { materias } = await cicloCom(ana, "TRF", { Português: 600, Direito: 600 });
-    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 30 });
-    await registrarEstudo(db, ana, materias.Direito, { ...estudo, duracaoMinutos: 20, dia: diaDaquiA(-7) });
-    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 40, dia: diaDaquiA(-7) });
-    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 90, dia: diaDaquiA(-8 * 7) }); // 9ª semana: fora
+    const { materias } = await cicloCom(ana, "TRF", { Português: 120 });
+    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 30, questoes: 10 });
+    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 30, questoes: 10, acertos: 10 });
 
-    const { horasPorSemana, mediaSemanalMinutos } = await obterEstatisticas(db, ana);
+    const { acertoPorMateria } = await obterEstatisticas(db, ana);
 
-    const segundaAtual = segundaDe(diaDaquiA(0));
-    expect(horasPorSemana).toHaveLength(8);
-    expect(horasPorSemana[7]).toEqual({ inicio: segundaAtual, minutos: 30 });
-    expect(horasPorSemana[6]).toEqual({ inicio: segundaDe(diaDaquiA(-7)), minutos: 60 });
-    expect(horasPorSemana.slice(0, 6).map((s) => s.minutos)).toEqual([0, 0, 0, 0, 0, 0]);
-    expect(horasPorSemana.map((s) => s.inicio)).toEqual([...horasPorSemana.map((s) => s.inicio)].sort());
-    expect(mediaSemanalMinutos).toBe(11); // 90 min em 8 semanas = 11,25
+    expect(acertoPorMateria.map((m) => [m.questoes, m.acertos, m.percentual])).toEqual([[20, 10, 50]]);
   });
 
   it("filtra tudo por Ciclo e lista os Ciclos do Usuário para o filtro", async () => {
@@ -92,7 +127,7 @@ describe("estatísticas", () => {
     expect(doStj.horasPorMateria.map((m) => [m.nome, m.minutos])).toEqual([["Direito", 45]]);
     expect(doStj.acertoPorMateria.map((m) => [m.nome, m.percentual])).toEqual([["Direito", 100]]);
     expect(doStj.totalQuestoes).toBe(20);
-    expect(doStj.horasPorSemana[7].minutos).toBe(45);
+    expect(doStj.horasPorSemana.at(-1)?.minutos).toBe(45);
     expect(doStj.ciclos.map((c) => c.nome)).toEqual(["TRF", "STJ"]);
   });
 

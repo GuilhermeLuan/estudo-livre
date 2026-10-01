@@ -7,8 +7,10 @@ import type { Usuario } from "./usuario";
 
 export const SEMANAS_NAS_ESTATISTICAS = 8;
 
-export type MateriaNasEstatisticas = { id: string; nome: string; ciclo: string; minutos: number };
-export type AcertoDaMateria = { id: string; nome: string; ciclo: string; questoes: number; acertos: number; percentual: number };
+/** Matéria com o nome do Ciclo a que pertence. */
+type MateriaDoCiclo = { id: string; nome: string; ciclo: string };
+export type MateriaNasEstatisticas = MateriaDoCiclo & { minutos: number };
+export type AcertoDaMateria = MateriaDoCiclo & { questoes: number; acertos: number; percentual: number };
 export type SemanaEstudada = { inicio: string; minutos: number };
 
 export type Estatisticas = {
@@ -16,11 +18,12 @@ export type Estatisticas = {
   ciclos: { id: string; nome: string }[];
   /** Horas de todas as Voltas, sem o limite de 100% do progresso. */
   horasPorMateria: MateriaNasEstatisticas[];
-  /** Só Matérias com ao menos uma questão; registros sem questões não entram na conta. */
+  /** Todas as Voltas. Só Matérias com ao menos uma questão; registros sem questões não entram na conta. */
   acertoPorMateria: AcertoDaMateria[];
   totalQuestoes: number;
   /** As últimas 8 semanas (segunda a domingo, em Brasília), da mais antiga à atual. */
   horasPorSemana: SemanaEstudada[];
+  /** Média das 8 semanas, contando a semana atual ainda incompleta. */
   mediaSemanalMinutos: number;
 };
 
@@ -37,12 +40,14 @@ export async function obterEstatisticas(db: Db, usuario: Usuario, opcoes: { cicl
       if (opcoes.cicloId && !ciclos.some((c) => c.id === opcoes.cicloId)) throw new NaoEncontradoError("Ciclo");
       const doEscopo = and(eq(ciclo.usuarioId, usuario.id), opcoes.cicloId ? eq(ciclo.id, opcoes.cicloId) : undefined);
 
-      const horasPorMateria = await tx
+      const materias = await tx
         .select({
           id: materia.id,
           nome: materia.nome,
           ciclo: ciclo.nome,
           minutos: sql<number>`coalesce(sum(${registroDeEstudo.duracaoMinutos}), 0)::int`,
+          questoes: sql<number>`coalesce(sum(${registroDeEstudo.questoes}), 0)::int`,
+          acertos: sql<number>`coalesce(sum(${registroDeEstudo.acertos}), 0)::int`,
         })
         .from(materia)
         .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
@@ -50,23 +55,10 @@ export async function obterEstatisticas(db: Db, usuario: Usuario, opcoes: { cicl
         .where(doEscopo)
         .groupBy(materia.id, ciclo.id)
         .orderBy(asc(ciclo.criadoEm), asc(ciclo.id), asc(materia.posicao));
-
-      const comQuestoes = await tx
-        .select({
-          id: materia.id,
-          nome: materia.nome,
-          ciclo: ciclo.nome,
-          questoes: sql<number>`sum(${registroDeEstudo.questoes})::int`,
-          acertos: sql<number>`sum(coalesce(${registroDeEstudo.acertos}, 0))::int`,
-        })
-        .from(materia)
-        .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
-        .innerJoin(registroDeEstudo, eq(registroDeEstudo.materiaId, materia.id))
-        .where(doEscopo)
-        .groupBy(materia.id, ciclo.id)
-        .having(sql`sum(${registroDeEstudo.questoes}) > 0`)
-        .orderBy(asc(ciclo.criadoEm), asc(ciclo.id), asc(materia.posicao));
-      const acertoPorMateria = comQuestoes.map((m) => ({ ...m, percentual: Math.round((m.acertos * 100) / m.questoes) }));
+      const horasPorMateria = materias.map(({ id, nome, ciclo, minutos }) => ({ id, nome, ciclo, minutos }));
+      const acertoPorMateria = materias
+        .filter((m) => m.questoes > 0)
+        .map(({ id, nome, ciclo, questoes, acertos }) => ({ id, nome, ciclo, questoes, acertos, percentual: Math.round((acertos * 100) / questoes) }));
 
       const primeiraSemana = somarDias(segundaDaSemana(hojeEmBrasilia()), -7 * (SEMANAS_NAS_ESTATISTICAS - 1));
       const porSemana = await tx
@@ -77,7 +69,7 @@ export async function obterEstatisticas(db: Db, usuario: Usuario, opcoes: { cicl
         .from(registroDeEstudo)
         .innerJoin(materia, eq(materia.id, registroDeEstudo.materiaId))
         .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
-        .where(and(doEscopo, gte(registroDeEstudo.dataHora, new Date(`${primeiraSemana}T00:00:00-03:00`))))
+        .where(and(doEscopo, gte(registroDeEstudo.dataHora, sql`(${primeiraSemana}::date)::timestamp at time zone ${FUSO}`)))
         .groupBy(sql`1`);
       const minutosDaSemana = new Map(porSemana.map((s) => [s.inicio, s.minutos]));
       const horasPorSemana = Array.from({ length: SEMANAS_NAS_ESTATISTICAS }, (_, i) => {
