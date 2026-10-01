@@ -41,7 +41,9 @@ export function Cronometro({ ativo, ciclo }: Props) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const [pendente, executar] = useTransition();
   const [aviso, setAviso] = useState<string | null>(null);
-  const [sessao, setSessao] = useState<SessaoCronometrada | null>(null);
+  // A sessão guarda o que o formulário precisa: salvar consome o Cronômetro e o card some do servidor,
+  // mas o diálogo precisa continuar montado até mostrar o aviso de sucesso.
+  const [sessao, setSessao] = useState<{ sugestao: SessaoCronometrada; materiaId: string; ciclo: NonNullable<Props["ciclo"]> } | null>(null);
   const [aberturas, setAberturas] = useState(0);
 
   // O estado vive no servidor: relê ao voltar para a aba e, com a aba aberta, a cada poucos segundos,
@@ -57,6 +59,11 @@ export function Cronometro({ ativo, ciclo }: Props) {
     };
   }, [router, existe]);
 
+  // Abre o diálogo quando uma sessão cronometrada nasce (ele só existe depois dela).
+  useEffect(() => {
+    if (sessao && !dialogo.current?.open) dialogo.current?.showModal();
+  }, [sessao]);
+
   function fazer(acao: () => Promise<ResultadoDoCronometro>) {
     executar(async () => {
       const resultado = await acao();
@@ -67,14 +74,12 @@ export function Cronometro({ ativo, ciclo }: Props) {
   function pararERegistrar() {
     executar(async () => {
       const resultado = await parar();
-      if (!resultado.parado) return setAviso(resultado.erro ?? null);
-      setSessao(resultado.parado);
+      if (!resultado.parado || !ativo || !ciclo) return setAviso(resultado.erro ?? null);
+      setSessao({ sugestao: resultado.parado, materiaId: ativo.materiaId, ciclo });
       setAberturas((n) => n + 1);
-      dialogo.current?.showModal();
     });
   }
 
-  const idBase = `cronometro-${ciclo?.id}`;
   return (
     <>
       {ativo && (
@@ -98,23 +103,21 @@ export function Cronometro({ ativo, ciclo }: Props) {
         </div>
       )}
 
-      {ciclo && ativo && (
-        <dialog ref={dialogo} className="sheet-dialog" aria-labelledby={`titulo-${idBase}`}>
-          {sessao && (
-            <FormularioDeRegistro
-              key={aberturas}
-              idBase={idBase}
-              ciclo={ciclo}
-              materiaInicial={ativo.materiaId}
-              sessaoCronometrada={sessao}
-              aoFechar={() => dialogo.current?.close()}
-              aoSalvar={(texto) => {
-                dialogo.current?.close();
-                setSessao(null);
-                setAviso(texto);
-              }}
-            />
-          )}
+      {sessao && (
+        <dialog ref={dialogo} className="sheet-dialog" aria-labelledby={`titulo-cronometro-${sessao.ciclo.id}`}>
+          <FormularioDeRegistro
+            key={aberturas}
+            idBase={`cronometro-${sessao.ciclo.id}`}
+            ciclo={sessao.ciclo}
+            materiaInicial={sessao.materiaId}
+            sessaoCronometrada={sessao.sugestao}
+            aoFechar={() => dialogo.current?.close()}
+            aoSalvar={(texto) => {
+              dialogo.current?.close();
+              setSessao(null);
+              setAviso(texto);
+            }}
+          />
         </dialog>
       )}
       <Aviso texto={aviso} aoSumir={() => setAviso(null)} />

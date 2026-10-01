@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { NaoEncontradoError, registrarEstudo, ValidacaoError } from "@/casos-de-uso";
 import type { TipoDeEstudo } from "@/dominio";
 import { obterDb } from "@/db";
+import { CAMPO_CRONOMETRO } from "./campos-do-registro";
 import { exigirUsuario } from "@/sessao";
 
 export type EstadoRegistro = { erro?: string; aviso?: string; enviado?: number };
@@ -30,7 +31,7 @@ export async function registrar(estado: EstadoRegistro, dados: FormData): Promis
       acertos: inteiroOpcional(dados, "acertos"),
       anotacao: texto(dados, "anotacao"),
       conteudoLivre: texto(dados, "conteudoLivre"),
-    }, { cronometro: dados.has("cronometro") });
+    }, { cronometro: dados.has(CAMPO_CRONOMETRO) });
     revalidatePath("/", "layout");
     return {
       aviso: voltaFechada
