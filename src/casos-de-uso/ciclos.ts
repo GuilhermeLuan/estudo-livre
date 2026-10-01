@@ -1,6 +1,6 @@
 import { and, asc, eq, max } from "drizzle-orm";
 import type { Db } from "@/db";
-import { ciclo, materia } from "@/db/schema";
+import { ciclo, materia, volta } from "@/db/schema";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
 
@@ -45,8 +45,11 @@ async function exigirMateria(db: Db, usuario: Usuario, materiaId: string) {
 
 export async function criarCiclo(db: Db, usuario: Usuario, dados: { nome: string }): Promise<{ id: string }> {
   const nome = nomeValido(dados.nome, "do ciclo");
-  const [linha] = await db.insert(ciclo).values({ usuarioId: usuario.id, nome }).returning({ id: ciclo.id });
-  return linha;
+  return db.transaction(async (tx) => {
+    const [linha] = await tx.insert(ciclo).values({ usuarioId: usuario.id, nome }).returning({ id: ciclo.id });
+    await tx.insert(volta).values({ cicloId: linha.id, numero: 1 });
+    return linha;
+  });
 }
 
 export async function renomearCiclo(db: Db, usuario: Usuario, cicloId: string, dados: { nome: string }) {

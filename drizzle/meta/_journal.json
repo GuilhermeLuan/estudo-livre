@@ -15,6 +15,13 @@
       "when": 1790890157143,
       "tag": "0001_ciclos_e_materias",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790893374589,
+      "tag": "0002_registro_de_estudo_e_volta",
+      "breakpoints": true
     }
   ]
 }

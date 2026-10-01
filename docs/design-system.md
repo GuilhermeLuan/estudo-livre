@@ -33,6 +33,8 @@ Definidos como variáveis CSS em `:root`. Em código (Tailwind), mapeie estes no
 | `--red` / `--red-soft` | `#FF6B6B` / `#3A1A1F` | `#C83A3A` / `#FBE7E7` | Revisão atrasada, erro, acerto baixo, nota "Errei" |
 | `--on-accent` | `#FFFFFF` | `#FFFFFF` | Texto e ícones sobre `--accent` |
 | `--focus` | `#6E9BFF` | `#2457E6` | Anel de foco |
+| `--scrim` | `rgba(3,6,12,.7)` | `rgba(15,23,42,.45)` | Fundo atrás do diálogo |
+| `--shadow-float` | `0 12px 30px -10px rgba(0,0,0,.6)` | `0 12px 30px -10px rgba(15,23,42,.25)` | Sombra de elementos flutuantes (toast) |
 
 Texto sobre `--accent` é branco. Texto sobre `--red` sólido usa `--paper`. Contraste mínimo: 4.5:1 para texto, mire 7:1 no texto principal.
 
@@ -45,7 +47,7 @@ Texto sobre `--accent` é branco. Texto sobre `--red` sólido usa `--paper`. Con
 
 ### Forma e espaço
 
-- Raios: `--r-sm` 6px (pílulas, itens de lista) · 8px (botões, inputs, chips) · `--r-md` 10px (blocos internos) · `--r-lg` 14px (cards, diálogo).
+- Raios: `--r-sm` 6px (pílulas, itens de lista) · `--r-control` 8px (botões, inputs, chips) · `--r-md` 10px (blocos internos) · `--r-lg` 14px (cards, diálogo).
 - Espaçamento base 4px; gaps comuns 6, 8, 12, 16, 24. Padding de card 18px (14px no mobile).
 - Bordas 1px `--line`. Sombra só em elementos flutuantes (cronômetro, toast, botão primário com brilho azul).
 
@@ -59,10 +61,10 @@ Texto sobre `--accent` é branco. Texto sobre `--red` sólido usa `--paper`. Con
 ## Componentes
 
 ### Disco do ciclo
-SVG, um arco por Matéria com comprimento proporcional à carga horária, separados por pequeno espaço. Trilho em `--line`, preenchimento em `--accent` proporcional ao Progresso da matéria (máx. 100%). A Próxima matéria recebe um arco externo fino em `--ink`. Centro: "Volta N", tempo que falta (grande, 600) e "para fechar". Passar o mouse/focar uma matéria na lista esmaece as outras fatias. Precisa de `aria-label` descrevendo o progresso de cada matéria.
+SVG, um arco por Matéria com comprimento proporcional à carga horária, separados por pequeno espaço. Trilho em `--line`, preenchimento em `--accent` proporcional ao Progresso da matéria (máx. 100%). A Próxima matéria recebe um arco externo fino em `--ink`. Centro: "Volta N", tempo que falta (grande, 600) e "para fechar". Passar o mouse/focar uma matéria na lista esmaece as outras fatias. Precisa de `aria-label` descrevendo o progresso de cada matéria. Os textos do centro são desenhados em unidades do `viewBox` 260×260 (rótulos 15, tempo 34/600) e escalam com o disco, por isso ficam fora da escala tipográfica em px.
 
 ### Card do ciclo (hero)
-Duas colunas: à esquerda pílulas (Volta, nº de matérias, concluídas), nome do ciclo, "Próxima matéria", meta de tempo/tópicos, ações (primário "Iniciar cronômetro", secundário "Registrar estudo") e a lista de matérias com barras; à direita o disco sobre `--surface-2` com um leve brilho azul radial no canto.
+Padding de 22px (como o card de login) e nome do ciclo em 22px/600, como o `h1`. Duas colunas: à esquerda pílulas (Volta, nº de matérias, concluídas), nome do ciclo, "Próxima matéria", meta de tempo/tópicos, ações (primário "Iniciar cronômetro", secundário "Registrar estudo") e a lista de matérias com barras; à direita o disco sobre `--surface-2` com um leve brilho azul radial no canto.
 
 ### Lista de matérias / barras
 Linha com nome, `feito / carga` e barra de 5px. Matéria concluída: barra verde, nome em `--ink-2`. Próxima matéria: pílula "próxima" azul ao lado do nome.
@@ -96,7 +98,7 @@ Sem barra de navegação. Marca no topo e um card (`--surface`, padding 22px) ce
 Painel com `h2` dizendo o que falta e uma linha em `--ink-2` dizendo o que fazer ("Nenhum ciclo ainda" / "Crie um ciclo…").
 
 ### Toast
-Topo central, `--surface-2` com borda; confirma a ação com o mesmo verbo do botão ("Estudo registrado.", "Cronômetro descartado. Nada foi registrado.").
+Topo central, `--surface-2` com borda; confirma a ação com o mesmo verbo do botão, é global (renderizado no `body`, nunca dentro de um card com `overflow: hidden`) e some sozinho em 5s ("Estudo registrado.", "Cronômetro descartado. Nada foi registrado.").
 
 ### Métricas e estatísticas
 Blocos de métrica em `--surface-2` (rótulo 13px, valor 20px/600). Barras semanais em `--accent-soft` com a semana atual em `--accent`. Acerto por matéria com barras azuis; abaixo de 60% em vermelho.

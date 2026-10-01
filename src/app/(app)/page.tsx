@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { obterHome } from "@/casos-de-uso";
+import { PainelDoCiclo } from "@/app/painel-do-ciclo";
+import { quantidade, tempo } from "@/app/formato";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 
@@ -9,8 +11,11 @@ function hojePorExtenso() {
   return new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
 }
 
-export default async function Hoje() {
+export default async function Hoje({ searchParams }: { searchParams: Promise<{ ciclo?: string }> }) {
+  const { ciclo: cicloEscolhido } = await searchParams;
   const home = await obterHome(obterDb(), await exigirUsuario());
+  const atual = home.ciclos.find((c) => c.id === cicloEscolhido) ?? home.ciclos[0];
+  const outros = home.ciclos.filter((c) => c !== atual);
   const data = hojePorExtenso();
   return (
     <section aria-labelledby="h-hoje">
@@ -33,30 +38,45 @@ export default async function Hoje() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-3">
-          <div className="flex items-center justify-between">
-            <h2>Ciclos</h2>
-            <Link href="/ciclos/novo" className="btn">
-              Novo ciclo
-            </Link>
+        <div className="grid gap-6">
+          <PainelDoCiclo key={atual.id} ciclo={atual} />
+          <div>
+            <div className="mb-3 flex items-baseline justify-between">
+              <h2>Outros ciclos</h2>
+              <Link href="/ciclos/novo" className="btn btn-quiet">
+                Novo ciclo
+              </Link>
+            </div>
+            {outros.length === 0 ? (
+              <p className="text-[.875rem] text-ink-2">Você tem um ciclo só. Crie outro para estudar para dois concursos ao mesmo tempo.</p>
+            ) : (
+              <ul className="grid gap-2 md:grid-cols-2">
+                {outros.map((c) => (
+                  <li key={c.id}>
+                    <Link href={`/?ciclo=${c.id}`} className="panel grid grid-cols-[36px_1fr] items-center gap-x-3 gap-y-2.5 hover:border-accent">
+                      <span className="grid size-9 place-items-center rounded-md bg-accent-soft text-[.75rem] font-bold text-accent-ink">
+                        {c.nome.slice(0, 2).toUpperCase()}
+                      </span>
+                      <span className="grid">
+                        <span className="text-[.875rem] font-semibold">{c.nome}</span>
+                        <span className="text-[.8125rem] text-ink-2">
+                          Volta {c.volta}.{c.proxima ? ` Próxima: ${c.proxima.nome}` : " Sem matérias ainda."}
+                        </span>
+                      </span>
+                      <span className="col-span-2 grid grid-cols-[1fr_auto] items-center gap-2.5 text-[.75rem] font-semibold">
+                        <span className="bar">
+                          <i style={{ width: `${c.percentual}%` }} />
+                        </span>
+                        <span className="tabular-nums" title={`Faltam ${tempo(c.faltaMinutos)} para fechar`}>
+                          {c.percentual}%
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          <ul className="grid gap-2 md:grid-cols-2">
-            {home.ciclos.map((c) => (
-              <li key={c.id}>
-                <Link href={`/ciclos/${c.id}`} className="panel flex items-center gap-3 hover:border-ink-2">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-md bg-accent-soft text-[.8125rem] font-semibold text-accent-ink">
-                    {c.nome.slice(0, 2).toUpperCase()}
-                  </span>
-                  <span className="grid">
-                    <span className="font-semibold">{c.nome}</span>
-                    <span className="text-[.8125rem] text-ink-2">
-                      {c.totalMaterias === 1 ? "1 matéria" : `${c.totalMaterias} matérias`}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
       )}
     </section>

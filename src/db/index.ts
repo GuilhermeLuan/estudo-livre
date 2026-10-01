@@ -3,6 +3,7 @@ import { Pool } from "pg";
 import * as schema from "./schema";
 
 export type Db = NodePgDatabase<typeof schema> & { $client: Pool };
+export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 
 export function criarDb(url: string): Db {
   return drizzle(new Pool({ connectionString: url }), { schema });
