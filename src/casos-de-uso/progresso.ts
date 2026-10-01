@@ -1,6 +1,7 @@
 import { and, asc, eq, gt, isNull, or, sql, type SQL } from "drizzle-orm";
 import type { Db, Tx } from "@/db";
 import { ciclo, materia, registroDeEstudo, volta } from "@/db/schema";
+import { concluida } from "@/dominio";
 
 export type Executor = Db | Tx;
 
@@ -38,7 +39,7 @@ export async function materiasComProgresso(db: Executor, filtro: SQL | undefined
  */
 export async function avaliarFechamentoDaVolta(tx: Executor, cicloId: string): Promise<number | null> {
   const materias = await materiasComProgresso(tx, eq(materia.cicloId, cicloId));
-  if (materias.length === 0 || materias.some((m) => m.feitoMinutos < m.cargaMinutos)) return null;
+  if (materias.length === 0 || materias.some((m) => !concluida(m))) return null;
   const fim = new Date();
   const [fechada] = await tx
     .update(volta)
@@ -48,5 +49,3 @@ export async function avaliarFechamentoDaVolta(tx: Executor, cicloId: string): P
   await tx.insert(volta).values({ cicloId, numero: fechada.numero + 1, inicio: fim });
   return fechada.numero;
 }
-
-export const concluida = (m: MateriaComProgresso) => m.feitoMinutos >= m.cargaMinutos;

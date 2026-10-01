@@ -1,7 +1,8 @@
 import { and, asc, eq, isNull } from "drizzle-orm";
 import type { Db } from "@/db";
 import { ciclo, user, volta } from "@/db/schema";
-import { concluida, materiasComProgresso, type MateriaComProgresso } from "./progresso";
+import { concluida } from "@/dominio";
+import { materiasComProgresso, type MateriaComProgresso } from "./progresso";
 import type { Usuario } from "./usuario";
 
 export type CicloDaHome = {

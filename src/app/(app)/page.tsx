@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { obterHome } from "@/casos-de-uso";
 import { PainelDoCiclo } from "@/app/painel-do-ciclo";
-import { tempo } from "@/app/formato";
+import { quantidade, tempo } from "@/app/formato";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 

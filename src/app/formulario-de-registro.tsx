@@ -3,13 +3,15 @@
 import { useActionState, useEffect, useState } from "react";
 import type { CicloDaHome } from "@/casos-de-uso";
 import { hojeEmBrasilia } from "@/dia";
+import { LIMITES_DO_REGISTRO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
 import { registrar, type EstadoRegistro } from "./acoes-estudo";
 
-const TIPOS = ["Teoria", "Exercícios", "Revisão", "Videoaula", "Leitura de lei"] as const;
+const ROTULO = "text-[.8125rem] font-medium text-ink-2";
+const { duracaoMaximaMinutos, questoesMaximas, anotacaoMaxima, conteudoLivreMaximo } = LIMITES_DO_REGISTRO;
 
 function RotuloDeCampo({ id, children }: { id: string; children: React.ReactNode }) {
   return (
-    <label htmlFor={id} className="text-[.8125rem] font-medium text-ink-2">
+    <label htmlFor={id} className={ROTULO}>
       {children}
     </label>
   );
@@ -35,9 +37,9 @@ type Props = {
 export function FormularioDeRegistro({ ciclo, materiaInicial, aoFechar, aoSalvar }: Props) {
   const { id, materias } = ciclo;
   const [materiaId, setMateriaId] = useState(materiaInicial);
-  const [tipo, setTipo] = useState<(typeof TIPOS)[number]>("Teoria");
+  const [tipo, setTipo] = useState<TipoDeEstudo>("Teoria");
   const [dia, setDia] = useState(() => hojeEmBrasilia());
-  const [estado, enviar, enviando] = useActionState<EstadoRegistro, FormData>(registrar.bind(null, materias), {});
+  const [estado, enviar, enviando] = useActionState<EstadoRegistro, FormData>(registrar, {});
 
   useEffect(() => {
     if (estado.aviso) aoSalvar(estado.aviso);
@@ -74,7 +76,7 @@ export function FormularioDeRegistro({ ciclo, materiaInicial, aoFechar, aoSalvar
 
       <div className="grid gap-1.5">
         <RotuloDeCampo id={`livre-${id}`}>Conteúdo livre</RotuloDeCampo>
-        <input id={`livre-${id}`} name="conteudoLivre" className="input" maxLength={200} placeholder="Opcional. Ex.: crase antes de horas" />
+        <input id={`livre-${id}`} name="conteudoLivre" className="input" maxLength={conteudoLivreMaximo} placeholder="Opcional. Ex.: crase antes de horas" />
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -82,16 +84,16 @@ export function FormularioDeRegistro({ ciclo, materiaInicial, aoFechar, aoSalvar
           <RotuloDeCampo id={`data-${id}`}>Data</RotuloDeCampo>
           <input id={`data-${id}`} name="data" type="date" className="input" value={dia} max={hojeEmBrasilia()} required onChange={(e) => setDia(e.target.value)} />
         </div>
-        <CampoNumerico rotulo="Horas" id={`horas-${id}`} name="horas" min="0" max="24" defaultValue={1} />
+        <CampoNumerico rotulo="Horas" id={`horas-${id}`} name="horas" min="0" max={duracaoMaximaMinutos / 60} defaultValue={1} />
         <CampoNumerico rotulo="Minutos" id={`minutos-${id}`} name="minutos" min="0" max="59" defaultValue={0} />
       </div>
 
       <div className="grid gap-1.5">
-        <span id={`tipo-${id}`} className="text-[.8125rem] font-medium text-ink-2">
+        <span id={`tipo-${id}`} className={ROTULO}>
           Tipo de estudo
         </span>
         <div role="group" aria-labelledby={`tipo-${id}`} className="flex flex-wrap gap-1.5">
-          {TIPOS.map((t) => (
+          {TIPOS_DE_ESTUDO.map((t) => (
             <button key={t} type="button" className="chip" aria-pressed={tipo === t} onClick={() => setTipo(t)}>
               {t}
             </button>
@@ -101,13 +103,13 @@ export function FormularioDeRegistro({ ciclo, materiaInicial, aoFechar, aoSalvar
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <CampoNumerico rotulo="Questões" id={`questoes-${id}`} name="questoes" min="0" max="1000" placeholder="Opcional" />
-        <CampoNumerico rotulo="Acertos" id={`acertos-${id}`} name="acertos" min="0" max="1000" placeholder="Opcional" />
+        <CampoNumerico rotulo="Questões" id={`questoes-${id}`} name="questoes" min="0" max={questoesMaximas} placeholder="Opcional" />
+        <CampoNumerico rotulo="Acertos" id={`acertos-${id}`} name="acertos" min="0" max={questoesMaximas} placeholder="Opcional" />
       </div>
 
       <div className="grid gap-1.5">
         <RotuloDeCampo id={`anotacao-${id}`}>Anotação</RotuloDeCampo>
-        <textarea id={`anotacao-${id}`} name="anotacao" maxLength={2000} placeholder="Opcional" className="input min-h-[70px] resize-y" />
+        <textarea id={`anotacao-${id}`} name="anotacao" maxLength={anotacaoMaxima} placeholder="Opcional" className="input min-h-[70px] resize-y" />
       </div>
 
       {estado.erro && (

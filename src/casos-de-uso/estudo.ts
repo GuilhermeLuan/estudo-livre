@@ -1,7 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db";
-import { ciclo, materia, registroDeEstudo, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/db/schema";
+import { ciclo, materia, registroDeEstudo } from "@/db/schema";
 import { hojeEmBrasilia } from "@/dia";
+import { LIMITES_DO_REGISTRO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
 import { avaliarFechamentoDaVolta } from "./progresso";
 import type { Usuario } from "./usuario";
@@ -17,10 +18,7 @@ export type DadosDoEstudo = {
   conteudoLivre?: string | null;
 };
 
-const DURACAO_MAXIMA_MINUTOS = 24 * 60;
-const QUESTOES_MAXIMAS = 1000;
-const ANOTACAO_MAXIMA = 2000;
-const CONTEUDO_LIVRE_MAXIMO = 200;
+const { duracaoMaximaMinutos, questoesMaximas, anotacaoMaxima, conteudoLivreMaximo } = LIMITES_DO_REGISTRO;
 
 const DIA_ISO = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -50,14 +48,14 @@ function textoOpcional(texto: string | null | undefined, maximo: number, rotulo:
 
 function validar(dados: DadosDoEstudo) {
   if (!TIPOS_DE_ESTUDO.includes(dados.tipo)) throw new ValidacaoError("Escolha um tipo de estudo.");
-  if (!inteiroEntre(dados.duracaoMinutos, 1, DURACAO_MAXIMA_MINUTOS))
+  if (!inteiroEntre(dados.duracaoMinutos, 1, duracaoMaximaMinutos))
     throw new ValidacaoError("A duração precisa ter de 1 minuto a 24 horas.");
   if (dados.dia !== undefined) instanteDoDia(dados.dia);
 
   const questoes = dados.questoes ?? null;
   const acertos = dados.acertos ?? null;
-  if (questoes !== null && !inteiroEntre(questoes, 0, QUESTOES_MAXIMAS))
-    throw new ValidacaoError(`Questões precisa ser um número de 0 a ${QUESTOES_MAXIMAS}.`);
+  if (questoes !== null && !inteiroEntre(questoes, 0, questoesMaximas))
+    throw new ValidacaoError(`Questões precisa ser um número de 0 a ${questoesMaximas}.`);
   if (acertos !== null) {
     if (questoes === null) throw new ValidacaoError("Informe as questões para registrar os acertos.");
     if (!inteiroEntre(acertos, 0, questoes)) throw new ValidacaoError("Os acertos não podem passar do total de questões.");
@@ -67,16 +65,16 @@ function validar(dados: DadosDoEstudo) {
     duracaoMinutos: dados.duracaoMinutos,
     questoes,
     acertos,
-    anotacao: textoOpcional(dados.anotacao, ANOTACAO_MAXIMA, "A anotação"),
-    conteudoLivre: textoOpcional(dados.conteudoLivre, CONTEUDO_LIVRE_MAXIMO, "O conteúdo"),
+    anotacao: textoOpcional(dados.anotacao, anotacaoMaxima, "A anotação"),
+    conteudoLivre: textoOpcional(dados.conteudoLivre, conteudoLivreMaximo, "O conteúdo"),
   };
 }
 
-export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: string, dados: DadosDoEstudo): Promise<{ id: string; voltaFechada: number | null }> {
+export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: string, dados: DadosDoEstudo): Promise<{ id: string; materia: string; voltaFechada: number | null }> {
   const registro = validar(dados);
   return db.transaction(async (tx) => {
     const [alvo] = await tx
-      .select({ cicloId: materia.cicloId })
+      .select({ cicloId: materia.cicloId, nome: materia.nome })
       .from(materia)
       .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
       .where(and(eq(materia.id, materiaId), eq(ciclo.usuarioId, usuario.id)));
@@ -87,6 +85,6 @@ export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: strin
     const dataHora = dados.dia === undefined ? new Date() : instanteDoDia(dados.dia);
     const [linha] = await tx.insert(registroDeEstudo).values({ materiaId, ...registro, dataHora }).returning({ id: registroDeEstudo.id });
     const voltaFechada = await avaliarFechamentoDaVolta(tx, alvo.cicloId);
-    return { id: linha.id, voltaFechada };
+    return { id: linha.id, materia: alvo.nome, voltaFechada };
   });
 }

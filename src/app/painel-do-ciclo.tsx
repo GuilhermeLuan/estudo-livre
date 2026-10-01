@@ -6,7 +6,8 @@ import type { CicloDaHome } from "@/casos-de-uso";
 import { Aviso } from "./aviso";
 import { DiscoDoCiclo } from "./disco-do-ciclo";
 import { FormularioDeRegistro } from "./formulario-de-registro";
-import { tempo } from "./formato";
+import { concluida, fracaoFeita } from "@/dominio";
+import { quantidade, tempo } from "./formato";
 
 /** Card do ciclo (hero): disco, Próxima matéria, lista de matérias e o diálogo de registro. */
 export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
@@ -39,8 +40,8 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
       <div className="min-w-0 p-[22px]">
         <div className="mb-3 flex flex-wrap gap-1.5">
           <span className="pill pill-blue">Volta {ciclo.volta}</span>
-          <span className="pill">{materias.length === 1 ? "1 matéria" : `${materias.length} matérias`}</span>
-          <span className="pill pill-green">{ciclo.concluidas === 1 ? "1 concluída" : `${ciclo.concluidas} concluídas`}</span>
+          <span className="pill">{quantidade(materias.length, "matéria", "matérias")}</span>
+          <span className="pill pill-green">{quantidade(ciclo.concluidas, "concluída", "concluídas")}</span>
         </div>
         <h2 className="mb-1 text-[1.375rem]">
           <Link href={`/ciclos/${ciclo.id}`} className="hover:text-accent-ink">
@@ -72,7 +73,7 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
 
         <ul className="subjects grid">
           {materias.map((m) => (
-            <li key={m.id} className={`${m.id === proxima?.id ? "is-next" : ""} ${m.feitoMinutos >= m.cargaMinutos ? "is-done" : ""}`}>
+            <li key={m.id} className={`${m.id === proxima?.id ? "is-next" : ""} ${concluida(m) ? "is-done" : ""}`}>
               <button
                 type="button"
                 onClick={() => abrir(m.id)}
@@ -87,7 +88,7 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
                   {tempo(m.feitoMinutos)} / {tempo(m.cargaMinutos)}
                 </span>
                 <span className="bar">
-                  <i style={{ width: `${(m.feitoMinutos / m.cargaMinutos) * 100}%` }} />
+                  <i style={{ width: `${fracaoFeita(m) * 100}%` }} />
                 </span>
               </button>
             </li>

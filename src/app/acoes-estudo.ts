@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { NaoEncontradoError, registrarEstudo, ValidacaoError, type MateriaComProgresso } from "@/casos-de-uso";
-import type { TipoDeEstudo } from "@/db/schema";
+import { NaoEncontradoError, registrarEstudo, ValidacaoError } from "@/casos-de-uso";
+import type { TipoDeEstudo } from "@/dominio";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 
@@ -17,17 +17,13 @@ function inteiroOpcional(dados: FormData, campo: string) {
   return bruto === "" ? null : Number(bruto);
 }
 
-export async function registrar(
-  materias: Pick<MateriaComProgresso, "id" | "nome">[],
-  estado: EstadoRegistro,
-  dados: FormData,
-): Promise<EstadoRegistro> {
+export async function registrar(estado: EstadoRegistro, dados: FormData): Promise<EstadoRegistro> {
   const usuario = await exigirUsuario();
   const materiaId = texto(dados, "materiaId");
   const duracaoMinutos = Number(texto(dados, "horas") || 0) * 60 + Number(texto(dados, "minutos") || 0);
   try {
-    const { voltaFechada } = await registrarEstudo(obterDb(), usuario, materiaId, {
-      tipo: texto(dados, "tipo") as TipoDeEstudo,
+    const { materia, voltaFechada } = await registrarEstudo(obterDb(), usuario, materiaId, {
+      tipo: texto(dados, "tipo") as TipoDeEstudo, // o caso de uso rejeita o que não for um tipo válido
       duracaoMinutos,
       dia: texto(dados, "data"),
       questoes: inteiroOpcional(dados, "questoes"),
@@ -36,11 +32,10 @@ export async function registrar(
       conteudoLivre: texto(dados, "conteudoLivre"),
     });
     revalidatePath("/", "layout");
-    const nome = materias.find((m) => m.id === materiaId)?.nome ?? "matéria";
     return {
       aviso: voltaFechada
         ? `Volta ${voltaFechada} fechada. Volta ${voltaFechada + 1} começou.`
-        : `Estudo registrado em ${nome}.`,
+        : `Estudo registrado em ${materia}.`,
       enviado: (estado.enviado ?? 0) + 1,
     };
   } catch (erro) {

@@ -7,3 +7,8 @@ export function tempo(minutos: number) {
   if (h) return `${h}h`;
   return r ? `${r}min` : "0h";
 }
+
+/** "1 matéria" / "3 matérias". */
+export function quantidade(n: number, singular: string, plural: string) {
+  return `${n} ${n === 1 ? singular : plural}`;
+}

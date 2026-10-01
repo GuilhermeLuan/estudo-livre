@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { TIPOS_DE_ESTUDO } from "@/dominio";
 import { boolean, integer, index, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 // Tabelas do Better Auth. "user" é o Usuário do domínio.
@@ -81,8 +82,6 @@ export const volta = pgTable("volta", {
   uniqueIndex("volta_unica_aberta").on(t.cicloId).where(sql`${t.fim} is null`),
 ]);
 
-export const TIPOS_DE_ESTUDO = ["Teoria", "Exercícios", "Revisão", "Videoaula", "Leitura de lei"] as const;
-export type TipoDeEstudo = (typeof TIPOS_DE_ESTUDO)[number];
 export const tipoDeEstudo = pgEnum("tipo_de_estudo", TIPOS_DE_ESTUDO);
 
 export const registroDeEstudo = pgTable("registro_de_estudo", {

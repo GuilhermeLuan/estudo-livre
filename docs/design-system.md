@@ -64,7 +64,7 @@ Texto sobre `--accent` é branco. Texto sobre `--red` sólido usa `--paper`. Con
 SVG, um arco por Matéria com comprimento proporcional à carga horária, separados por pequeno espaço. Trilho em `--line`, preenchimento em `--accent` proporcional ao Progresso da matéria (máx. 100%). A Próxima matéria recebe um arco externo fino em `--ink`. Centro: "Volta N", tempo que falta (grande, 600) e "para fechar". Passar o mouse/focar uma matéria na lista esmaece as outras fatias. Precisa de `aria-label` descrevendo o progresso de cada matéria. Os textos do centro são desenhados em unidades do `viewBox` 260×260 (rótulos 15, tempo 34/600) e escalam com o disco, por isso ficam fora da escala tipográfica em px.
 
 ### Card do ciclo (hero)
-Duas colunas: à esquerda pílulas (Volta, nº de matérias, concluídas), nome do ciclo, "Próxima matéria", meta de tempo/tópicos, ações (primário "Iniciar cronômetro", secundário "Registrar estudo") e a lista de matérias com barras; à direita o disco sobre `--surface-2` com um leve brilho azul radial no canto.
+Padding de 22px (como o card de login) e nome do ciclo em 22px/600, como o `h1`. Duas colunas: à esquerda pílulas (Volta, nº de matérias, concluídas), nome do ciclo, "Próxima matéria", meta de tempo/tópicos, ações (primário "Iniciar cronômetro", secundário "Registrar estudo") e a lista de matérias com barras; à direita o disco sobre `--surface-2` com um leve brilho azul radial no canto.
 
 ### Lista de matérias / barras
 Linha com nome, `feito / carga` e barra de 5px. Matéria concluída: barra verde, nome em `--ink-2`. Próxima matéria: pílula "próxima" azul ao lado do nome.

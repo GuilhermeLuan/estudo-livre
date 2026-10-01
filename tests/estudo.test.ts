@@ -95,7 +95,7 @@ describe("registro de estudo e progresso da volta", () => {
     const { materias } = await cicloCom(ana, { Português: 60, Direito: 60 });
 
     const parcial = await registrarEstudo(db, ana, materias.Direito, { ...estudo, duracaoMinutos: 60 });
-    expect(parcial.voltaFechada).toBeNull();
+    expect(parcial).toMatchObject({ materia: "Direito", voltaFechada: null });
     expect((await cicloDaHome(ana)).volta).toBe(1);
 
     // O excedente (30 min além da carga) não passa para a Volta seguinte.
