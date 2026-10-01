@@ -14,6 +14,12 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         className="sticky top-0 z-30 flex items-center gap-1 border-b border-line bg-[color-mix(in_srgb,var(--paper)_88%,transparent)] px-[clamp(16px,3vw,32px)] py-2.5 backdrop-blur-[10px]"
       >
         <Marca />
+        <Link href="/" className="btn btn-quiet ml-3 text-[.875rem]">
+          Hoje
+        </Link>
+        <Link href="/estatisticas" className="btn btn-quiet ml-3 text-[.875rem]">
+          Estatísticas
+        </Link>
         {usuario.admin && (
           <Link href="/usuarios" className="btn btn-quiet ml-3 text-[.875rem]">
             Usuários
