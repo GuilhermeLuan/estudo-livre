@@ -22,7 +22,7 @@ export async function registrar(estado: EstadoRegistro, dados: FormData): Promis
   const materiaId = texto(dados, "materiaId");
   const duracaoMinutos = Number(texto(dados, "horas") || 0) * 60 + Number(texto(dados, "minutos") || 0);
   try {
-    const { materia, voltaFechada } = await registrarEstudo(obterDb(), usuario, materiaId, {
+    const { materia, ciclo, voltaFechada } = await registrarEstudo(obterDb(), usuario, materiaId, {
       tipo: texto(dados, "tipo") as TipoDeEstudo, // o caso de uso rejeita o que não for um tipo válido
       duracaoMinutos,
       dia: texto(dados, "data"),
@@ -34,7 +34,7 @@ export async function registrar(estado: EstadoRegistro, dados: FormData): Promis
     revalidatePath("/", "layout");
     return {
       aviso: voltaFechada
-        ? `Volta ${voltaFechada} fechada. Volta ${voltaFechada + 1} começou.`
+        ? `Volta ${voltaFechada} fechada. Volta ${voltaFechada + 1} começou em ${ciclo}.`
         : `Estudo registrado em ${materia}.`,
       enviado: (estado.enviado ?? 0) + 1,
     };

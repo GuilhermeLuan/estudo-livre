@@ -70,11 +70,11 @@ function validar(dados: DadosDoEstudo) {
   };
 }
 
-export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: string, dados: DadosDoEstudo): Promise<{ id: string; materia: string; voltaFechada: number | null }> {
+export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: string, dados: DadosDoEstudo): Promise<{ id: string; materia: string; ciclo: string; voltaFechada: number | null }> {
   const registro = validar(dados);
   return db.transaction(async (tx) => {
     const [alvo] = await tx
-      .select({ cicloId: materia.cicloId, nome: materia.nome })
+      .select({ cicloId: materia.cicloId, nome: materia.nome, cicloNome: ciclo.nome })
       .from(materia)
       .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
       .where(and(eq(materia.id, materiaId), eq(ciclo.usuarioId, usuario.id)));
@@ -85,6 +85,6 @@ export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: strin
     const dataHora = dados.dia === undefined ? new Date() : instanteDoDia(dados.dia);
     const [linha] = await tx.insert(registroDeEstudo).values({ materiaId, ...registro, dataHora }).returning({ id: registroDeEstudo.id });
     const voltaFechada = await avaliarFechamentoDaVolta(tx, alvo.cicloId);
-    return { id: linha.id, materia: alvo.nome, voltaFechada };
+    return { id: linha.id, materia: alvo.nome, ciclo: alvo.cicloNome, voltaFechada };
   });
 }

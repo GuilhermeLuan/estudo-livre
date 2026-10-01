@@ -100,7 +100,7 @@ describe("registro de estudo e progresso da volta", () => {
 
     // O excedente (30 min além da carga) não passa para a Volta seguinte.
     const final = await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 90 });
-    expect(final.voltaFechada).toBe(1);
+    expect(final).toMatchObject({ ciclo: "TRF", voltaFechada: 1 });
 
     const ciclo = await cicloDaHome(ana);
     expect(ciclo.volta).toBe(2);
