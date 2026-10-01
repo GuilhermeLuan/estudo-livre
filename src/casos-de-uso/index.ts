@@ -3,3 +3,4 @@
 export { prepararCadastro, CadastroFechadoError } from "./conta";
 export { obterHome, type Home } from "./home";
 export type { Usuario } from "./usuario";
+export { listarUsuarios, redefinirSenha, NaoAutorizadoError, SenhaInvalidaError, type UsuarioListado } from "./admin";

@@ -1,7 +1,12 @@
+import Link from "next/link";
 import { sair } from "@/app/acoes-conta";
 import { Marca } from "@/app/marca";
+import { obterHome } from "@/casos-de-uso";
+import { obterDb } from "@/db";
+import { exigirUsuario } from "@/sessao";
 
-export default function LayoutApp({ children }: { children: React.ReactNode }) {
+export default async function LayoutApp({ children }: { children: React.ReactNode }) {
+  const { usuario } = await obterHome(obterDb(), await exigirUsuario());
   return (
     <div className="min-h-screen">
       <nav
@@ -9,6 +14,11 @@ export default function LayoutApp({ children }: { children: React.ReactNode }) {
         className="sticky top-0 z-30 flex items-center gap-1 border-b border-line bg-[color-mix(in_srgb,var(--paper)_88%,transparent)] px-[clamp(16px,3vw,32px)] py-2.5 backdrop-blur-[10px]"
       >
         <Marca />
+        {usuario.admin && (
+          <Link href="/usuarios" className="btn btn-quiet ml-3 text-[.875rem]">
+            Usuários
+          </Link>
+        )}
         <div className="flex-1" />
         <form action={sair}>
           <button type="submit" className="btn btn-quiet">

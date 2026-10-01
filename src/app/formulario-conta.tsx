@@ -10,10 +10,11 @@ type Props = {
   titulo: string;
   botao: string;
   comNome?: boolean;
+  esqueci?: boolean;
   rodape: { texto: string; link: string; href: string } | null;
 };
 
-export function FormularioConta({ acao, titulo, botao, comNome, rodape }: Props) {
+export function FormularioConta({ acao, titulo, botao, comNome, esqueci, rodape }: Props) {
   const [estado, enviar, enviando] = useActionState(acao, {});
   return (
     <form action={enviar} className="grid gap-4">
@@ -29,6 +30,11 @@ export function FormularioConta({ acao, titulo, botao, comNome, rodape }: Props)
         minLength={comNome ? 8 : undefined}
         autoComplete={comNome ? "new-password" : "current-password"}
       />
+      {esqueci && (
+        <Link href="/esqueci-senha" className="btn btn-quiet self-start text-[.8125rem]">
+          Esqueci minha senha
+        </Link>
+      )}
       {estado.erro && (
         <p role="alert" className="text-[.8125rem] text-red">
           {estado.erro}
