@@ -8,4 +8,4 @@ export function proxy(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/((?!(?:entrar|cadastrar)$|api/auth/|_next/|.*\\..*).*)"] };
+export const config = { matcher: ["/((?!(?:entrar|cadastrar|esqueci-senha|redefinir-senha)$|api/auth/|_next/|.*\\..*).*)"] };

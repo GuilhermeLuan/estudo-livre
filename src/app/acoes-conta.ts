@@ -4,8 +4,9 @@ import { APIError } from "better-auth/api";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { obterAuth } from "@/auth";
+import { smtpConfigurado } from "@/email";
 
-export type EstadoFormulario = { erro?: string; nome?: string; email?: string };
+export type EstadoFormulario = { erro?: string; ok?: string; nome?: string; email?: string };
 
 function texto(dados: FormData, campo: string) {
   return String(dados.get(campo) ?? "").trim();
@@ -47,5 +48,29 @@ export async function cadastrar(_: EstadoFormulario, dados: FormData): Promise<E
 
 export async function sair() {
   await obterAuth().api.signOut({ headers: await headers() });
+  redirect("/entrar");
+}
+
+export async function pedirRecuperacao(_: EstadoFormulario, dados: FormData): Promise<EstadoFormulario> {
+  const email = texto(dados, "email");
+  if (!smtpConfigurado()) return { erro: "A recuperação por e-mail não está disponível. Peça ao Admin para redefinir sua senha.", email };
+  try {
+    await obterAuth().api.requestPasswordReset({ body: { email, redirectTo: "/redefinir-senha" } });
+  } catch {
+    return { erro: "Não foi possível enviar o e-mail agora. Tente de novo mais tarde.", email };
+  }
+  // Mesma resposta exista ou não a conta, para não revelar quem tem cadastro.
+  return { ok: "Se existir uma conta com este e-mail, enviamos o link para redefinir a senha.", email };
+}
+
+export async function redefinirComToken(_: EstadoFormulario, dados: FormData): Promise<EstadoFormulario> {
+  const senha = String(dados.get("senha") ?? "");
+  if (senha.length < 8) return { erro: "A senha precisa ter pelo menos 8 caracteres." };
+  try {
+    await obterAuth().api.resetPassword({ body: { newPassword: senha, token: texto(dados, "token") } });
+  } catch (erro) {
+    if (erro instanceof APIError) return { erro: "O link é inválido ou expirou. Peça um novo." };
+    throw erro;
+  }
   redirect("/entrar");
 }

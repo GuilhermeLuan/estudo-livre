@@ -8,6 +8,12 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?defina BETTER_AUTH_SECRET no .env}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       CADASTRO_ABERTO: ${CADASTRO_ABERTO:-true}
+      # SMTP opcional: sem SMTP_HOST, a recuperação de senha é feita pelo Admin.
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USUARIO: ${SMTP_USUARIO:-}
+      SMTP_SENHA: ${SMTP_SENHA:-}
+      SMTP_REMETENTE: ${SMTP_REMETENTE:-}
     depends_on:
       db:
         condition: service_healthy

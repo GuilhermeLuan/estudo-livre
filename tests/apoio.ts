@@ -15,3 +15,7 @@ export async function cadastrar(db: Db, email: string, opcoes: { cadastroAberto?
   const { user } = await auth.api.signUpEmail({ body: { email, password: "senha-de-teste-123", name: email } });
   return { id: user.id };
 }
+
+export function authDeTeste(db: Db, opcoes: Partial<Parameters<typeof criarAuth>[1]> = {}) {
+  return criarAuth(db, { cadastroAberto: true, segredo: "segredo-de-teste-com-32-caracteres!!", ...opcoes });
+}
