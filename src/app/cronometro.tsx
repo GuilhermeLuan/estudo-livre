@@ -3,9 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { CicloDaHome, CronometroAtivo } from "@/casos-de-uso";
-import { descartar, parar, pausar, retomar } from "./acoes-cronometro";
+import { descartar, parar, pausar, retomar, type ResultadoDoCronometro } from "./acoes-cronometro";
 import { Aviso } from "./aviso";
 import { FormularioDeRegistro, type SessaoCronometrada } from "./formulario-de-registro";
+
+const INTERVALO_DE_ATUALIZACAO_MS = 15_000;
 
 const doisDigitos = (n: number) => String(Math.floor(n)).padStart(2, "0");
 const relogio = (s: number) => `${doisDigitos(s / 3600)}:${doisDigitos((s % 3600) / 60)}:${doisDigitos(s % 60)}`;
@@ -42,14 +44,20 @@ export function Cronometro({ ativo, ciclo }: Props) {
   const [sessao, setSessao] = useState<SessaoCronometrada | null>(null);
   const [aberturas, setAberturas] = useState(0);
 
-  // Trocar de aparelho ou de aba: ao voltar, relê o estado que vive no servidor.
+  // O estado vive no servidor: relê ao voltar para a aba e, com a aba aberta, a cada poucos segundos,
+  // para refletir o que foi feito em outro aparelho.
+  const existe = ativo !== null;
   useEffect(() => {
     const atualizar = () => document.visibilityState === "visible" && router.refresh();
     document.addEventListener("visibilitychange", atualizar);
-    return () => document.removeEventListener("visibilitychange", atualizar);
-  }, [router]);
+    const periodico = existe ? setInterval(atualizar, INTERVALO_DE_ATUALIZACAO_MS) : undefined;
+    return () => {
+      document.removeEventListener("visibilitychange", atualizar);
+      clearInterval(periodico);
+    };
+  }, [router, existe]);
 
-  function fazer(acao: () => Promise<{ erro?: string; aviso?: string }>) {
+  function fazer(acao: () => Promise<ResultadoDoCronometro>) {
     executar(async () => {
       const resultado = await acao();
       setAviso(resultado.erro ?? resultado.aviso ?? null);
@@ -59,8 +67,8 @@ export function Cronometro({ ativo, ciclo }: Props) {
   function pararERegistrar() {
     executar(async () => {
       const resultado = await parar();
-      if (resultado.erro || resultado.duracaoMinutos === undefined) return setAviso(resultado.erro ?? null);
-      setSessao({ duracaoMinutos: resultado.duracaoMinutos, passouDoLimite: !!resultado.passouDoLimite });
+      if (!resultado.parado) return setAviso(resultado.erro ?? null);
+      setSessao(resultado.parado);
       setAberturas((n) => n + 1);
       dialogo.current?.showModal();
     });
@@ -96,7 +104,7 @@ export function Cronometro({ ativo, ciclo }: Props) {
               key={aberturas}
               ciclo={ciclo}
               materiaInicial={ativo.materiaId}
-              cronometrado={sessao}
+              sessaoCronometrada={sessao}
               aoFechar={() => dialogo.current?.close()}
               aoSalvar={(texto) => {
                 dialogo.current?.close();

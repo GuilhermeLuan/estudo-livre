@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { sair } from "@/app/acoes-conta";
+import { Cronometro } from "@/app/cronometro";
 import { Marca } from "@/app/marca";
 import { obterCronometro, obterHome } from "@/casos-de-uso";
-import { Cronometro } from "@/app/cronometro";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 

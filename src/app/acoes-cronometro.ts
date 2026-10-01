@@ -2,21 +2,25 @@
 
 import { revalidatePath } from "next/cache";
 import {
+  type CronometroParado,
   descartarCronometro,
   iniciarCronometro,
   NaoEncontradoError,
   pararCronometro,
   pausarCronometro,
   retomarCronometro,
+  type Usuario,
   ValidacaoError,
 } from "@/casos-de-uso";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 
-export type ResultadoDoCronometro = { erro?: string; aviso?: string; duracaoMinutos?: number; passouDoLimite?: boolean };
+export type ResultadoDoCronometro =
+  | { erro: string; parado?: undefined }
+  | { erro?: undefined; aviso?: string; /** Só em `parar`: a duração para preencher o registro. */ parado?: Omit<CronometroParado, "materiaId"> };
 
 /** Executa a operação e traduz os erros esperados em mensagem; a tela se atualiza com o estado do servidor. */
-async function executar(operacao: (usuario: Awaited<ReturnType<typeof exigirUsuario>>) => Promise<ResultadoDoCronometro | void>): Promise<ResultadoDoCronometro> {
+async function executar(operacao: (usuario: Usuario) => Promise<ResultadoDoCronometro | void>): Promise<ResultadoDoCronometro> {
   const usuario = await exigirUsuario();
   try {
     const resultado = await operacao(usuario);
@@ -50,5 +54,8 @@ export async function descartar() {
 }
 
 export async function parar() {
-  return executar((u) => pararCronometro(obterDb(), u));
+  return executar(async (u) => {
+    const { duracaoMinutos, passouDoLimite } = await pararCronometro(obterDb(), u);
+    return { parado: { duracaoMinutos, passouDoLimite } };
+  });
 }

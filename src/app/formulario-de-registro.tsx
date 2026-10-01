@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import type { CicloDaHome } from "@/casos-de-uso";
+import type { CicloDaHome, CronometroParado } from "@/casos-de-uso";
 import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_REGISTRO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
 import { registrar, type EstadoRegistro } from "./acoes-estudo";
@@ -27,23 +27,24 @@ function CampoNumerico({ rotulo, id, ...resto }: React.InputHTMLAttributes<HTMLI
 }
 
 /** Sessão cronometrada: a Matéria fica travada e o registro consome o Cronômetro ao salvar. */
-export type SessaoCronometrada = { duracaoMinutos: number; passouDoLimite: boolean };
+export type SessaoCronometrada = Omit<CronometroParado, "materiaId">;
 
 type Props = {
   ciclo: Pick<CicloDaHome, "id" | "nome" | "materias">;
   materiaInicial: string;
-  cronometrado?: SessaoCronometrada;
+  sessaoCronometrada?: SessaoCronometrada;
   aoFechar: () => void;
   aoSalvar: (aviso: string) => void;
 };
 
 /** Conteúdo do diálogo "Registrar estudo". É remontado a cada abertura para começar limpo. */
-export function FormularioDeRegistro({ ciclo, materiaInicial, cronometrado, aoFechar, aoSalvar }: Props) {
+export function FormularioDeRegistro({ ciclo, materiaInicial, sessaoCronometrada, aoFechar, aoSalvar }: Props) {
   const { id, materias } = ciclo;
   const [materiaId, setMateriaId] = useState(materiaInicial);
   const [tipo, setTipo] = useState<TipoDeEstudo>("Teoria");
   const [dia, setDia] = useState(() => hojeEmBrasilia());
-  const duracaoInicial = cronometrado?.duracaoMinutos ?? 60;
+  const cronometrado = !!sessaoCronometrada;
+  const duracaoInicial = sessaoCronometrada?.duracaoMinutos ?? 60;
   const horasIniciais = Math.floor(duracaoInicial / 60);
   const minutosIniciais = duracaoInicial % 60;
   const [estado, enviar, enviando] = useActionState<EstadoRegistro, FormData>(registrar, {});
@@ -72,14 +73,18 @@ export function FormularioDeRegistro({ ciclo, materiaInicial, cronometrado, aoFe
 
       <div className="grid gap-1.5">
         <RotuloDeCampo id={`materia-${id}`}>Matéria</RotuloDeCampo>
-        {cronometrado && <input type="hidden" name="materiaId" value={materiaId} />}
-        {cronometrado && <input type="hidden" name="cronometro" value="1" />}
+        {cronometrado && (
+          <>
+            <input type="hidden" name="materiaId" value={materiaId} />
+            <input type="hidden" name="cronometro" value="1" />
+          </>
+        )}
         <select
           id={`materia-${id}`}
           name={cronometrado ? undefined : "materiaId"}
           className="input"
           value={materiaId}
-          disabled={!!cronometrado}
+          disabled={cronometrado}
           onChange={(e) => setMateriaId(e.target.value)}
         >
           {materias.map((m) => (
@@ -104,8 +109,8 @@ export function FormularioDeRegistro({ ciclo, materiaInicial, cronometrado, aoFe
         <CampoNumerico rotulo="Minutos" id={`minutos-${id}`} name="minutos" min="0" max="59" defaultValue={minutosIniciais} />
       </div>
 
-      {cronometrado?.passouDoLimite && (
-        <p className="-mt-2 text-[.8125rem] text-ink-2">O cronômetro passou de 24 horas. Ajuste a duração se precisar.</p>
+      {sessaoCronometrada?.passouDoLimite && (
+        <p className="-mt-2 text-[.8125rem] text-ink-2">O cronômetro passou de {duracaoMaximaMinutos / 60} horas. Ajuste a duração se precisar.</p>
       )}
 
       <div className="grid gap-1.5">

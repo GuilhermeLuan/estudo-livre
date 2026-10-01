@@ -1,4 +1,5 @@
-import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, sql, type SQL } from "drizzle-orm";
+import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
 import type { Db } from "@/db";
 import { ciclo, cronometro, materia } from "@/db/schema";
 import { LIMITES_DO_REGISTRO } from "@/dominio";
@@ -25,12 +26,9 @@ export type CronometroParado = {
 
 const POSTGRES_VIOLACAO_DE_UNICIDADE = "23505";
 
-/** Segundos decorridos desde `desde` (relógio do servidor), nunca negativos. */
-const segundosDesde = (desde: Date, agora: Date) => Math.max(0, Math.round((agora.getTime() - desde.getTime()) / 1000));
-
-/** Soma ao acumulado o trecho que estava correndo. */
-const acumuladoAte = (agora: Date) =>
-  sql<number>`${cronometro.acumuladoSegundos} + greatest(0, round(extract(epoch from (${agora.toISOString()}::timestamptz - ${cronometro.rodandoDesde}))))::int`;
+/** Regra única do tempo estudado: o acumulado mais o trecho que está correndo (nenhum, se pausado). */
+const segundosAte = (agora: Date) =>
+  sql<number>`${cronometro.acumuladoSegundos} + coalesce(greatest(0, round(extract(epoch from (${agora.toISOString()}::timestamptz - ${cronometro.rodandoDesde})))), 0)::int`;
 
 export async function obterCronometro(db: Db, usuario: Usuario, agora = new Date()): Promise<CronometroAtivo | null> {
   const [linha] = await db
@@ -39,16 +37,14 @@ export async function obterCronometro(db: Db, usuario: Usuario, agora = new Date
       materia: materia.nome,
       cicloId: ciclo.id,
       ciclo: ciclo.nome,
-      acumulado: cronometro.acumuladoSegundos,
-      rodandoDesde: cronometro.rodandoDesde,
+      segundos: segundosAte(agora),
+      rodando: sql<boolean>`${cronometro.rodandoDesde} is not null`,
     })
     .from(cronometro)
     .innerJoin(materia, eq(materia.id, cronometro.materiaId))
     .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
     .where(eq(cronometro.usuarioId, usuario.id));
-  if (!linha) return null;
-  const { acumulado, rodandoDesde, ...resto } = linha;
-  return { ...resto, segundos: acumulado + (rodandoDesde ? segundosDesde(rodandoDesde, agora) : 0), rodando: rodandoDesde !== null };
+  return linha ?? null;
 }
 
 export async function iniciarCronometro(db: Db, usuario: Usuario, materiaId: string, agora = new Date()): Promise<void> {
@@ -68,25 +64,26 @@ export async function iniciarCronometro(db: Db, usuario: Usuario, materiaId: str
   }
 }
 
-/** Idempotente: pausar um Cronômetro já pausado não muda nada. */
-export async function pausarCronometro(db: Db, usuario: Usuario, agora = new Date()): Promise<void> {
-  const [pausado] = await db
+/**
+ * Aplica a transição só se o Cronômetro estiver no estado de partida (`condicao`), num UPDATE atômico.
+ * Se não aplicou, ou ele já está no estado final (idempotente) ou não existe.
+ */
+async function transitar(db: Db, usuario: Usuario, condicao: SQL, mudanca: PgUpdateSetSource<typeof cronometro>) {
+  const [alterado] = await db
     .update(cronometro)
-    .set({ acumuladoSegundos: acumuladoAte(agora), rodandoDesde: null })
-    .where(and(eq(cronometro.usuarioId, usuario.id), isNotNull(cronometro.rodandoDesde)))
+    .set(mudanca)
+    .where(and(eq(cronometro.usuarioId, usuario.id), condicao))
     .returning({ usuarioId: cronometro.usuarioId });
-  if (!pausado) await exigirCronometro(db, usuario);
+  if (alterado) return;
+  const [existe] = await db.select({ id: cronometro.usuarioId }).from(cronometro).where(eq(cronometro.usuarioId, usuario.id));
+  if (!existe) throw new NaoEncontradoError("Cronômetro");
 }
 
-/** Idempotente: retomar um Cronômetro que já corre não muda nada. */
-export async function retomarCronometro(db: Db, usuario: Usuario, agora = new Date()): Promise<void> {
-  const [retomado] = await db
-    .update(cronometro)
-    .set({ rodandoDesde: agora })
-    .where(and(eq(cronometro.usuarioId, usuario.id), isNull(cronometro.rodandoDesde)))
-    .returning({ usuarioId: cronometro.usuarioId });
-  if (!retomado) await exigirCronometro(db, usuario);
-}
+export const pausarCronometro = (db: Db, usuario: Usuario, agora = new Date()) =>
+  transitar(db, usuario, isNotNull(cronometro.rodandoDesde), { acumuladoSegundos: segundosAte(agora), rodandoDesde: null });
+
+export const retomarCronometro = (db: Db, usuario: Usuario, agora = new Date()) =>
+  transitar(db, usuario, isNull(cronometro.rodandoDesde), { rodandoDesde: agora });
 
 export async function descartarCronometro(db: Db, usuario: Usuario): Promise<void> {
   const [removido] = await db.delete(cronometro).where(eq(cronometro.usuarioId, usuario.id)).returning({ usuarioId: cronometro.usuarioId });
@@ -105,9 +102,4 @@ export async function pararCronometro(db: Db, usuario: Usuario, agora = new Date
   const minutos = Math.max(1, Math.round(ativo.segundos / 60));
   const { duracaoMaximaMinutos } = LIMITES_DO_REGISTRO;
   return { materiaId: ativo.materiaId, duracaoMinutos: Math.min(minutos, duracaoMaximaMinutos), passouDoLimite: minutos > duracaoMaximaMinutos };
-}
-
-async function exigirCronometro(db: Db, usuario: Usuario) {
-  const [existe] = await db.select({ id: cronometro.usuarioId }).from(cronometro).where(eq(cronometro.usuarioId, usuario.id));
-  if (!existe) throw new NaoEncontradoError("Cronômetro");
 }
