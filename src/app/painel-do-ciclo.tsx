@@ -10,9 +10,9 @@ import { FormularioDeRegistro } from "./formulario-de-registro";
 import { concluida, fracaoFeita } from "@/dominio";
 import { quantidade, tempo } from "./formato";
 
-/** Card do ciclo (hero): disco, Próxima matéria, lista de matérias e o diálogo de registro. */
+/** Card do ciclo (hero): disco, Próxima etapa, lista de matérias e o diálogo de registro. */
 export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
-  const { materias, proxima } = ciclo;
+  const { etapas, materias, proxima } = ciclo;
   const dialogo = useRef<HTMLDialogElement>(null);
   const [aberturas, setAberturas] = useState(0);
   const [materiaId, setMateriaId] = useState("");
@@ -20,15 +20,15 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
   const [aviso, setAviso] = useState<string | null>(null);
   const [iniciando, iniciarTransicao] = useTransition();
 
-  function iniciarCronometro(alvo: { id: string; nome: string }) {
+  function iniciarCronometro(materia: { materiaId: string; nome: string }) {
     iniciarTransicao(async () => {
-      const { erro } = await iniciar(alvo.id);
-      setAviso(erro ?? `Cronômetro iniciado em ${alvo.nome}.`);
+      const { erro } = await iniciar(materia.materiaId);
+      setAviso(erro ?? `Cronômetro iniciado em ${materia.nome}.`);
     });
   }
 
   function abrir(id?: string) {
-    setMateriaId(id ?? proxima?.id ?? materias[0]?.id ?? "");
+    setMateriaId(id ?? proxima?.materiaId ?? materias[0]?.id ?? "");
     setAberturas((n) => n + 1);
     dialogo.current?.showModal();
   }
@@ -39,7 +39,7 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
         <DiscoDoCiclo
           nome={ciclo.nome}
           volta={ciclo.volta}
-          materias={materias}
+          etapas={etapas}
           faltaMinutos={ciclo.faltaMinutos}
           proximaId={proxima?.id}
           destaqueId={destaque}
@@ -49,7 +49,7 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
       <div className="min-w-0 p-[22px]">
         <div className="mb-3 flex flex-wrap gap-1.5">
           <span className="pill pill-blue">Volta {ciclo.volta}</span>
-          <span className="pill">{quantidade(materias.length, "matéria", "matérias")}</span>
+          <span className="pill">{quantidade(ciclo.totalEtapas, "etapa", "etapas")}</span>
           <span className="pill pill-green">{quantidade(ciclo.concluidas, "concluída", "concluídas")}</span>
         </div>
         <h2 className="mb-1 text-[1.375rem]">
@@ -60,7 +60,7 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
 
         {proxima ? (
           <>
-            <p className="mt-3.5 text-[.875rem] text-ink-2">Próxima matéria</p>
+            <p className="mt-3.5 text-[.875rem] text-ink-2">Próxima etapa</p>
             <p className="text-[1.375rem] font-semibold tracking-[-0.02em]">{proxima.nome}</p>
             <p className="max-w-[52ch] text-[.875rem] text-ink-2">
               {tempo(proxima.feitoMinutos)} de {tempo(proxima.cargaMinutos)} nesta volta.
@@ -76,16 +76,16 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
           </>
         ) : (
           <div className="my-4 grid justify-items-start gap-2 border-b border-line pb-[18px]">
-            <p className="text-[.875rem] text-ink-2">Adicione matérias com carga horária para acompanhar a volta deste ciclo.</p>
+            <p className="text-[.875rem] text-ink-2">Adicione etapas com carga horária para acompanhar a volta deste ciclo.</p>
             <Link href={`/ciclos/${ciclo.id}`} className="btn btn-primary">
-              Adicionar matérias
+              Adicionar etapas
             </Link>
           </div>
         )}
 
         <ul className="subjects grid">
           {materias.map((m) => (
-            <li key={m.id} className={`${m.id === proxima?.id ? "is-next" : ""} ${concluida(m) ? "is-done" : ""}`}>
+            <li key={m.id} className={`${m.id === proxima?.materiaId ? "is-next" : ""} ${concluida(m) ? "is-done" : ""}`}>
               <button
                 type="button"
                 onClick={() => abrir(m.id)}
@@ -98,6 +98,7 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
                 <span className="s-name text-[.875rem] font-medium">{m.nome}</span>
                 <span className="text-[.8125rem] text-ink-2 tabular-nums">
                   {tempo(m.feitoMinutos)} / {tempo(m.cargaMinutos)}
+                  {m.extraMinutos > 0 && <b className="ml-1.5 font-semibold text-accent-ink">+{tempo(m.extraMinutos)} extra</b>}
                 </span>
                 <span className="bar">
                   <i style={{ width: `${fracaoFeita(m) * 100}%` }} />

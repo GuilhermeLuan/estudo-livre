@@ -29,6 +29,13 @@
       "when": 1790894804512,
       "tag": "0003_cronometro",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790897780932,
+      "tag": "0004_etapas",
+      "breakpoints": true
     }
   ]
 }

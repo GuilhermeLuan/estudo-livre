@@ -3,13 +3,15 @@ import type { Db } from "@/db";
 import { ciclo, materia, registroDeEstudo } from "@/db/schema";
 import { FUSO, hojeEmBrasilia, segundaDaSemana, somarDias } from "@/dia";
 import { NaoEncontradoError } from "./erros";
+import { progressoDosCiclos } from "./progresso";
 import type { Usuario } from "./usuario";
 
 export const SEMANAS_NAS_ESTATISTICAS = 8;
 
 /** Matéria com o nome do Ciclo a que pertence. */
 type MateriaDoCiclo = { id: string; nome: string; ciclo: string };
-export type MateriaNasEstatisticas = MateriaDoCiclo & { minutos: number };
+/** `metaMinutos` é a soma das Etapas da Matéria (uma Volta); `extraMinutos` são as horas extras da Volta atual. */
+export type MateriaNasEstatisticas = MateriaDoCiclo & { minutos: number; metaMinutos: number; extraMinutos: number };
 export type AcertoDaMateria = MateriaDoCiclo & { questoes: number; acertos: number; percentual: number };
 export type SemanaEstudada = { inicio: string; minutos: number };
 
@@ -45,6 +47,7 @@ export async function obterEstatisticas(db: Db, usuario: Usuario, opcoes: { cicl
           id: materia.id,
           nome: materia.nome,
           ciclo: ciclo.nome,
+          cicloId: ciclo.id,
           minutos: sql<number>`coalesce(sum(${registroDeEstudo.duracaoMinutos}), 0)::int`,
           questoes: sql<number>`coalesce(sum(${registroDeEstudo.questoes}), 0)::int`,
           acertos: sql<number>`coalesce(sum(${registroDeEstudo.acertos}), 0)::int`,
@@ -54,8 +57,21 @@ export async function obterEstatisticas(db: Db, usuario: Usuario, opcoes: { cicl
         .leftJoin(registroDeEstudo, eq(registroDeEstudo.materiaId, materia.id))
         .where(doEscopo)
         .groupBy(materia.id, ciclo.id)
-        .orderBy(asc(ciclo.criadoEm), asc(ciclo.id), asc(materia.posicao));
-      const horasPorMateria = materias.map(({ id, nome, ciclo, minutos }) => ({ id, nome, ciclo, minutos }));
+        .orderBy(asc(ciclo.criadoEm), asc(ciclo.id), asc(materia.nome));
+      // Dentro de cada Ciclo, na ordem da primeira Etapa de cada Matéria; as que ficaram sem Etapas vêm no fim.
+      const progresso = await progressoDosCiclos(tx, doEscopo);
+      const doProgresso = new Map([...progresso.values()].flatMap((p) => p.materias.map((m, ordem) => [m.id, { ...m, ordem }] as const)));
+      const ordenadas = [...Map.groupBy(materias, (m) => m.cicloId).values()].flatMap((doCiclo) =>
+        doCiclo.toSorted((a, b) => (doProgresso.get(a.id)?.ordem ?? Number.MAX_SAFE_INTEGER) - (doProgresso.get(b.id)?.ordem ?? Number.MAX_SAFE_INTEGER)),
+      );
+      const horasPorMateria = ordenadas.map(({ id, nome, ciclo, minutos }) => ({
+        id,
+        nome,
+        ciclo,
+        minutos,
+        metaMinutos: doProgresso.get(id)?.cargaMinutos ?? 0,
+        extraMinutos: doProgresso.get(id)?.extraMinutos ?? 0,
+      }));
       const acertoPorMateria = materias
         .filter((m) => m.questoes > 0)
         .map(({ id, nome, ciclo, questoes, acertos }) => ({ id, nome, ciclo, questoes, acertos, percentual: Math.round((acertos * 100) / questoes) }));

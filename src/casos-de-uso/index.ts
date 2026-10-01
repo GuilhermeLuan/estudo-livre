@@ -2,18 +2,19 @@
 // server actions e pelos testes. Toda operação recebe o Usuário.
 export { prepararCadastro, CadastroFechadoError } from "./conta";
 export { obterHome, type CicloDaHome, type Home } from "./home";
-export type { MateriaComProgresso } from "./progresso";
+export type { EtapaComProgresso, MateriaComProgresso } from "./progresso";
 export type { Usuario } from "./usuario";
 export { listarUsuarios, redefinirSenha, NaoAutorizadoError, SenhaInvalidaError, UsuarioNaoEncontradoError, type UsuarioListado } from "./admin";
 export {
-  adicionarMateria,
+  adicionarEtapa,
   criarCiclo,
-  editarMateria,
+  editarEtapa,
   obterCiclo,
-  removerMateria,
+  removerEtapa,
   renomearCiclo,
-  reordenarMaterias,
+  reordenarEtapas,
   type CicloDetalhe,
+  type EtapaDoCiclo,
 } from "./ciclos";
 export {
   descartarCronometro,
