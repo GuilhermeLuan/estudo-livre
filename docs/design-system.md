@@ -103,6 +103,8 @@ Topo central, `--surface-2` com borda; confirma a ação com o mesmo verbo do bo
 ### Métricas e estatísticas
 Blocos de métrica em `--surface-2` (rótulo 13px, valor 20px/600). Barras semanais em `--accent-soft` com a semana atual em `--accent`. Acerto por matéria com barras azuis; abaixo de 60% em vermelho.
 
+**Tela Estatísticas** (`/estatisticas`): título, subtítulo com o ciclo filtrado ("Todos os ciclos" por padrão) e, abaixo, chips de filtro por ciclo ("Todos" + um por ciclo; navegação por link, o selecionado leva `aria-current="true"` e o estilo do chip pressionado). Grade de duas colunas (uma em ≤ 760px) com "Horas por semana" (8 semanas, de segunda a domingo em Brasília; rótulo `d/m`, a atual "esta"; média no cabeçalho) e "Acerto por matéria" (só registros com questões). Um terceiro painel de largura total, "Horas por matéria" (todas as voltas), usa a mesma lista de barras do acerto, com a barra proporcional à matéria mais estudada. Com mais de um ciclo e sem filtro, o nome do ciclo aparece sob a matéria. A altura das barras semanais é proporcional à maior semana, com escala mínima de 1h (o protótipo usa 20h fixas). Painéis sem dados mostram uma linha em `--ink-2` dizendo o que registrar.
+
 ## Acessibilidade e movimento
 
 - Foco visível sempre (`--focus`, 2px). Alvos de toque ≥ 38px.
