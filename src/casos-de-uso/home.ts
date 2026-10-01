@@ -52,16 +52,10 @@ export async function obterHome(db: Db, usuario: Usuario): Promise<Home> {
         .where(eq(ciclo.usuarioId, usuario.id))
         .orderBy(asc(ciclo.criadoEm), asc(ciclo.id));
       const materias = await materiasComProgresso(tx, eq(ciclo.usuarioId, usuario.id));
+      const porCiclo = Map.groupBy(materias, (m) => m.cicloId);
       return {
         usuario: linha,
-        ciclos: ciclos.map((c) =>
-          resumir(
-            c,
-            materias
-              .filter((m) => m.cicloId === c.id)
-              .map(({ id, nome, cargaMinutos, feitoMinutos }) => ({ id, nome, cargaMinutos, feitoMinutos })),
-          ),
-        ),
+        ciclos: ciclos.map((c) => resumir(c, (porCiclo.get(c.id) ?? []).map(({ cicloId: _, ...materia }) => materia))),
       };
     },
     { isolationLevel: "repeatable read", accessMode: "read only" },
