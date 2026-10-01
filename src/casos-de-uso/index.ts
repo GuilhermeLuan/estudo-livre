@@ -26,5 +26,6 @@ export {
   type CronometroParado,
   type SugestaoDeRegistro,
 } from "./cronometro";
+export { obterEstatisticas, type Estatisticas, type MateriaNasEstatisticas } from "./estatisticas";
 export { instanteDoDia, registrarEstudo, type DadosDoEstudo, type OpcoesDoRegistro } from "./estudo";
 export { NaoEncontradoError, ValidacaoError } from "./erros";
