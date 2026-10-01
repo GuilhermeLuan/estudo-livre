@@ -15,6 +15,7 @@ Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agent
 ### Interface (obrigatório)
 
 Toda UI deve seguir o **design system** em `docs/design-system.md` e o **protótipo** em `prototype/index.html` (abra no navegador para ver o comportamento). Use os tokens do design system em vez de cores e tamanhos literais, reproduza os componentes e o layout do protótipo e mantenha os textos em pt-BR com o vocabulário do `CONTEXT.md`. Se precisar de algo que nenhum dos dois cobre, siga os princípios do design system e atualize o documento no mesmo PR. Se o protótipo e o documento divergirem, o protótipo vence e o documento deve ser corrigido.
+Sempre utilize a skills /frontend-design para implementar.
 
 ## 1. Commit Message Format
 
