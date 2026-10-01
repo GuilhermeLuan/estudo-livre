@@ -72,14 +72,17 @@ export async function salvarMateria(materiaId: string, _: EstadoCiclo, dados: Fo
   return estado;
 }
 
-export async function excluirMateria(materiaId: string) {
+export async function excluirMateria(materiaId: string): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
-  await executar(() => removerMateria(obterDb(), usuario, materiaId));
+  const estado = await executar(() => removerMateria(obterDb(), usuario, materiaId));
   revalidatePath("/", "layout");
+  return estado;
 }
 
-export async function moverMateria(cicloId: string, ids: string[]) {
+/** `ids` é a nova ordem completa das Matérias do Ciclo. */
+export async function moverMateria(cicloId: string, ids: string[]): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
-  await executar(() => reordenarMaterias(obterDb(), usuario, cicloId, ids));
+  const estado = await executar(() => reordenarMaterias(obterDb(), usuario, cicloId, ids));
   revalidatePath("/", "layout");
+  return estado;
 }
