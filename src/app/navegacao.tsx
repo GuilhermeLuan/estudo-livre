@@ -26,7 +26,7 @@ const LINKS = [
  */
 export function Navegacao({ admin, formato }: { admin: boolean; formato: "topo" | "base" }) {
   const caminho = usePathname();
-  const ativo = (href: string) => (href === "/" ? caminho === "/" : caminho.startsWith(href));
+  const ativo = (href: string) => caminho === href || (href !== "/" && caminho.startsWith(`${href}/`));
   const links = LINKS.filter((l) => !("soAdmin" in l) || admin);
   return (
     <nav aria-label={formato === "topo" ? "Principal" : "Principal (celular)"} className={formato === "topo" ? "nav-topo" : "nav-base"}>

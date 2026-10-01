@@ -21,9 +21,9 @@ export type Estatisticas = {
   /** Todas as Voltas. Só Matérias com ao menos uma questão; registros sem questões não entram na conta. */
   acertoPorMateria: AcertoDaMateria[];
   totalQuestoes: number;
-  /** As últimas 8 semanas (segunda a domingo, em Brasília), da mais antiga à atual. */
+  /** As últimas SEMANAS_NAS_ESTATISTICAS semanas (segunda a domingo, em Brasília), da mais antiga à atual. */
   horasPorSemana: SemanaEstudada[];
-  /** Média das 8 semanas, contando a semana atual ainda incompleta. */
+  /** Média dessas semanas, contando a semana atual ainda incompleta. */
   mediaSemanalMinutos: number;
 };
 
@@ -70,6 +70,7 @@ export async function obterEstatisticas(db: Db, usuario: Usuario, opcoes: { cicl
         .innerJoin(materia, eq(materia.id, registroDeEstudo.materiaId))
         .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
         .where(and(doEscopo, gte(registroDeEstudo.dataHora, sql`(${primeiraSemana}::date)::timestamp at time zone ${FUSO}`)))
+        // Agrupa pela 1ª coluna (a semana): repetir a expressão geraria parâmetros distintos no group by.
         .groupBy(sql`1`);
       const minutosDaSemana = new Map(porSemana.map((s) => [s.inicio, s.minutos]));
       const horasPorSemana = Array.from({ length: SEMANAS_NAS_ESTATISTICAS }, (_, i) => {
