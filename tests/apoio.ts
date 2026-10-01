@@ -7,7 +7,7 @@ export function bancoDeTeste(): Db {
 }
 
 export async function limparBanco(db: Db) {
-  await db.execute(sql`truncate table "user", session, account, verification cascade`);
+  await db.execute(sql`truncate table "user", ciclo, materia, session, account, verification cascade`);
 }
 
 export async function cadastrar(db: Db, email: string, opcoes: { cadastroAberto?: boolean } = {}) {

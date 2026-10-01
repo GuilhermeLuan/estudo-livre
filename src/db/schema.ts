@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, integer, index, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 // Tabelas do Better Auth. "user" é o Usuário do domínio.
 export const user = pgTable("user", {
@@ -51,3 +51,19 @@ export const verification = pgTable("verification", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+// Domínio. Cada Matéria pertence a exatamente um Ciclo (ADR-0001).
+export const ciclo = pgTable("ciclo", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  usuarioId: text("usuario_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  nome: text("nome").notNull(),
+  criadoEm: timestamp("criado_em").notNull().defaultNow(),
+}, (t) => [index("ciclo_usuario").on(t.usuarioId)]);
+
+export const materia = pgTable("materia", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  cicloId: text("ciclo_id").notNull().references(() => ciclo.id, { onDelete: "cascade" }),
+  nome: text("nome").notNull(),
+  cargaMinutos: integer("carga_minutos").notNull(),
+  posicao: integer("posicao").notNull(),
+}, (t) => [index("materia_ciclo").on(t.cicloId, t.posicao)]);
