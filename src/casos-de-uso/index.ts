@@ -15,5 +15,15 @@ export {
   reordenarMaterias,
   type CicloDetalhe,
 } from "./ciclos";
-export { instanteDoDia, registrarEstudo, type DadosDoEstudo } from "./estudo";
+export {
+  descartarCronometro,
+  iniciarCronometro,
+  obterCronometro,
+  pararCronometro,
+  pausarCronometro,
+  retomarCronometro,
+  type CronometroAtivo,
+  type CronometroParado,
+} from "./cronometro";
+export { instanteDoDia, registrarEstudo, type DadosDoEstudo, type OpcoesDoRegistro } from "./estudo";
 export { NaoEncontradoError, ValidacaoError } from "./erros";

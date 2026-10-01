@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db";
-import { ciclo, materia, registroDeEstudo } from "@/db/schema";
+import { ciclo, cronometro, materia, registroDeEstudo } from "@/db/schema";
 import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_REGISTRO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
@@ -70,7 +70,12 @@ function validar(dados: DadosDoEstudo) {
   };
 }
 
-export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: string, dados: DadosDoEstudo): Promise<{ id: string; materia: string; ciclo: string; voltaFechada: number | null }> {
+export type OpcoesDoRegistro = {
+  /** O registro vem do Cronômetro do Usuário nesta Matéria: ele é consumido junto com a gravação. */
+  cronometro?: boolean;
+};
+
+export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: string, dados: DadosDoEstudo, opcoes: OpcoesDoRegistro = {}): Promise<{ id: string; materia: string; ciclo: string; voltaFechada: number | null }> {
   const registro = validar(dados);
   return db.transaction(async (tx) => {
     const [alvo] = await tx
@@ -84,6 +89,8 @@ export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: strin
     // O instante de "hoje" vale só depois da trava: assim o registro nunca cai numa Volta que outro acabou de fechar.
     const dataHora = dados.dia === undefined ? new Date() : instanteDoDia(dados.dia);
     const [linha] = await tx.insert(registroDeEstudo).values({ materiaId, ...registro, dataHora }).returning({ id: registroDeEstudo.id });
+    if (opcoes.cronometro)
+      await tx.delete(cronometro).where(and(eq(cronometro.usuarioId, usuario.id), eq(cronometro.materiaId, materiaId)));
     const voltaFechada = await avaliarFechamentoDaVolta(tx, alvo.cicloId);
     return { id: linha.id, materia: alvo.nome, ciclo: alvo.cicloNome, voltaFechada };
   });

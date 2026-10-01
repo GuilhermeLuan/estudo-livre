@@ -22,6 +22,13 @@
       "when": 1790893374589,
       "tag": "0002_registro_de_estudo_e_volta",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790894804512,
+      "tag": "0003_cronometro",
+      "breakpoints": true
     }
   ]
 }
