@@ -3,3 +3,14 @@
 export { prepararCadastro, CadastroFechadoError } from "./conta";
 export { obterHome, type Home } from "./home";
 export type { Usuario } from "./usuario";
+export {
+  adicionarMateria,
+  criarCiclo,
+  editarMateria,
+  obterCiclo,
+  removerMateria,
+  renomearCiclo,
+  reordenarMaterias,
+  type CicloDetalhe,
+} from "./ciclos";
+export { NaoEncontradoError, ValidacaoError } from "./erros";
