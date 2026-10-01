@@ -147,6 +147,15 @@
   @keyframes subir { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   .toast { position: fixed; left: 50%; top: 70px; transform: translateX(-50%); z-index: 40; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); padding: 10px 16px; border-radius: var(--radius-md); font-weight: 500; font-size: .875rem; max-width: calc(100vw - 32px); box-shadow: var(--shadow-float); }
   @media (max-width: 760px) { .toast { top: 16px; } }
+  .timer { position: fixed; right: 24px; bottom: 24px; z-index: 20; width: min(420px, calc(100vw - 32px)); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px 16px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--accent); box-shadow: var(--shadow-float), 0 0 0 4px var(--accent-soft); }
+  .timer .t-time { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; color: var(--accent-ink); }
+  .timer.paused .t-time { opacity: .5; }
+  .timer .t-what { flex: 1; min-width: 140px; line-height: 1.3; font-weight: 600; font-size: .875rem; }
+  .timer .t-what small { display: block; color: var(--ink-2); font-weight: 400; }
+  .timer .t-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; width: 100%; }
+  .timer .t-actions .btn:not(.btn-quiet) { flex: 1; }
+  .timer .btn-quiet { color: var(--ink-2); }
+  @media (max-width: 760px) { .timer { left: 12px; right: 12px; width: auto; bottom: calc(76px + env(safe-area-inset-bottom)); } }
 }
 
 @media (prefers-reduced-motion: reduce) {

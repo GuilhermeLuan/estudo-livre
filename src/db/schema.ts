@@ -96,3 +96,12 @@ export const registroDeEstudo = pgTable("registro_de_estudo", {
   conteudoLivre: text("conteudo_livre"),
   criadoEm: timestamp("criado_em").notNull().defaultNow(),
 }, (t) => [index("registro_materia_data").on(t.materiaId, t.dataHora)]);
+
+// Cronômetro do Usuário: no máximo um (a chave é o Usuário). O tempo decorrido é
+// `acumuladoSegundos` + o intervalo desde `rodandoDesde`; nulo significa pausado.
+export const cronometro = pgTable("cronometro", {
+  usuarioId: text("usuario_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+  materiaId: text("materia_id").notNull().references(() => materia.id, { onDelete: "cascade" }),
+  acumuladoSegundos: integer("acumulado_segundos").notNull().default(0),
+  rodandoDesde: timestamp("rodando_desde", { withTimezone: true }),
+});
