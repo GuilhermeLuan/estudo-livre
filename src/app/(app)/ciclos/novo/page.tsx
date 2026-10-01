@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { novoCiclo } from "@/app/acoes-ciclos";
 import { FormularioNome } from "@/app/formulario-ciclo";
 
