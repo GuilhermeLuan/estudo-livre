@@ -13,17 +13,17 @@ import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifi
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useState, useTransition } from "react";
-import { excluirMateria, moverMateria, salvarMateria } from "./acoes-ciclos";
+import { excluirEtapa, moverEtapa, salvarEtapa } from "./acoes-ciclos";
 import { FormularioNome } from "./formulario-ciclo";
 
-export type MateriaItem = { id: string; nome: string; cargaMinutos: number };
+export type EtapaItem = { id: string; nome: string; cargaMinutos: number };
 
 function rotuloCarga(minutos: number) {
   return `${(minutos / 60).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} h`;
 }
 
-function Item({ materia, posicao, aoRemover }: { materia: MateriaItem; posicao: number; aoRemover: () => void }) {
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: materia.id });
+function Item({ etapa, posicao, aoRemover }: { etapa: EtapaItem; posicao: number; aoRemover: () => void }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: etapa.id });
   return (
     <li
       ref={setNodeRef}
@@ -36,7 +36,7 @@ function Item({ materia, posicao, aoRemover }: { materia: MateriaItem; posicao: 
           type="button"
           {...attributes}
           {...listeners}
-          aria-label={`Reordenar ${materia.nome}. Posição ${posicao}. Use espaço e as setas para mover.`}
+          aria-label={`Reordenar ${etapa.nome}. Posição ${posicao}. Use espaço e as setas para mover.`}
           className="grid size-9 shrink-0 cursor-grab touch-none place-items-center rounded-md text-ink-2 hover:text-ink active:cursor-grabbing"
         >
           <svg width="14" height="18" viewBox="0 0 14 18" aria-hidden="true" fill="currentColor">
@@ -46,22 +46,22 @@ function Item({ materia, posicao, aoRemover }: { materia: MateriaItem; posicao: 
         <details className="min-w-0 flex-1">
           <summary className="flex cursor-pointer items-center gap-3 text-[.875rem]">
             <span className="w-5 text-ink-2 tabular-nums">{posicao}</span>
-            <strong className="min-w-0 flex-1 truncate">{materia.nome}</strong>
-            <span className="text-ink-2 tabular-nums">{rotuloCarga(materia.cargaMinutos)}</span>
+            <strong className="min-w-0 flex-1 truncate">{etapa.nome}</strong>
+            <span className="text-ink-2 tabular-nums">{rotuloCarga(etapa.cargaMinutos)}</span>
             <span className="text-accent-ink">Editar</span>
           </summary>
           <div className="mt-3 grid gap-3">
             <FormularioNome
-              acao={salvarMateria.bind(null, materia.id)}
-              botao="Salvar matéria"
-              nome={materia.nome}
-              horas={materia.cargaMinutos / 60}
+              acao={salvarEtapa.bind(null, etapa.id)}
+              botao="Salvar etapa"
+              nome={etapa.nome}
+              horas={etapa.cargaMinutos / 60}
               comCarga
               rotuloNome="Nome da matéria"
             />
             <div>
-              <button type="button" onClick={aoRemover} className="btn btn-quiet text-red" aria-label={`Remover ${materia.nome}`}>
-                Remover matéria
+              <button type="button" onClick={aoRemover} className="btn btn-quiet text-red" aria-label={`Remover ${etapa.nome}`}>
+                Remover etapa
               </button>
             </div>
           </div>
@@ -71,11 +71,11 @@ function Item({ materia, posicao, aoRemover }: { materia: MateriaItem; posicao: 
   );
 }
 
-export function ListaMaterias({ cicloId, materias }: { cicloId: string; materias: MateriaItem[] }) {
-  const [itens, setItens] = useState(materias);
+export function ListaEtapas({ cicloId, etapas }: { cicloId: string; etapas: EtapaItem[] }) {
+  const [itens, setItens] = useState(etapas);
   const [erro, setErro] = useState<string>();
   const [, iniciar] = useTransition();
-  useEffect(() => setItens(materias), [materias]);
+  useEffect(() => setItens(etapas), [etapas]);
 
   const sensores = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -85,11 +85,11 @@ export function ListaMaterias({ cicloId, materias }: { cicloId: string; materias
   function aoSoltar({ active, over }: DragEndEvent) {
     if (!over || active.id === over.id) return;
     const anteriores = itens;
-    const novos = arrayMove(itens, itens.findIndex((m) => m.id === active.id), itens.findIndex((m) => m.id === over.id));
+    const novos = arrayMove(itens, itens.findIndex((e) => e.id === active.id), itens.findIndex((e) => e.id === over.id));
     setItens(novos);
     setErro(undefined);
     iniciar(async () => {
-      const estado = await moverMateria(cicloId, novos.map((m) => m.id));
+      const estado = await moverEtapa(cicloId, novos.map((e) => e.id));
       if (estado.erro) {
         setItens(anteriores);
         setErro(estado.erro);
@@ -100,22 +100,22 @@ export function ListaMaterias({ cicloId, materias }: { cicloId: string; materias
   function remover(id: string) {
     setErro(undefined);
     iniciar(async () => {
-      const estado = await excluirMateria(id);
+      const estado = await excluirEtapa(id);
       if (estado.erro) setErro(estado.erro);
     });
   }
 
   if (itens.length === 0)
-    return <p className="text-[.875rem] text-ink-2">Nenhuma matéria ainda. Adicione a primeira abaixo, com a carga horária de uma volta.</p>;
+    return <p className="text-[.875rem] text-ink-2">Nenhuma etapa ainda. Adicione a primeira abaixo, com a matéria e as horas dela nesta etapa.</p>;
 
   return (
     <div className="grid gap-2">
       <p className="text-[.8125rem] text-ink-2">Arraste pela alça para mudar a ordem.</p>
       <DndContext sensors={sensores} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis, restrictToParentElement]} onDragEnd={aoSoltar}>
-        <SortableContext items={itens.map((m) => m.id)} strategy={verticalListSortingStrategy}>
+        <SortableContext items={itens.map((e) => e.id)} strategy={verticalListSortingStrategy}>
           <ol className="grid gap-2">
-            {itens.map((m, i) => (
-              <Item key={m.id} materia={m} posicao={i + 1} aoRemover={() => remover(m.id)} />
+            {itens.map((e, i) => (
+              <Item key={e.id} etapa={e} posicao={i + 1} aoRemover={() => remover(e.id)} />
             ))}
           </ol>
         </SortableContext>

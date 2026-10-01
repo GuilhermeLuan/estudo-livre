@@ -3,13 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
-  adicionarMateria,
+  adicionarEtapa,
   criarCiclo,
-  editarMateria,
+  editarEtapa,
   NaoEncontradoError,
-  removerMateria,
+  removerEtapa,
   renomearCiclo,
-  reordenarMaterias,
+  reordenarEtapas,
   ValidacaoError,
 } from "@/casos-de-uso";
 import { obterDb } from "@/db";
@@ -54,35 +54,35 @@ export async function renomear(cicloId: string, _: EstadoCiclo, dados: FormData)
   return estado;
 }
 
-export async function novaMateria(cicloId: string, _: EstadoCiclo, dados: FormData): Promise<EstadoCiclo> {
+export async function novaEtapa(cicloId: string, _: EstadoCiclo, dados: FormData): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
   const estado = await executar(async () => {
-    await adicionarMateria(obterDb(), usuario, cicloId, { nome: texto(dados, "nome"), cargaMinutos: minutos(dados) });
+    await adicionarEtapa(obterDb(), usuario, cicloId, { nome: texto(dados, "nome"), cargaMinutos: minutos(dados) });
   });
   revalidatePath("/", "layout");
   return estado;
 }
 
-export async function salvarMateria(materiaId: string, _: EstadoCiclo, dados: FormData): Promise<EstadoCiclo> {
+export async function salvarEtapa(etapaId: string, _: EstadoCiclo, dados: FormData): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
   const estado = await executar(() =>
-    editarMateria(obterDb(), usuario, materiaId, { nome: texto(dados, "nome"), cargaMinutos: minutos(dados) }),
+    editarEtapa(obterDb(), usuario, etapaId, { nome: texto(dados, "nome"), cargaMinutos: minutos(dados) }),
   );
   revalidatePath("/", "layout");
   return estado;
 }
 
-export async function excluirMateria(materiaId: string): Promise<EstadoCiclo> {
+export async function excluirEtapa(etapaId: string): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
-  const estado = await executar(() => removerMateria(obterDb(), usuario, materiaId));
+  const estado = await executar(() => removerEtapa(obterDb(), usuario, etapaId));
   revalidatePath("/", "layout");
   return estado;
 }
 
-/** `ids` é a nova ordem completa das Matérias do Ciclo. */
-export async function moverMateria(cicloId: string, ids: string[]): Promise<EstadoCiclo> {
+/** `ids` é a nova ordem completa das Etapas do Ciclo. */
+export async function moverEtapa(cicloId: string, ids: string[]): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
-  const estado = await executar(() => reordenarMaterias(obterDb(), usuario, cicloId, ids));
+  const estado = await executar(() => reordenarEtapas(obterDb(), usuario, cicloId, ids));
   revalidatePath("/", "layout");
   return estado;
 }

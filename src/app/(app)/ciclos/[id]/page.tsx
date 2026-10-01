@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { novaMateria, renomear } from "@/app/acoes-ciclos";
+import { novaEtapa, renomear } from "@/app/acoes-ciclos";
 import { FormularioNome } from "@/app/formulario-ciclo";
-import { ListaMaterias } from "@/app/lista-materias";
+import { ListaEtapas } from "@/app/lista-etapas";
+import { tempo } from "@/app/formato";
 import { NaoEncontradoError, obterCiclo } from "@/casos-de-uso";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
@@ -18,7 +19,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
     <section aria-labelledby="h-ciclo" className="grid max-w-[720px] gap-5">
       <div>
         <h1 id="h-ciclo">{ciclo.nome}</h1>
-        <p className="text-[.875rem] text-ink-2">Cada ciclo tem as próprias matérias. A ordem é só uma sugestão.</p>
+        <p className="text-[.875rem] text-ink-2">Cada ciclo tem as próprias matérias. Uma matéria pode ter várias etapas, cada uma com as suas horas. A ordem é só uma sugestão.</p>
       </div>
 
       <div className="panel grid gap-3">
@@ -27,13 +28,16 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
       </div>
 
       <div className="panel grid gap-3">
-        <h2>Matérias</h2>
-        <ListaMaterias cicloId={id} materias={ciclo.materias} />
+        <div className="panel-head">
+          <h2>Etapas</h2>
+          <span className="text-[.8125rem] text-ink-2">Total de horas: {tempo(ciclo.etapas.reduce((soma, e) => soma + e.cargaMinutos, 0))}</span>
+        </div>
+        <ListaEtapas cicloId={id} etapas={ciclo.etapas} />
       </div>
 
       <div className="panel grid gap-3">
-        <h2>Adicionar matéria</h2>
-        <FormularioNome acao={novaMateria.bind(null, id)} botao="Adicionar matéria" comCarga rotuloNome="Nome da matéria" />
+        <h2>Adicionar etapa</h2>
+        <FormularioNome acao={novaEtapa.bind(null, id)} botao="Adicionar etapa" comCarga rotuloNome="Nome da matéria" />
       </div>
     </section>
   );

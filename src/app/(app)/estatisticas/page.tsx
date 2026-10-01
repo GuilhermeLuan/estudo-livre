@@ -13,12 +13,13 @@ const ACERTO_BAIXO_PERCENTUAL = 60;
 const ESCALA_MINIMA_MINUTOS = 60;
 
 /** Matéria com valor e barra proporcional (`fracao` de 0 a 1). */
-function LinhaDaMateria({ nome, ciclo, valor, fracao, baixo }: { nome: string; ciclo?: string; valor: string; fracao: number; baixo?: boolean }) {
+function LinhaDaMateria({ nome, ciclo, detalhe, valor, fracao, baixo }: { nome: string; ciclo?: string; detalhe?: string; valor: string; fracao: number; baixo?: boolean }) {
   return (
     <li className={baixo ? "low" : undefined}>
       <span>
         {nome}
         {ciclo && <small className="block text-[.75rem] text-ink-2">{ciclo}</small>}
+        {detalhe && <small className="block text-[.75rem] text-ink-2">{detalhe}</small>}
       </span>
       <strong className="num">{valor}</strong>
       <span className="bar" aria-hidden="true">
@@ -26,6 +27,12 @@ function LinhaDaMateria({ nome, ciclo, valor, fracao, baixo }: { nome: string; c
       </span>
     </li>
   );
+}
+
+/** Meta de uma volta (soma das etapas) e, se houver, as horas extras da volta atual. */
+function detalheDasHoras(metaMinutos: number, extraMinutos: number) {
+  if (!metaMinutos) return undefined;
+  return `meta ${tempo(metaMinutos)} por volta${extraMinutos ? `, +${tempo(extraMinutos)} extra nesta volta` : ""}`;
 }
 
 function Vazio({ children }: { children: React.ReactNode }) {
@@ -117,7 +124,14 @@ export default async function Estatisticas({ searchParams }: { searchParams: Pro
           ) : (
             <ul className="acc-list">
               {horasPorMateria.map((m) => (
-                <LinhaDaMateria key={m.id} nome={m.nome} ciclo={nomeDoCiclo(m.ciclo)} valor={tempo(m.minutos)} fracao={m.minutos / maiorMateria} />
+                <LinhaDaMateria
+                  key={m.id}
+                  nome={m.nome}
+                  ciclo={nomeDoCiclo(m.ciclo)}
+                  detalhe={detalheDasHoras(m.metaMinutos, m.extraMinutos)}
+                  valor={tempo(m.minutos)}
+                  fracao={m.minutos / maiorMateria}
+                />
               ))}
             </ul>
           )}
