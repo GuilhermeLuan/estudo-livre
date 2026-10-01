@@ -53,7 +53,8 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// Domínio. Cada Matéria pertence a exatamente um Ciclo (ADR-0001).
+// Domínio. Cada Matéria pertence a exatamente um Ciclo (ADR-0001) e aparece uma só vez nele; o Ciclo é uma
+// sequência de Etapas, cada uma com a carga horária de uma visita à Matéria (ADR-0004).
 export const ciclo = pgTable("ciclo", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   usuarioId: text("usuario_id").notNull().references(() => user.id, { onDelete: "cascade" }),
@@ -65,9 +66,15 @@ export const materia = pgTable("materia", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   cicloId: text("ciclo_id").notNull().references(() => ciclo.id, { onDelete: "cascade" }),
   nome: text("nome").notNull(),
+}, (t) => [uniqueIndex("materia_ciclo_nome").on(t.cicloId, sql`lower(${t.nome})`)]);
+
+export const etapa = pgTable("etapa", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  cicloId: text("ciclo_id").notNull().references(() => ciclo.id, { onDelete: "cascade" }),
+  materiaId: text("materia_id").notNull().references(() => materia.id, { onDelete: "cascade" }),
   cargaMinutos: integer("carga_minutos").notNull(),
   posicao: integer("posicao").notNull(),
-}, (t) => [index("materia_ciclo").on(t.cicloId, t.posicao)]);
+}, (t) => [index("etapa_ciclo").on(t.cicloId, t.posicao), index("etapa_materia").on(t.materiaId)]);
 
 // Uma Volta cobre o intervalo (inicio, fim] do Ciclo; inicio nulo = sem limite inferior (Volta 1)
 // e fim nulo = Volta aberta. Todo Ciclo tem exatamente uma Volta aberta.

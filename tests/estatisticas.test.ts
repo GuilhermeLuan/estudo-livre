@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { adicionarMateria, criarCiclo, NaoEncontradoError, obterEstatisticas, registrarEstudo } from "@/casos-de-uso";
+import { adicionarEtapa, criarCiclo, NaoEncontradoError, obterEstatisticas, registrarEstudo } from "@/casos-de-uso";
 import { registroDeEstudo } from "@/db/schema";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
@@ -15,7 +15,7 @@ async function cicloCom(usuario: { id: string }, nome: string, cargas: Record<st
   const { id } = await criarCiclo(db, usuario, { nome });
   const materias: Record<string, string> = {};
   for (const [materia, cargaMinutos] of Object.entries(cargas))
-    materias[materia] = (await adicionarMateria(db, usuario, id, { nome: materia, cargaMinutos })).id;
+    materias[materia] = (await adicionarEtapa(db, usuario, id, { nome: materia, cargaMinutos })).materiaId;
   return { id, materias };
 }
 
@@ -31,6 +31,22 @@ describe("estatísticas", () => {
     expect(horasPorMateria.map((m) => [m.nome, m.minutos])).toEqual([
       ["Português", 75],
       ["Direito", 0],
+    ]);
+  });
+
+  it("uma Matéria com várias Etapas aparece uma vez, com a meta somada", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { id } = await criarCiclo(db, ana, { nome: "BB" });
+    const ti = await adicionarEtapa(db, ana, id, { nome: "TI", cargaMinutos: 60 });
+    await adicionarEtapa(db, ana, id, { nome: "Estatística", cargaMinutos: 120 });
+    await adicionarEtapa(db, ana, id, { nome: "TI", cargaMinutos: 50 });
+    await registrarEstudo(db, ana, ti.materiaId, { ...estudo, duracaoMinutos: 130 });
+
+    const { horasPorMateria } = await obterEstatisticas(db, ana);
+
+    expect(horasPorMateria.map((m) => [m.nome, m.minutos, m.metaMinutos, m.extraMinutos])).toEqual([
+      ["TI", 130, 110, 20],
+      ["Estatística", 0, 120, 0],
     ]);
   });
 

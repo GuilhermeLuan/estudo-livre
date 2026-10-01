@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import {
-  adicionarMateria,
+  adicionarEtapa,
   criarCiclo,
   descartarCronometro,
   iniciarCronometro,
@@ -10,6 +10,7 @@ import {
   pararCronometro,
   pausarCronometro,
   registrarEstudo,
+  removerEtapa,
   retomarCronometro,
   ValidacaoError,
 } from "@/casos-de-uso";
@@ -25,9 +26,9 @@ const depois = (segundos: number) => new Date(T0.getTime() + segundos * 1000);
 
 async function cicloCom(usuario: { id: string }, nomeDoCiclo = "TRF") {
   const { id } = await criarCiclo(db, usuario, { nome: nomeDoCiclo });
-  const portugues = await adicionarMateria(db, usuario, id, { nome: "Português", cargaMinutos: 120 });
-  const direito = await adicionarMateria(db, usuario, id, { nome: "Direito", cargaMinutos: 90 });
-  return { cicloId: id, portugues: portugues.id, direito: direito.id };
+  const portugues = await adicionarEtapa(db, usuario, id, { nome: "Português", cargaMinutos: 120 });
+  const direito = await adicionarEtapa(db, usuario, id, { nome: "Direito", cargaMinutos: 90 });
+  return { cicloId: id, portugues: portugues.materiaId, direito: direito.materiaId, etapaDePortugues: portugues.id };
 }
 
 describe("cronômetro: iniciar e consultar", () => {
@@ -220,13 +221,12 @@ describe("cronômetro: parar e registrar", () => {
     expect(await obterCronometro(db, ana, depois(60))).toMatchObject({ materia: "Português", rodando: true });
   });
 
-  it("apagar a Matéria remove o Cronômetro dela", async () => {
+  it("apagar a única Etapa de uma Matéria sem estudo remove o Cronômetro dela", async () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
-    const { portugues } = await cicloCom(ana);
+    const { portugues, etapaDePortugues } = await cicloCom(ana);
     await iniciarCronometro(db, ana, portugues, T0);
 
-    const { removerMateria } = await import("@/casos-de-uso");
-    await removerMateria(db, ana, portugues);
+    await removerEtapa(db, ana, etapaDePortugues);
 
     expect(await obterCronometro(db, ana, T0)).toBeNull();
   });

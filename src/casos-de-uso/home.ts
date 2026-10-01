@@ -2,7 +2,7 @@ import { and, asc, eq, isNull } from "drizzle-orm";
 import type { Db } from "@/db";
 import { ciclo, user, volta } from "@/db/schema";
 import { concluida } from "@/dominio";
-import { materiasComProgresso, type MateriaComProgresso } from "./progresso";
+import { progressoDosCiclos, type EtapaComProgresso, type MateriaComProgresso } from "./progresso";
 import type { Usuario } from "./usuario";
 
 export type CicloDaHome = {
@@ -10,9 +10,13 @@ export type CicloDaHome = {
   nome: string;
   volta: number;
   totalMaterias: number;
+  totalEtapas: number;
+  /** Matérias com Etapas, na ordem da primeira Etapa de cada uma. */
   materias: MateriaComProgresso[];
-  proxima: MateriaComProgresso | null;
-  /** Matérias que já chegaram a 100% na Volta atual. */
+  etapas: EtapaComProgresso[];
+  /** A Próxima etapa: a primeira, na ordem do ciclo, que ainda não chegou a 100%. */
+  proxima: EtapaComProgresso | null;
+  /** Etapas que já chegaram a 100% na Volta atual. */
   concluidas: number;
   /** Fração da carga horária total cumprida na Volta atual, de 0 a 100. */
   percentual: number;
@@ -25,22 +29,24 @@ export type Home = {
   ciclos: CicloDaHome[];
 };
 
-function resumir(base: { id: string; nome: string; volta: number }, materias: MateriaComProgresso[]): CicloDaHome {
-  const carga = materias.reduce((soma, m) => soma + m.cargaMinutos, 0);
-  const feito = materias.reduce((soma, m) => soma + m.feitoMinutos, 0);
+function resumir(base: { id: string; nome: string; volta: number }, { etapas, materias }: { etapas: EtapaComProgresso[]; materias: MateriaComProgresso[] }): CicloDaHome {
+  const carga = etapas.reduce((soma, e) => soma + e.cargaMinutos, 0);
+  const feito = etapas.reduce((soma, e) => soma + e.feitoMinutos, 0);
   return {
     ...base,
     totalMaterias: materias.length,
+    totalEtapas: etapas.length,
     materias,
-    proxima: materias.find((m) => !concluida(m)) ?? null,
-    concluidas: materias.filter(concluida).length,
+    etapas,
+    proxima: etapas.find((e) => !concluida(e)) ?? null,
+    concluidas: etapas.filter(concluida).length,
     percentual: carga ? Math.round((feito / carga) * 100) : 0,
     faltaMinutos: carga - feito,
   };
 }
 
 export async function obterHome(db: Db, usuario: Usuario): Promise<Home> {
-  // Uma leitura consistente: as Voltas e o progresso das Matérias vêm do mesmo instante.
+  // Uma leitura consistente: as Voltas e o progresso das Etapas vêm do mesmo instante.
   return db.transaction(
     async (tx) => {
       const [linha] = await tx.select({ nome: user.name, admin: user.admin }).from(user).where(eq(user.id, usuario.id));
@@ -51,11 +57,10 @@ export async function obterHome(db: Db, usuario: Usuario): Promise<Home> {
         .innerJoin(volta, and(eq(volta.cicloId, ciclo.id), isNull(volta.fim)))
         .where(eq(ciclo.usuarioId, usuario.id))
         .orderBy(asc(ciclo.criadoEm), asc(ciclo.id));
-      const materias = await materiasComProgresso(tx, eq(ciclo.usuarioId, usuario.id));
-      const porCiclo = Map.groupBy(materias, (m) => m.cicloId);
+      const progresso = await progressoDosCiclos(tx, eq(ciclo.usuarioId, usuario.id));
       return {
         usuario: linha,
-        ciclos: ciclos.map((c) => resumir(c, (porCiclo.get(c.id) ?? []).map(({ cicloId: _, ...materia }) => materia))),
+        ciclos: ciclos.map((c) => resumir(c, progresso.get(c.id) ?? { etapas: [], materias: [] })),
       };
     },
     { isolationLevel: "repeatable read", accessMode: "read only" },

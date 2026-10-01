@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import {
-  adicionarMateria,
+  adicionarEtapa,
   criarCiclo,
   instanteDoDia,
   NaoEncontradoError,
@@ -21,12 +21,17 @@ const estudo = { tipo: "Teoria" } as const;
 /** O dia de Brasília `dias` dias a partir de hoje (negativo = passado). */
 const diaDaquiA = (dias: number) => hojeEmBrasilia(new Date(Date.now() + dias * 24 * 3600_000));
 
-/** Ciclo com Matérias; as cargas são em minutos. */
+/** Ciclo com uma Etapa por Matéria; as cargas são em minutos. */
 async function cicloCom(usuario: { id: string }, cargas: Record<string, number>) {
+  return cicloComEtapas(usuario, Object.entries(cargas));
+}
+
+/** Ciclo com as Etapas na ordem dada; uma Matéria pode aparecer em várias Etapas. */
+async function cicloComEtapas(usuario: { id: string }, etapas: [string, number][]) {
   const { id } = await criarCiclo(db, usuario, { nome: "TRF" });
   const materias: Record<string, string> = {};
-  for (const [nome, cargaMinutos] of Object.entries(cargas))
-    materias[nome] = (await adicionarMateria(db, usuario, id, { nome, cargaMinutos })).id;
+  for (const [nome, cargaMinutos] of etapas)
+    materias[nome] = (await adicionarEtapa(db, usuario, id, { nome, cargaMinutos })).materiaId;
   return { id, materias };
 }
 
@@ -275,5 +280,68 @@ describe("instanteDoDia", () => {
     expect(() => instanteDoDia("2026-10-02", agora)).toThrow(ValidacaoError);
     expect(() => instanteDoDia("01/10/2026", agora)).toThrow(ValidacaoError);
     expect(() => instanteDoDia("2026-02-31", agora)).toThrow(ValidacaoError);
+  });
+});
+
+describe("etapas: as horas de uma Matéria preenchem as Etapas dela em ordem", () => {
+  const ciclo = [["TI", 60], ["Estatística", 120], ["TI", 50]] as [string, number][];
+
+  it("preenche a primeira Etapa da Matéria e transborda para a seguinte", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { materias } = await cicloComEtapas(ana, ciclo);
+    await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 90 });
+
+    const home = await cicloDaHome(ana);
+    expect(home.etapas.map((e) => [e.nome, e.feitoMinutos, e.cargaMinutos])).toEqual([
+      ["TI", 60, 60],
+      ["Estatística", 0, 120],
+      ["TI", 30, 50],
+    ]);
+    expect(home.materias.map((m) => [m.nome, m.feitoMinutos, m.cargaMinutos, m.extraMinutos])).toEqual([
+      ["TI", 90, 110, 0],
+      ["Estatística", 0, 120, 0],
+    ]);
+    expect(home).toMatchObject({ totalMaterias: 2, totalEtapas: 3, concluidas: 1, faltaMinutos: 140 });
+  });
+
+  it("estudar fora da ordem do ciclo conta já, e a Próxima etapa é a primeira incompleta", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { materias } = await cicloComEtapas(ana, ciclo);
+    expect((await cicloDaHome(ana)).proxima).toMatchObject({ nome: "TI", materiaId: materias.TI });
+
+    await registrarEstudo(db, ana, materias.Estatística, { ...estudo, duracaoMinutos: 120 });
+    expect((await cicloDaHome(ana)).proxima?.nome).toBe("TI");
+
+    await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 60 });
+    expect((await cicloDaHome(ana)).proxima).toMatchObject({ nome: "TI", feitoMinutos: 0, cargaMinutos: 50 });
+  });
+
+  it("horas além da soma das Etapas viram horas extras, sem passar para a Volta seguinte", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { materias } = await cicloComEtapas(ana, [["TI", 60], ["TI", 50]]);
+
+    const parcial = await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 100 });
+    expect(parcial.voltaFechada).toBeNull();
+    const fim = await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 50 });
+    expect(fim.voltaFechada).toBe(1);
+
+    const nova = await cicloDaHome(ana);
+    expect(nova.volta).toBe(2);
+    expect(nova.materias[0]).toMatchObject({ feitoMinutos: 0, extraMinutos: 0 });
+
+    await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 100 });
+    expect((await cicloDaHome(ana)).materias[0]).toMatchObject({ feitoMinutos: 100, extraMinutos: 0 });
+    await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 5 });
+    expect((await cicloDaHome(ana)).volta).toBe(2);
+  });
+
+  it("mostra o extra enquanto a Volta ainda não fechou", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { materias } = await cicloComEtapas(ana, [["TI", 60], ["Estatística", 60]]);
+    await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 90 });
+
+    const home = await cicloDaHome(ana);
+    expect(home.materias[0]).toMatchObject({ nome: "TI", feitoMinutos: 60, extraMinutos: 30 });
+    expect(home.volta).toBe(1);
   });
 });
