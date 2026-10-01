@@ -76,6 +76,43 @@
   .input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
   .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 18px; }
   @media (max-width: 760px) { .panel { padding: 14px; } }
+
+  .pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px; font-size: .75rem; font-weight: 600; background: var(--surface-2); color: var(--ink-2); }
+  .pill-blue { background: var(--accent-soft); color: var(--accent-ink); }
+  .pill-green { background: var(--green-soft); color: var(--green); }
+  .chip { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: 500; font-size: .875rem; color: var(--ink-2); }
+  .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-soft); }
+  .bar { grid-column: 1 / -1; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); border-radius: 3px; transition: width .6s ease; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 300px); border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+  .hero-disc {
+    order: 1; padding: 22px; display: grid; place-items: center; border-left: 1px solid var(--line);
+    background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%), var(--surface-2);
+  }
+  @media (max-width: 760px) {
+    .hero { grid-template-columns: minmax(0, 1fr); }
+    .hero-disc { order: -1; border-left: 0; border-bottom: 1px solid var(--line); }
+    .hero-disc .disc { max-width: 240px; }
+  }
+  .disc { width: 100%; height: auto; display: block; }
+  .disc .seg-track { stroke: var(--line); }
+  .disc .seg-fill { stroke: var(--accent); transition: stroke-dasharray .6s ease; }
+  .disc .seg-next { stroke: var(--ink); }
+  .disc .seg { transition: opacity .15s; }
+  .disc .seg.dim { opacity: .25; }
+  .disc text { fill: var(--ink); }
+  .disc text.muted { fill: var(--ink-2); }
+  .subjects li button { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; width: 100%; padding: 10px 8px; border-radius: var(--radius-sm); text-align: left; cursor: pointer; }
+  .subjects li button:hover, .subjects li button:focus-visible { background: var(--surface-2); }
+  .subjects .is-next .s-name::after { content: "próxima"; margin-left: 8px; font-size: .6875rem; font-weight: 600; padding: 1px 6px; border-radius: 5px; background: var(--accent-soft); color: var(--accent-ink); vertical-align: 1px; }
+  .subjects .is-done .s-name { color: var(--ink-2); }
+  .subjects .is-done .bar > i { background: var(--green); }
+  dialog.sheet-dialog { border: 1px solid var(--line); padding: 0; border-radius: var(--radius-lg); background: var(--surface); color: var(--ink); width: min(540px, calc(100vw - 32px)); max-height: calc(100vh - 32px); margin: auto; }
+  dialog.sheet-dialog::backdrop { background: rgba(3, 6, 12, .7); backdrop-filter: blur(2px); }
+  dialog.sheet-dialog[open] { animation: subir .2s ease-out; }
+  @keyframes subir { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .toast { position: fixed; left: 50%; top: 70px; transform: translateX(-50%); z-index: 40; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); padding: 10px 16px; border-radius: var(--radius-md); font-weight: 500; font-size: .875rem; max-width: calc(100vw - 32px); box-shadow: 0 12px 30px -10px rgba(0,0,0,.6); }
+  @media (max-width: 760px) { .toast { top: 16px; } }
 }
 
 @media (prefers-reduced-motion: reduce) {

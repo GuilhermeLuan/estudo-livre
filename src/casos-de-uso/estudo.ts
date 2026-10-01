@@ -74,7 +74,7 @@ function validar(dados: DadosDoEstudo) {
   };
 }
 
-export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: string, dados: DadosDoEstudo): Promise<{ id: string }> {
+export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: string, dados: DadosDoEstudo): Promise<{ id: string; voltaFechada: number | null }> {
   const registro = validar(dados);
   return db.transaction(async (tx) => {
     const [alvo] = await tx
@@ -88,7 +88,7 @@ export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: strin
     // Sem data informada, vale o instante após a trava: nunca cai numa Volta que outro registro acabou de fechar.
     const dataHora = registro.dataHora ?? new Date();
     const [linha] = await tx.insert(registroDeEstudo).values({ materiaId, ...registro, dataHora }).returning({ id: registroDeEstudo.id });
-    await avaliarFechamentoDaVolta(tx, alvo.cicloId);
-    return linha;
+    const voltaFechada = await avaliarFechamentoDaVolta(tx, alvo.cicloId);
+    return { id: linha.id, voltaFechada };
   });
 }

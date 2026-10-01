@@ -79,11 +79,13 @@ describe("registro de estudo e progresso da volta", () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
     const { materias } = await cicloCom(ana, { Português: 60, Direito: 60 });
 
-    await registrarEstudo(db, ana, materias.Direito, { ...estudo, duracaoMinutos: 60 });
+    const parcial = await registrarEstudo(db, ana, materias.Direito, { ...estudo, duracaoMinutos: 60 });
+    expect(parcial.voltaFechada).toBeNull();
     expect((await cicloDaHome(ana)).volta).toBe(1);
 
     // O excedente (30 min além da carga) não passa para a Volta seguinte.
-    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 90 });
+    const final = await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 90 });
+    expect(final.voltaFechada).toBe(1);
 
     const ciclo = await cicloDaHome(ana);
     expect(ciclo.volta).toBe(2);

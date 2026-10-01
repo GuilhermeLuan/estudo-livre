@@ -32,10 +32,13 @@ export async function materiasComProgresso(db: Executor, filtro: SQL | undefined
     .orderBy(asc(materia.posicao));
 }
 
-/** Fecha a Volta aberta do Ciclo se ele tem Matérias e todas chegaram a 100%, abrindo a seguinte. */
-export async function avaliarFechamentoDaVolta(tx: Executor, cicloId: string) {
+/**
+ * Fecha a Volta aberta do Ciclo se ele tem Matérias e todas chegaram a 100%, abrindo a seguinte.
+ * Devolve o número da Volta fechada, ou null se nada mudou.
+ */
+export async function avaliarFechamentoDaVolta(tx: Executor, cicloId: string): Promise<number | null> {
   const materias = await materiasComProgresso(tx, eq(materia.cicloId, cicloId));
-  if (materias.length === 0 || materias.some((m) => m.feitoMinutos < m.cargaMinutos)) return;
+  if (materias.length === 0 || materias.some((m) => m.feitoMinutos < m.cargaMinutos)) return null;
   const fim = new Date();
   const [fechada] = await tx
     .update(volta)
@@ -43,4 +46,5 @@ export async function avaliarFechamentoDaVolta(tx: Executor, cicloId: string) {
     .where(and(eq(volta.cicloId, cicloId), isNull(volta.fim)))
     .returning({ numero: volta.numero });
   await tx.insert(volta).values({ cicloId, numero: fechada.numero + 1, inicio: fim });
+  return fechada.numero;
 }
