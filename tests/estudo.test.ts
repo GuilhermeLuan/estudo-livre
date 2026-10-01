@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import {
   adicionarMateria,
@@ -8,6 +9,7 @@ import {
   registrarEstudo,
   ValidacaoError,
 } from "@/casos-de-uso";
+import { hojeEmBrasilia } from "@/dia";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
 const db = bancoDeTeste();
@@ -15,6 +17,9 @@ beforeEach(() => limparBanco(db));
 afterAll(() => db.$client.end());
 
 const estudo = { tipo: "Teoria" } as const;
+
+/** O dia de Brasília `dias` dias a partir de hoje (negativo = passado). */
+const diaDaquiA = (dias: number) => hojeEmBrasilia(new Date(Date.now() + dias * 24 * 3600_000));
 
 /** Ciclo com Matérias; as cargas são em minutos. */
 async function cicloCom(usuario: { id: string }, cargas: Record<string, number>) {
@@ -69,10 +74,20 @@ describe("registro de estudo e progresso da volta", () => {
     expect((await cicloDaHome(ana)).proxima?.nome).toBe("Direito");
   });
 
+  it("a tela inicial resume o Ciclo: percentual da Volta, matérias concluídas e tempo que falta", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { materias } = await cicloCom(ana, { Português: 60, Direito: 120, Informática: 60 });
+
+    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 90 }); // trava em 60
+    await registrarEstudo(db, ana, materias.Direito, { ...estudo, duracaoMinutos: 30 });
+
+    expect(await cicloDaHome(ana)).toMatchObject({ percentual: 38, concluidas: 1, faltaMinutos: 150 });
+  });
+
   it("um Ciclo sem Matérias não tem Próxima matéria", async () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
     await criarCiclo(db, ana, { nome: "Vazio" });
-    expect((await cicloDaHome(ana)).proxima).toBeNull();
+    expect(await cicloDaHome(ana)).toMatchObject({ proxima: null, percentual: 0, concluidas: 0, faltaMinutos: 0 });
   });
 
   it("quando todas as Matérias chegam a 100%, a Volta fecha e uma nova começa zerada", async () => {
@@ -108,13 +123,12 @@ describe("registro de estudo e progresso da volta", () => {
   it("um estudo retroativo que cai numa Volta já fechada não conta para a Volta atual", async () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
     const { materias } = await cicloCom(ana, { Português: 60, Direito: 60 });
-    const ontem = new Date(Date.now() - 24 * 3600_000);
 
     await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 60 });
     await registrarEstudo(db, ana, materias.Direito, { ...estudo, duracaoMinutos: 60 });
     expect((await cicloDaHome(ana)).volta).toBe(2);
 
-    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 30, data: ontem });
+    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 30, dia: diaDaquiA(-1) });
     expect((await cicloDaHome(ana)).materias.map((m) => m.feitoMinutos)).toEqual([0, 0]);
   });
 
@@ -145,6 +159,32 @@ describe("concorrência", () => {
   });
 });
 
+describe("registro que espera outro fechar a Volta", () => {
+  it("conta na Volta nova um estudo de hoje que ficou esperando o fechamento", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { materias } = await cicloCom(ana, { Português: 60 });
+
+    // Segura o Ciclo para que os dois registros fiquem na fila, na ordem em que chegaram.
+    let soltar!: () => void;
+    const solto = new Promise<void>((r) => (soltar = r));
+    const preso = db.transaction(async (tx) => {
+      await tx.execute(sql`select 1 from ciclo for update`);
+      await solto;
+    });
+    await new Promise((r) => setTimeout(r, 100));
+    const fecha = registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 60, dia: hojeEmBrasilia() });
+    await new Promise((r) => setTimeout(r, 100));
+    const espera = registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 20, dia: hojeEmBrasilia() });
+    await new Promise((r) => setTimeout(r, 100));
+    soltar();
+    await Promise.all([preso, fecha, espera]);
+
+    const ciclo = await cicloDaHome(ana);
+    expect(ciclo.volta).toBe(2);
+    expect(ciclo.materias[0].feitoMinutos).toBe(20);
+  });
+});
+
 describe("validação do registro de estudo", () => {
   async function materiaDe(usuario: { id: string }) {
     const { materias } = await cicloCom(usuario, { Português: 600 });
@@ -159,7 +199,7 @@ describe("validação do registro de estudo", () => {
     await registrarEstudo(db, ana, materia, {
       tipo: "Exercícios",
       duracaoMinutos: 45,
-      data: new Date(Date.now() - 3600_000),
+      dia: hojeEmBrasilia(),
       questoes: 20,
       acertos: 15,
       anotacao: "Revisar crase",
@@ -200,7 +240,7 @@ describe("validação do registro de estudo", () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
     const materia = await materiaDe(ana);
     const base = { ...estudo, duracaoMinutos: 30 };
-    await expect(registrarEstudo(db, ana, materia, { ...base, data: new Date(Date.now() + 3600_000) })).rejects.toThrow(ValidacaoError);
+    await expect(registrarEstudo(db, ana, materia, { ...base, dia: diaDaquiA(1) })).rejects.toThrow(ValidacaoError);
     await expect(registrarEstudo(db, ana, materia, { ...base, anotacao: "a".repeat(2001) })).rejects.toThrow(ValidacaoError);
     await expect(registrarEstudo(db, ana, materia, { ...base, conteudoLivre: "a".repeat(201) })).rejects.toThrow(ValidacaoError);
   });

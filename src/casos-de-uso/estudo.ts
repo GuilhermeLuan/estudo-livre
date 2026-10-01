@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db";
 import { ciclo, materia, registroDeEstudo, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/db/schema";
+import { hojeEmBrasilia } from "@/dia";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
 import { avaliarFechamentoDaVolta } from "./progresso";
 import type { Usuario } from "./usuario";
@@ -8,8 +9,8 @@ import type { Usuario } from "./usuario";
 export type DadosDoEstudo = {
   tipo: TipoDeEstudo;
   duracaoMinutos: number;
-  /** Instante do estudo; padrão: agora. Não pode estar no futuro. */
-  data?: Date;
+  /** Dia do estudo (AAAA-MM-DD, em Brasília); padrão: hoje. Não pode estar no futuro. */
+  dia?: string;
   questoes?: number | null;
   acertos?: number | null;
   anotacao?: string | null;
@@ -21,7 +22,6 @@ const QUESTOES_MAXIMAS = 1000;
 const ANOTACAO_MAXIMA = 2000;
 const CONTEUDO_LIVRE_MAXIMO = 200;
 
-const FUSO = "America/Sao_Paulo";
 const DIA_ISO = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 /**
@@ -33,7 +33,7 @@ export function instanteDoDia(dia: string, agora = new Date()): Date {
   const meioDia = partes && new Date(`${dia}T12:00:00-03:00`);
   if (!partes || !meioDia || Number.isNaN(meioDia.getTime()) || meioDia.toISOString().slice(0, 10) !== dia)
     throw new ValidacaoError("Informe uma data válida.");
-  const hoje = new Intl.DateTimeFormat("en-CA", { timeZone: FUSO }).format(agora);
+  const hoje = hojeEmBrasilia(agora);
   if (dia > hoje) throw new ValidacaoError("A data do estudo não pode estar no futuro.");
   return dia === hoje ? agora : meioDia;
 }
@@ -52,8 +52,7 @@ function validar(dados: DadosDoEstudo) {
   if (!TIPOS_DE_ESTUDO.includes(dados.tipo)) throw new ValidacaoError("Escolha um tipo de estudo.");
   if (!inteiroEntre(dados.duracaoMinutos, 1, DURACAO_MAXIMA_MINUTOS))
     throw new ValidacaoError("A duração precisa ter de 1 minuto a 24 horas.");
-  const dataHora = dados.data ?? null;
-  if (dataHora && dataHora.getTime() > Date.now()) throw new ValidacaoError("A data do estudo não pode estar no futuro.");
+  if (dados.dia !== undefined) instanteDoDia(dados.dia);
 
   const questoes = dados.questoes ?? null;
   const acertos = dados.acertos ?? null;
@@ -66,7 +65,6 @@ function validar(dados: DadosDoEstudo) {
   return {
     tipo: dados.tipo,
     duracaoMinutos: dados.duracaoMinutos,
-    dataHora,
     questoes,
     acertos,
     anotacao: textoOpcional(dados.anotacao, ANOTACAO_MAXIMA, "A anotação"),
@@ -85,8 +83,8 @@ export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: strin
     if (!alvo) throw new NaoEncontradoError("Matéria");
     // Trava o Ciclo para que registros simultâneos não fechem a mesma Volta duas vezes.
     await tx.select({ id: ciclo.id }).from(ciclo).where(eq(ciclo.id, alvo.cicloId)).for("update");
-    // Sem data informada, vale o instante após a trava: nunca cai numa Volta que outro registro acabou de fechar.
-    const dataHora = registro.dataHora ?? new Date();
+    // O instante de "hoje" vale só depois da trava: assim o registro nunca cai numa Volta que outro acabou de fechar.
+    const dataHora = dados.dia === undefined ? new Date() : instanteDoDia(dados.dia);
     const [linha] = await tx.insert(registroDeEstudo).values({ materiaId, ...registro, dataHora }).returning({ id: registroDeEstudo.id });
     const voltaFechada = await avaliarFechamentoDaVolta(tx, alvo.cicloId);
     return { id: linha.id, voltaFechada };

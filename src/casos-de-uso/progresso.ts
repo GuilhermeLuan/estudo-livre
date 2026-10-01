@@ -1,17 +1,17 @@
 import { and, asc, eq, gt, isNull, or, sql, type SQL } from "drizzle-orm";
-import type { Db } from "@/db";
+import type { Db, Tx } from "@/db";
 import { ciclo, materia, registroDeEstudo, volta } from "@/db/schema";
 
-export type Executor = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];
+export type Executor = Db | Tx;
 
-export type MateriaComProgresso = { id: string; cicloId: string; nome: string; cargaMinutos: number; feitoMinutos: number };
+export type MateriaComProgresso = { id: string; nome: string; cargaMinutos: number; feitoMinutos: number };
 
 /**
  * Matérias com o Progresso da matéria na Volta aberta do Ciclo, em ordem de posição.
  * O registro pertence à Volta pelo intervalo (início, fim]; a Volta aberta não tem fim.
  * O progresso trava na carga horária, então o excedente nunca passa para a Volta seguinte.
  */
-export async function materiasComProgresso(db: Executor, filtro: SQL | undefined): Promise<MateriaComProgresso[]> {
+export async function materiasComProgresso(db: Executor, filtro: SQL | undefined): Promise<(MateriaComProgresso & { cicloId: string })[]> {
   return db
     .select({
       id: materia.id,
@@ -48,3 +48,5 @@ export async function avaliarFechamentoDaVolta(tx: Executor, cicloId: string): P
   await tx.insert(volta).values({ cicloId, numero: fechada.numero + 1, inicio: fim });
   return fechada.numero;
 }
+
+export const concluida = (m: MateriaComProgresso) => m.feitoMinutos >= m.cargaMinutos;

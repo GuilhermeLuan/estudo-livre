@@ -17,12 +17,15 @@
   --red-soft: #3A1A1F;
   --focus: #6E9BFF;
   --on-accent: #FFFFFF;
+  --scrim: rgba(3, 6, 12, .7);
+  --shadow-float: 0 12px 30px -10px rgba(0, 0, 0, .6);
   color-scheme: dark;
 }
 :root[data-theme="light"] {
   --paper: #F4F6FA; --surface: #FFFFFF; --surface-2: #F0F3F8; --ink: #0F172A; --ink-2: #4B5568;
   --line: #E2E7EF; --accent: #2457E6; --accent-ink: #2457E6; --accent-soft: #E6EDFF;
   --green: #138A4B; --green-soft: #E2F5EA; --red: #C83A3A; --red-soft: #FBE7E7; --focus: #2457E6;
+  --scrim: rgba(15, 23, 42, .45); --shadow-float: 0 12px 30px -10px rgba(15, 23, 42, .25);
   color-scheme: light;
 }
 
@@ -45,6 +48,7 @@
   --font-sans: var(--font-geist), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --radius-sm: 6px;
+  --radius-control: 8px;
   --radius-md: 10px;
   --radius-lg: 14px;
 }
@@ -60,7 +64,7 @@
 @layer components {
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    min-height: 38px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--line);
+    min-height: 38px; padding: 0 16px; border-radius: var(--radius-control); border: 1px solid var(--line);
     background: var(--surface-2); cursor: pointer; font-weight: 600; font-size: .875rem; white-space: nowrap;
   }
   .btn:hover { border-color: var(--ink-2); }
@@ -70,20 +74,20 @@
   .btn-quiet { border-color: transparent; background: none; color: var(--accent-ink); padding: 0 4px; min-height: 0; font-weight: 500; }
   .btn-quiet:hover { border-color: transparent; }
   .input {
-    width: 100%; min-height: 40px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px;
+    width: 100%; min-height: 40px; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius-control);
     background: var(--paper); font-size: .875rem;
   }
   .input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
   .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 18px; }
   @media (max-width: 760px) { .panel { padding: 14px; } }
 
-  .pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px; font-size: .75rem; font-weight: 600; background: var(--surface-2); color: var(--ink-2); }
+  .pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: var(--radius-sm); font-size: .75rem; font-weight: 600; background: var(--surface-2); color: var(--ink-2); }
   .pill-blue { background: var(--accent-soft); color: var(--accent-ink); }
   .pill-green { background: var(--green-soft); color: var(--green); }
-  .chip { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: 500; font-size: .875rem; color: var(--ink-2); }
+  .chip { border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius-control); padding: 6px 12px; cursor: pointer; font-weight: 500; font-size: .875rem; color: var(--ink-2); }
   .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-soft); }
-  .bar { grid-column: 1 / -1; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
-  .bar > i { display: block; height: 100%; background: var(--accent); border-radius: 3px; transition: width .6s ease; }
+  .bar { grid-column: 1 / -1; height: 5px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width .6s ease; }
   .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 300px); border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
   .hero-disc {
     order: 1; padding: 22px; display: grid; place-items: center; border-left: 1px solid var(--line);
@@ -101,17 +105,18 @@
   .disc .seg { transition: opacity .15s; }
   .disc .seg.dim { opacity: .25; }
   .disc text { fill: var(--ink); }
-  .disc text.muted { fill: var(--ink-2); }
+  .disc .disco-rotulo { fill: var(--ink-2); font-size: 15px; }
+  .disc .disco-tempo { font-size: 34px; font-weight: 600; }
   .subjects li button { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; width: 100%; padding: 10px 8px; border-radius: var(--radius-sm); text-align: left; cursor: pointer; }
   .subjects li button:hover, .subjects li button:focus-visible { background: var(--surface-2); }
-  .subjects .is-next .s-name::after { content: "próxima"; margin-left: 8px; font-size: .6875rem; font-weight: 600; padding: 1px 6px; border-radius: 5px; background: var(--accent-soft); color: var(--accent-ink); vertical-align: 1px; }
+  .subjects .is-next .s-name::after { content: "próxima"; margin-left: 8px; font-size: .6875rem; font-weight: 600; padding: 1px 6px; border-radius: var(--radius-sm); background: var(--accent-soft); color: var(--accent-ink); vertical-align: 1px; }
   .subjects .is-done .s-name { color: var(--ink-2); }
   .subjects .is-done .bar > i { background: var(--green); }
   dialog.sheet-dialog { border: 1px solid var(--line); padding: 0; border-radius: var(--radius-lg); background: var(--surface); color: var(--ink); width: min(540px, calc(100vw - 32px)); max-height: calc(100vh - 32px); margin: auto; }
-  dialog.sheet-dialog::backdrop { background: rgba(3, 6, 12, .7); backdrop-filter: blur(2px); }
+  dialog.sheet-dialog::backdrop { background: var(--scrim); backdrop-filter: blur(2px); }
   dialog.sheet-dialog[open] { animation: subir .2s ease-out; }
   @keyframes subir { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .toast { position: fixed; left: 50%; top: 70px; transform: translateX(-50%); z-index: 40; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); padding: 10px 16px; border-radius: var(--radius-md); font-weight: 500; font-size: .875rem; max-width: calc(100vw - 32px); box-shadow: 0 12px 30px -10px rgba(0,0,0,.6); }
+  .toast { position: fixed; left: 50%; top: 70px; transform: translateX(-50%); z-index: 40; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); padding: 10px 16px; border-radius: var(--radius-md); font-weight: 500; font-size: .875rem; max-width: calc(100vw - 32px); box-shadow: var(--shadow-float); }
   @media (max-width: 760px) { .toast { top: 16px; } }
 }
 

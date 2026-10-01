@@ -51,34 +51,29 @@ export default async function Hoje({ searchParams }: { searchParams: Promise<{ c
               <p className="text-[.875rem] text-ink-2">Você tem um ciclo só. Crie outro para estudar para dois concursos ao mesmo tempo.</p>
             ) : (
               <ul className="grid gap-2 md:grid-cols-2">
-                {outros.map((c) => {
-                  const carga = c.materias.reduce((a, m) => a + m.cargaMinutos, 0);
-                  const feito = c.materias.reduce((a, m) => a + m.feitoMinutos, 0);
-                  const pct = carga ? Math.round((feito / carga) * 100) : 0;
-                  return (
-                    <li key={c.id}>
-                      <Link href={`/?ciclo=${c.id}`} className="panel grid grid-cols-[36px_1fr] items-center gap-x-3 gap-y-2.5 hover:border-accent">
-                        <span className="grid size-9 place-items-center rounded-md bg-accent-soft text-[.75rem] font-bold text-accent-ink">
-                          {c.nome.slice(0, 2).toUpperCase()}
+                {outros.map((c) => (
+                  <li key={c.id}>
+                    <Link href={`/?ciclo=${c.id}`} className="panel grid grid-cols-[36px_1fr] items-center gap-x-3 gap-y-2.5 hover:border-accent">
+                      <span className="grid size-9 place-items-center rounded-md bg-accent-soft text-[.75rem] font-bold text-accent-ink">
+                        {c.nome.slice(0, 2).toUpperCase()}
+                      </span>
+                      <span className="grid">
+                        <span className="text-[.875rem] font-semibold">{c.nome}</span>
+                        <span className="text-[.8125rem] text-ink-2">
+                          Volta {c.volta}.{c.proxima ? ` Próxima: ${c.proxima.nome}` : " Sem matérias ainda."}
                         </span>
-                        <span className="grid">
-                          <span className="text-[.875rem] font-semibold">{c.nome}</span>
-                          <span className="text-[.8125rem] text-ink-2">
-                            Volta {c.volta}.{c.proxima ? ` Próxima: ${c.proxima.nome}` : " Sem matérias ainda."}
-                          </span>
+                      </span>
+                      <span className="col-span-2 grid grid-cols-[1fr_auto] items-center gap-2.5 text-[.75rem] font-semibold">
+                        <span className="bar">
+                          <i style={{ width: `${c.percentual}%` }} />
                         </span>
-                        <span className="col-span-2 grid grid-cols-[1fr_auto] items-center gap-2.5 text-[.75rem] font-semibold">
-                          <span className="bar">
-                            <i style={{ width: `${pct}%` }} />
-                          </span>
-                          <span className="tabular-nums" title={`${tempo(feito)} de ${tempo(carga)}`}>
-                            {pct}%
-                          </span>
+                        <span className="tabular-nums" title={`Faltam ${tempo(c.faltaMinutos)} para fechar`}>
+                          {c.percentual}%
                         </span>
-                      </Link>
-                    </li>
-                  );
-                })}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
               </ul>
             )}
           </div>

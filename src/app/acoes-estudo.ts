@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { instanteDoDia, NaoEncontradoError, registrarEstudo, ValidacaoError } from "@/casos-de-uso";
+import { NaoEncontradoError, registrarEstudo, ValidacaoError, type MateriaComProgresso } from "@/casos-de-uso";
 import type { TipoDeEstudo } from "@/db/schema";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
@@ -18,7 +18,7 @@ function inteiroOpcional(dados: FormData, campo: string) {
 }
 
 export async function registrar(
-  materias: { id: string; nome: string; cargaMinutos: number }[],
+  materias: Pick<MateriaComProgresso, "id" | "nome">[],
   estado: EstadoRegistro,
   dados: FormData,
 ): Promise<EstadoRegistro> {
@@ -29,7 +29,7 @@ export async function registrar(
     const { voltaFechada } = await registrarEstudo(obterDb(), usuario, materiaId, {
       tipo: texto(dados, "tipo") as TipoDeEstudo,
       duracaoMinutos,
-      data: instanteDoDia(texto(dados, "data")),
+      dia: texto(dados, "data"),
       questoes: inteiroOpcional(dados, "questoes"),
       acertos: inteiroOpcional(dados, "acertos"),
       anotacao: texto(dados, "anotacao"),
