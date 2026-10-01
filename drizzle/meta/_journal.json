@@ -8,6 +8,13 @@
       "when": 1790887712500,
       "tag": "0000_inicial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790890157143,
+      "tag": "0001_ciclos_e_materias",
+      "breakpoints": true
     }
   ]
 }
