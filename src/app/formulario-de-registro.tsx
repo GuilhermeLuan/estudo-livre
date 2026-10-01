@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import type { CicloDaHome, CronometroParado } from "@/casos-de-uso";
+import type { CicloDaHome, SugestaoDeRegistro } from "@/casos-de-uso";
 import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_REGISTRO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
 import { registrar, type EstadoRegistro } from "./acoes-estudo";
@@ -27,9 +27,11 @@ function CampoNumerico({ rotulo, id, ...resto }: React.InputHTMLAttributes<HTMLI
 }
 
 /** Sessão cronometrada: a Matéria fica travada e o registro consome o Cronômetro ao salvar. */
-export type SessaoCronometrada = Omit<CronometroParado, "materiaId">;
+export type SessaoCronometrada = SugestaoDeRegistro;
 
 type Props = {
+  /** Prefixo dos ids dos campos: o painel e o cronômetro montam este formulário para o mesmo Ciclo. */
+  idBase: string;
   ciclo: Pick<CicloDaHome, "id" | "nome" | "materias">;
   materiaInicial: string;
   sessaoCronometrada?: SessaoCronometrada;
@@ -38,8 +40,8 @@ type Props = {
 };
 
 /** Conteúdo do diálogo "Registrar estudo". É remontado a cada abertura para começar limpo. */
-export function FormularioDeRegistro({ ciclo, materiaInicial, sessaoCronometrada, aoFechar, aoSalvar }: Props) {
-  const { id, materias } = ciclo;
+export function FormularioDeRegistro({ idBase: id, ciclo, materiaInicial, sessaoCronometrada, aoFechar, aoSalvar }: Props) {
+  const { materias } = ciclo;
   const [materiaId, setMateriaId] = useState(materiaInicial);
   const [tipo, setTipo] = useState<TipoDeEstudo>("Teoria");
   const [dia, setDia] = useState(() => hojeEmBrasilia());
@@ -76,7 +78,7 @@ export function FormularioDeRegistro({ ciclo, materiaInicial, sessaoCronometrada
         {cronometrado && (
           <>
             <input type="hidden" name="materiaId" value={materiaId} />
-            <input type="hidden" name="cronometro" value="1" />
+            <input type="hidden" name="cronometro" value="sim" />
           </>
         )}
         <select

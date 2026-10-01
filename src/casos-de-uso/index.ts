@@ -24,6 +24,7 @@ export {
   retomarCronometro,
   type CronometroAtivo,
   type CronometroParado,
+  type SugestaoDeRegistro,
 } from "./cronometro";
 export { instanteDoDia, registrarEstudo, type DadosDoEstudo, type OpcoesDoRegistro } from "./estudo";
 export { NaoEncontradoError, ValidacaoError } from "./erros";

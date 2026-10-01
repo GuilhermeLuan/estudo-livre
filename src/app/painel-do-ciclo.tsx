@@ -111,6 +111,7 @@ export function PainelDoCiclo({ ciclo }: { ciclo: CicloDaHome }) {
       <dialog ref={dialogo} className="sheet-dialog" aria-labelledby={`titulo-${ciclo.id}`}>
         <FormularioDeRegistro
           key={aberturas}
+          idBase={ciclo.id}
           ciclo={ciclo}
           materiaInicial={materiaId}
           aoFechar={() => dialogo.current?.close()}

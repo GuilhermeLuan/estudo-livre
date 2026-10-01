@@ -74,6 +74,7 @@ export function Cronometro({ ativo, ciclo }: Props) {
     });
   }
 
+  const idBase = `cronometro-${ciclo?.id}`;
   return (
     <>
       {ativo && (
@@ -98,10 +99,11 @@ export function Cronometro({ ativo, ciclo }: Props) {
       )}
 
       {ciclo && ativo && (
-        <dialog ref={dialogo} className="sheet-dialog" aria-labelledby={`titulo-${ciclo.id}`}>
+        <dialog ref={dialogo} className="sheet-dialog" aria-labelledby={`titulo-${idBase}`}>
           {sessao && (
             <FormularioDeRegistro
               key={aberturas}
+              idBase={idBase}
               ciclo={ciclo}
               materiaInicial={ativo.materiaId}
               sessaoCronometrada={sessao}

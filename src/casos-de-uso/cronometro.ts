@@ -16,13 +16,15 @@ export type CronometroAtivo = {
   rodando: boolean;
 };
 
-export type CronometroParado = {
-  materiaId: string;
-  /** Duração sugerida ao registro: minutos arredondados, de 1 minuto a 24 horas. */
+/** O que o Cronômetro parado sugere ao Registro de estudo. */
+export type SugestaoDeRegistro = {
+  /** Minutos arredondados, de 1 minuto a 24 horas. */
   duracaoMinutos: number;
   /** O tempo passou de 24 horas e a duração sugerida foi limitada. */
   passouDoLimite: boolean;
 };
+
+export type CronometroParado = SugestaoDeRegistro & { materiaId: string };
 
 const POSTGRES_VIOLACAO_DE_UNICIDADE = "23505";
 
