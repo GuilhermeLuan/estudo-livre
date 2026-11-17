@@ -231,7 +231,7 @@ Proof: `grep -q "ig7Pq2uPxPWjeWuCKmTuBW" AGENTS.md && grep -q "Figma vence" AGEN
 ## Handoff
 
 - **Settled mid-build:** "Aprovado!" (the plan, 2026-11-17); the three unconfirmed assumptions stand as written.
-- **Dispatched:** Verifier and screens round 1, both at HEAD 30a75ec (before send)
+- **Dispatched:** Verifier and screens round 1 at 30a75ec, both returned; screens round 2 resumed at the next HEAD (before send)
 - **Boundary:** all code and docs committed; tests 88/88 green; build green.
 - **Abandoned:** a first Docker outage blocked tests and the app for one turn; it passed on its own. Found and fixed in the walk: the Registrar estudo modal overflowed at 390px, `<form action>` cleared the fields after a refused save, and a server error left the field invalid so the browser would not resubmit.
 - **Walked:** production build (`next start`) on a throwaway Postgres, seeded with 2 Ciclos, 9 Etapas and 7 Registros, logged in as Marina (Admin), Chrome for Testing at 1440x960 and 390x844, pt-BR, America/Sao_Paulo. Pictures saved: `entrar`, `hoje-claro-suave`, `hoje-escuro`, `pwa-hoje`, `ciclo`, `estatisticas`, `registrar-estudo` (`*.running.png`). Visited: Iniciar (C21), Parar opening the modal with the note (C37), Registrar with Acertos greater than Questões showing the message under the field, then fixing and saving, Hoje totals updated and the toast (C39 C40), the Acerto field (C38: 150% then 80%), Escuro from the user card applied at once (C4), Adicionar etapa modal (C29), the avatar menu with Ciclos, Novo ciclo, Usuários, tema and Sair (C12), the "+" sheet at 390px (C11 C41), the tab bar and big Cronômetro card (C10).
