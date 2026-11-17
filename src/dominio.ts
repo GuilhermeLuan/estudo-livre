@@ -38,3 +38,13 @@ export function preencherEtapas<E extends { materiaId: string; cargaMinutos: num
   });
   return { etapas: preenchidas, extraPorMateria: restante };
 }
+
+/** Variação percentual arredondada contra o período anterior; sem período anterior (0) não há variação. */
+export function variacaoPercentual(atual: number, anterior: number): number | null {
+  return anterior > 0 ? Math.round(((atual - anterior) / anterior) * 100) : null;
+}
+
+/** Acerto arredondado de 0 a 100; sem questões não há acerto. */
+export function percentualDeAcerto(acertos: number | null, questoes: number | null): number | null {
+  return questoes ? Math.round(((acertos ?? 0) * 100) / questoes) : null;
+}

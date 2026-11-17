@@ -1,6 +1,7 @@
 import { and, asc, eq, gte, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import { ciclo, materia, registroDeEstudo } from "@/db/schema";
+import { variacaoPercentual } from "@/dominio";
 import { FUSO, hojeEmBrasilia, segundaDaSemana, somarDias } from "@/dia";
 import { NaoEncontradoError } from "./erros";
 import { progressoDosCiclos } from "./progresso";
@@ -27,6 +28,8 @@ export type Estatisticas = {
   horasPorSemana: SemanaEstudada[];
   /** Média dessas semanas, contando a semana atual ainda incompleta. */
   mediaSemanalMinutos: number;
+  /** A semana atual contra a anterior, em %; nulo quando a anterior não teve estudo. */
+  variacaoSemanal: number | null;
 };
 
 /** `cicloId` restringe as estatísticas a um Ciclo do Usuário. */
@@ -102,6 +105,7 @@ export async function obterEstatisticas(db: Db, usuario: Usuario, opcoes: { cicl
         totalQuestoes: acertoPorMateria.reduce((soma, m) => soma + m.questoes, 0),
         horasPorSemana,
         mediaSemanalMinutos: Math.round(totalMinutos / SEMANAS_NAS_ESTATISTICAS),
+        variacaoSemanal: variacaoPercentual(horasPorSemana[SEMANAS_NAS_ESTATISTICAS - 1].minutos, horasPorSemana[SEMANAS_NAS_ESTATISTICAS - 2].minutos),
       };
     },
     { isolationLevel: "repeatable read", accessMode: "read only" },

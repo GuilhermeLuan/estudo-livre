@@ -1,7 +1,8 @@
-import { and, asc, eq, isNull } from "drizzle-orm";
-import type { Db } from "@/db";
-import { ciclo, user, volta } from "@/db/schema";
-import { concluida } from "@/dominio";
+import { and, asc, eq, isNull, sql, type AnyColumn } from "drizzle-orm";
+import type { Db, Tx } from "@/db";
+import { ciclo, materia, registroDeEstudo, user, volta } from "@/db/schema";
+import { FUSO, hojeEmBrasilia, segundaDaSemana, somarDias } from "@/dia";
+import { concluida, percentualDeAcerto, variacaoPercentual } from "@/dominio";
 import { progressoDosCiclos, type EtapaComProgresso, type MateriaComProgresso } from "./progresso";
 import type { Usuario } from "./usuario";
 
@@ -24,10 +25,57 @@ export type CicloDaHome = {
   faltaMinutos: number;
 };
 
+/** Os números do dia e da semana (segunda a domingo, em Brasília), somados em todos os Ciclos do Usuário. */
+export type Indicadores = {
+  hojeMinutos: number;
+  /** Hoje menos ontem; nulo sem estudo hoje ou sem diferença. */
+  diferencaHojeMinutos: number | null;
+  questoesHoje: number;
+  acertoHoje: number | null;
+  semanaMinutos: number;
+  /** Contra a semana anterior inteira; nulo quando ela não teve estudo. */
+  variacaoSemana: number | null;
+};
+
 export type Home = {
   usuario: { nome: string; admin: boolean };
   ciclos: CicloDaHome[];
+  indicadores: Indicadores;
 };
+
+const inicioDoDia = (dia: string) => sql`(${dia}::date)::timestamp at time zone ${FUSO}`;
+
+async function indicadoresDoUsuario(tx: Tx, usuarioId: string): Promise<Indicadores> {
+  const hoje = hojeEmBrasilia();
+  const segunda = segundaDaSemana(hoje);
+  const intervalo = (de: string, ate: string) =>
+    sql`${registroDeEstudo.dataHora} >= ${inicioDoDia(de)} and ${registroDeEstudo.dataHora} < ${inicioDoDia(ate)}`;
+  const soma = (campo: AnyColumn, filtro: ReturnType<typeof intervalo>) =>
+    sql<number>`coalesce(sum(${campo}) filter (where ${filtro}), 0)::int`;
+  const amanha = somarDias(hoje, 1);
+  const [linha] = await tx
+    .select({
+      hoje: soma(registroDeEstudo.duracaoMinutos, intervalo(hoje, amanha)),
+      ontem: soma(registroDeEstudo.duracaoMinutos, intervalo(somarDias(hoje, -1), hoje)),
+      questoes: soma(registroDeEstudo.questoes, intervalo(hoje, amanha)),
+      acertos: soma(registroDeEstudo.acertos, intervalo(hoje, amanha)),
+      semana: soma(registroDeEstudo.duracaoMinutos, intervalo(segunda, somarDias(segunda, 7))),
+      semanaAnterior: soma(registroDeEstudo.duracaoMinutos, intervalo(somarDias(segunda, -7), segunda)),
+    })
+    .from(registroDeEstudo)
+    .innerJoin(materia, eq(materia.id, registroDeEstudo.materiaId))
+    .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
+    .where(eq(ciclo.usuarioId, usuarioId));
+  const diferenca = linha.hoje - linha.ontem;
+  return {
+    hojeMinutos: linha.hoje,
+    diferencaHojeMinutos: linha.hoje > 0 && diferenca !== 0 ? diferenca : null,
+    questoesHoje: linha.questoes,
+    acertoHoje: percentualDeAcerto(linha.acertos, linha.questoes),
+    semanaMinutos: linha.semana,
+    variacaoSemana: variacaoPercentual(linha.semana, linha.semanaAnterior),
+  };
+}
 
 function resumir(base: { id: string; nome: string; volta: number }, { etapas, materias }: { etapas: EtapaComProgresso[]; materias: MateriaComProgresso[] }): CicloDaHome {
   const carga = etapas.reduce((soma, e) => soma + e.cargaMinutos, 0);
@@ -61,6 +109,7 @@ export async function obterHome(db: Db, usuario: Usuario): Promise<Home> {
       return {
         usuario: linha,
         ciclos: ciclos.map((c) => resumir(c, progresso.get(c.id) ?? { etapas: [], materias: [] })),
+        indicadores: await indicadoresDoUsuario(tx, usuario.id),
       };
     },
     { isolationLevel: "repeatable read", accessMode: "read only" },
