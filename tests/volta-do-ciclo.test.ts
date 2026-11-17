@@ -23,6 +23,9 @@ describe("progresso na tela do Ciclo", () => {
     expect(ciclo.volta).toEqual({ numero: 1, inicio: null });
     expect([ciclo.cargaMinutos, ciclo.feitoMinutos, ciclo.extraMinutos]).toEqual([240, 90, 0]);
     expect(ciclo.materias.map((m) => [m.nome, m.cargaMinutos, m.feitoMinutos])).toEqual([["Português", 120, 90], ["Direito", 120, 0]]);
+    expect(ciclo.materias.map((m) => [m.nome, m.etapas])).toEqual([["Português", 2], ["Direito", 1]]);
+    expect([ciclo.etapas.length, ciclo.materias.length, ciclo.cargaMinutos - ciclo.feitoMinutos, ciclo.percentual]).toEqual([3, 2, 150, 38]); // 90/240 = 37,5%
+    expect(ciclo.proximaEtapaId).toBe(ciclo.etapas[1].id); // Português 1 está a 100%, Direito é a primeira incompleta
   });
 
   it("depois de fechar a Volta, mostra a Volta 2 com o instante em que abriu e soma as horas extras", async () => {

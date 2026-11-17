@@ -124,7 +124,7 @@ function Formulario({
           <span className="text-body-medium text-text-primary" id="rotulo-tipo">
             Tipo de estudo
           </span>
-          <SegmentedControl aria-labelledby="rotulo-tipo" selectedKeys={[tipo]} onSelectionChange={(chaves) => setTipo([...chaves][0] as TipoDeEstudo)} className="max-w-full overflow-x-auto">
+          <SegmentedControl aria-labelledby="rotulo-tipo" selectedKeys={[tipo]} onSelectionChange={(chaves) => setTipo([...chaves][0] as TipoDeEstudo)} className="w-full [&>*]:flex-1">
             {TIPOS_DE_ESTUDO.map((t) => (
               <SegmentedControlItem key={t} id={t}>
                 {t}

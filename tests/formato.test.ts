@@ -8,6 +8,9 @@ describe("variação e acerto", () => {
     expect(variacaoPercentual(300, 600)).toBe(-50);
     expect(variacaoPercentual(0, 120)).toBe(-100);
     expect(variacaoPercentual(120, 0)).toBeNull();
+    // meio ponto se afasta do zero nos dois sinais
+    expect(variacaoPercentual(90, 80)).toBe(13);
+    expect(variacaoPercentual(70, 80)).toBe(-13);
   });
 
   it("acerto arredondado; sem questões, nenhum", () => {

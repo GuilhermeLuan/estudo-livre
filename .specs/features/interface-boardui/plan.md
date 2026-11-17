@@ -225,6 +225,8 @@ Os documentos que dizem como fazer interface passam a apontar para o Figma.
 | "Iniciada em ..." em qualquer Volta | "Primeira volta" na Volta 1 | y - AD-005 |
 | Conteúdo com "Tópico", "Nota da revisão" e "Próxima revisão estimada" no modal; Duração em um campo | só o texto livre; Horas e Minutos lado a lado | y - AD-001 |
 | Variação em "Acerto geral" e "Questões" nas Estatísticas | sem variação | y - AD-004 |
+| Cartão do Cronômetro sem lixeira | botão de lixeira "Descartar cronômetro" | y - AD-006 |
+| Data com "dd/mm/aaaa · hh:mm" no modal | entrada de data do navegador, só o dia | y - AD-007 |
 
 ## Sources
 

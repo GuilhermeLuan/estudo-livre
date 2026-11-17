@@ -18,10 +18,9 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
     throw erro;
   });
   const { etapas, materias, volta } = ciclo;
-  const percentual = ciclo.cargaMinutos ? Math.round((ciclo.feitoMinutos / ciclo.cargaMinutos) * 100) : 0;
+  const { percentual } = ciclo;
   const extraDaMateria = new Map(materias.map((m) => [m.id, m.extraMinutos]));
   const itens = etapas.map((e) => ({ id: e.id, nome: e.nome, cargaMinutos: e.cargaMinutos, feitoMinutos: e.feitoMinutos, extraMinutos: extraDaMateria.get(e.materiaId) ?? 0 }));
-  const proxima = etapas.find((e) => !concluida(e));
 
   return (
     <section aria-labelledby="h-ciclo" className="grid gap-5">
@@ -65,7 +64,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <ListaEtapas cicloId={id} etapas={itens} proximaId={proxima?.id} />
+        <ListaEtapas cicloId={id} etapas={itens} proximaId={ciclo.proximaEtapaId ?? undefined} />
         {materias.length > 0 && (
           <aside aria-label="Matérias" className="grid gap-3 rounded-3xl bg-background-secondary-default p-4">
             <h2 className="text-title-3-medium text-text-primary">Matérias</h2>
@@ -75,7 +74,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
                   <div className="grid">
                     <span className="text-body-medium text-text-primary">{m.nome}</span>
                     <span className="text-caption-1-regular text-text-secondary">
-                      {quantidade(etapas.filter((e) => e.materiaId === m.id).length, "etapa", "etapas")} · {tempoHM(m.cargaMinutos)}
+                      {quantidade(m.etapas, "etapa", "etapas")} · {tempoHM(m.cargaMinutos)}
                     </span>
                   </div>
                   <ProgressTrack percentage={(m.feitoMinutos / m.cargaMinutos) * 100} size="sm" className={concluida(m) ? "text-chart-2" : "text-accent-500"} />

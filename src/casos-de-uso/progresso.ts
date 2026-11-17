@@ -8,7 +8,7 @@ export type Executor = Db | Tx;
 export type EtapaComProgresso = { id: string; materiaId: string; nome: string; cargaMinutos: number; feitoMinutos: number };
 
 /** A Matéria soma as Etapas dela; `extraMinutos` é o que passou da carga total na Volta atual. */
-export type MateriaComProgresso = { id: string; nome: string; cargaMinutos: number; feitoMinutos: number; extraMinutos: number };
+export type MateriaComProgresso = { id: string; nome: string; cargaMinutos: number; feitoMinutos: number; extraMinutos: number; etapas: number };
 
 export type ProgressoDoCiclo = { etapas: EtapaComProgresso[]; materias: MateriaComProgresso[] };
 
@@ -51,7 +51,8 @@ export async function progressoDosCiclos(db: Executor, filtro: SQL | undefined):
     );
     const materias = new Map<string, MateriaComProgresso>();
     for (const e of preenchidas) {
-      const atual = materias.get(e.materiaId) ?? { id: e.materiaId, nome: e.nome, cargaMinutos: 0, feitoMinutos: 0, extraMinutos: extraPorMateria.get(e.materiaId) ?? 0 };
+      const atual = materias.get(e.materiaId) ?? { id: e.materiaId, nome: e.nome, cargaMinutos: 0, feitoMinutos: 0, extraMinutos: extraPorMateria.get(e.materiaId) ?? 0, etapas: 0 };
+      atual.etapas += 1;
       atual.cargaMinutos += e.cargaMinutos;
       atual.feitoMinutos += e.feitoMinutos;
       materias.set(e.materiaId, atual);

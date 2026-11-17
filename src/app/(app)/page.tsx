@@ -1,4 +1,4 @@
-import { RiCalendarLine, RiCheckboxCircleFill, RiTimeLine } from "@remixicon/react";
+import { RiAddLine, RiCalendarLine, RiCheckboxCircleFill, RiTimeLine } from "@remixicon/react";
 import { AcoesDaHoje } from "@/app/acoes-da-hoje";
 import { CartaoDeIndicador } from "@/app/cartao-de-indicador";
 import { CartaoDoCiclo } from "@/app/cartao-do-ciclo";
@@ -77,7 +77,7 @@ export default async function Hoje() {
                 <span className="max-lg:hidden">Ciclos ativos</span>
               </h2>
               <span className="text-body-regular text-text-secondary lg:hidden">{ciclos.length === 1 ? "1 ciclo" : `${ciclos.length} ciclos`}</span>
-              <ButtonLink href="/ciclos/novo" variant="secondary" className="max-lg:hidden">
+              <ButtonLink href="/ciclos/novo" variant="secondary" leadingIcon={RiAddLine} className="max-lg:hidden">
                 Novo ciclo
               </ButtonLink>
             </div>

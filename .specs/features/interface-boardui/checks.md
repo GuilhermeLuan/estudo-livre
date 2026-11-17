@@ -12,7 +12,7 @@ Plan: `.specs/features/interface-boardui/plan.md`
 ### S1 - Fundação BoardUI
 
 **C1** - The app SHALL render all text in Inter, and no file under `src/` SHALL reference the tokens or classes listed in Landing door 2 (AC 1)
-Proof: `! grep -rEn "(bg|text|border|ring)-(paper|surface-2|surface|ink-2|ink|line|accent-ink|accent-soft|on-accent)([^a-z-]|$)|var\(--(paper|surface|ink|line|geist)" src/app src/casos-de-uso`
+Proof: `! grep -rEn "(bg|text|border|ring)-(paper|surface-2|surface|ink-2|ink|line|accent-ink|accent-soft|on-accent)([^a-z-]|$)|var\(--(paper|surface|ink|line|geist)" src --include="*.ts" --include="*.tsx" && grep -q "Inter(" src/app/layout.tsx && ! grep -rEn "Geist" src`
 
 **C2** - WHILE no `tema` is stored and the OS prefers light THEN the system SHALL render `background/full` as `#ebebe8` and `text/primary` as `#1c1c1b` (Claro suave, AD-002) (AC 2)
 Proof: walk - with no `tema` stored and the OS in light, open `/` and read `background/full` and `text/primary` computed on `body`
@@ -103,6 +103,7 @@ Proof: run unit | ✓ tests/formato.test.ts > Volta e Situação da Etapa > Volt
 
 **C27** - The EtapaRow SHALL show the drag handle, position, Matéria, carga, the bar with percent and one Situação chip: "Concluída" (100%), "Próxima etapa" (the Próxima etapa, row highlighted), "Em andamento" (> 0%), "Não iniciada" (0%), or "+<tempo (AC 27)
 Proof: run unit | ✓ tests/formato.test.ts > Volta e Situação da Etapa > uma Situação por Etapa
+Proof: run unit | ✓ tests/volta-do-ciclo.test.ts > progresso na tela do Ciclo > cada Etapa traz o feito
 
 **C28** - WHEN the Usuário drags an EtapaRow to a new position THEN the system SHALL save the new order and keep it on reload, as today (AC 28)
 Proof: walk - drag an EtapaRow, reload and see the order kept
@@ -138,6 +139,7 @@ Proof: browser - reach Registrar estudo open at 1440px, save `.specs/features/in
 Proof: walk - Parar on the Cronômetro opens the modal with the duration and the note
 
 **C38** - WHEN the Usuário types Questões and Acertos THEN the field "Acerto" SHALL show acertos/questões rounded, as "80%" for 16 of 20, and "—" while Questões is empty or 0 (AC 38)
+Proof: run unit | ✓ tests/formato.test.ts > variação e acerto > acerto arredondado
 Proof: walk - type Questões 20 and Acertos 16 and see "80%"; clear Questões and see "—"
 
 **C39** - IF the Usuário saves with Acertos greater than Questões THEN the system SHALL keep the modal open and show the server's message under the field, in the Input error style (AC 39)
@@ -193,7 +195,7 @@ Proof: walk - as Admin `/usuarios` lists the Usuários in the Table and "Redefin
 Proof: `test ! -e prototype`
 
 **C53** - The document `docs/design-system.md` SHALL describe the BoardUI semantic tokens with the Claro suave and Escuro values, the type scale, the components of Landing door 1, the product components (Sidebar, StatCard, EtapaRow) and the 1024px br (AC 53)
-Proof: `! grep -Ei "geist|disco do ciclo" docs/design-system.md`
+Proof: `! grep -Ei "geist|disco do ciclo" docs/design-system.md && grep -q "1024px" docs/design-system.md && grep -q "Claro suave" docs/design-system.md && grep -q "Sidebar" docs/design-system.md && grep -q "StatCard" docs/design-system.md && grep -q "EtapaRow" docs/design-system.md && grep -q "text-title-1-medium" docs/design-system.md`
 
 **C54** - The interface rule in `AGENTS.md` SHALL point to the Figma file `ig7Pq2uPxPWjeWuCKmTuBW` and say that, when Figma and the document differ, Figma wins and the document is corrected in the same PR (AC 54)
 Proof: `grep -q "ig7Pq2uPxPWjeWuCKmTuBW" AGENTS.md && grep -q "Figma vence" AGENTS.md`

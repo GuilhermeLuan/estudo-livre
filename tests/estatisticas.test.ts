@@ -63,6 +63,8 @@ describe("estatísticas", () => {
     // 23 acertos em 40 questões = 57,5%, arredondado para 58%. Matérias sem questões ficam de fora.
     expect(acertoPorMateria.map((m) => [m.nome, m.questoes, m.acertos, m.percentual])).toEqual([["Português", 40, 23, 58]]);
     expect(totalQuestoes).toBe(40);
+    // A Matéria sem questões continua em "Horas por matéria".
+    expect((await obterEstatisticas(db, ana)).horasPorMateria.map((m) => m.nome)).toContain("Direito");
   });
 
   describe("horas por semana", () => {

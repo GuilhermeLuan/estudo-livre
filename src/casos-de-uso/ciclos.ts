@@ -1,6 +1,7 @@
 import { and, asc, eq, isNull, max, sql } from "drizzle-orm";
 import type { Db, Tx } from "@/db";
 import { ciclo, etapa, materia, registroDeEstudo, volta } from "@/db/schema";
+import { concluida } from "@/dominio";
 import { progressoDosCiclos, type Executor, type MateriaComProgresso } from "./progresso";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
@@ -21,6 +22,10 @@ export type CicloDetalhe = {
   feitoMinutos: number;
   /** Horas extras da Volta atual, somadas de todas as Matérias. */
   extraMinutos: number;
+  /** Fração da carga cumprida na Volta atual, de 0 a 100. */
+  percentual: number;
+  /** A Próxima etapa: a primeira, na ordem do ciclo, que ainda não chegou a 100%. */
+  proximaEtapaId: string | null;
 };
 
 const CARGA_MAXIMA_MINUTOS = 10_000 * 60;
@@ -109,15 +114,19 @@ export async function obterCiclo(db: Db, usuario: Usuario, cicloId: string): Pro
       const posicaoDe = new Map(posicoes.map((e) => [e.id, e.posicao]));
       const progresso = (await progressoDosCiclos(tx, eq(ciclo.id, cicloId))).get(cicloId) ?? { etapas: [], materias: [] };
       const [aberta] = await tx.select({ numero: volta.numero, inicio: volta.inicio }).from(volta).where(and(eq(volta.cicloId, cicloId), isNull(volta.fim)));
+      const carga = progresso.etapas.reduce((soma, e) => soma + e.cargaMinutos, 0);
+      const feito = progresso.etapas.reduce((soma, e) => soma + e.feitoMinutos, 0);
       return {
         id,
         nome,
         etapas: progresso.etapas.map((e) => ({ ...e, posicao: posicaoDe.get(e.id)! })),
         materias: progresso.materias,
         volta: aberta,
-        cargaMinutos: progresso.etapas.reduce((soma, e) => soma + e.cargaMinutos, 0),
-        feitoMinutos: progresso.etapas.reduce((soma, e) => soma + e.feitoMinutos, 0),
+        cargaMinutos: carga,
+        feitoMinutos: feito,
         extraMinutos: progresso.materias.reduce((soma, m) => soma + m.extraMinutos, 0),
+        percentual: carga ? Math.round((feito / carga) * 100) : 0,
+        proximaEtapaId: progresso.etapas.find((e) => !concluida(e))?.id ?? null,
       };
     },
     { isolationLevel: "repeatable read", accessMode: "read only" },
