@@ -1,83 +1,91 @@
-import Link from "next/link";
+import { RiAddLine, RiCalendarLine, RiCheckboxCircleFill, RiTimeLine } from "@remixicon/react";
+import { AcoesDaHoje } from "@/app/acoes-da-hoje";
+import { CartaoDeIndicador } from "@/app/cartao-de-indicador";
+import { CartaoDoCiclo } from "@/app/cartao-do-ciclo";
+import { CartaoDoCronometro } from "@/app/cronometro";
+import { rotuloDaDiferenca, rotuloDaVariacao, tempo } from "@/app/formato";
 import { obterHome } from "@/casos-de-uso";
-import { PainelDoCiclo } from "@/app/painel-do-ciclo";
-import { quantidade, tempo } from "@/app/formato";
+import { ButtonLink } from "@/components/base/buttons/button";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 
 export const dynamic = "force-dynamic";
 
 function hojePorExtenso() {
-  return new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
+  const data = new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", weekday: "long", day: "numeric", month: "long" }).format(new Date());
+  return data.charAt(0).toUpperCase() + data.slice(1);
 }
 
-export default async function Hoje({ searchParams }: { searchParams: Promise<{ ciclo?: string }> }) {
-  const { ciclo: cicloEscolhido } = await searchParams;
+export default async function Hoje() {
   const home = await obterHome(obterDb(), await exigirUsuario());
-  const atual = home.ciclos.find((c) => c.id === cicloEscolhido) ?? home.ciclos[0];
-  const outros = home.ciclos.filter((c) => c !== atual);
-  const data = hojePorExtenso();
+  const { indicadores: i, ciclos } = home;
   return (
-    <section aria-labelledby="h-hoje">
-      <div className="mb-5">
-        <h1 id="h-hoje">
-          Seu ciclo de hoje{" "}
-          <small className="ml-2 text-[.8125rem] font-normal tracking-normal text-ink-2">
-            {data.charAt(0).toUpperCase() + data.slice(1)}
-          </small>
-        </h1>
+    <section aria-labelledby="h-hoje" className="grid gap-5 lg:gap-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 id="h-hoje" className="text-title-1-medium text-text-primary max-lg:sr-only">
+            Hoje
+          </h1>
+          <p className="text-body-regular text-text-secondary">{hojePorExtenso()}</p>
+        </div>
+        {ciclos.length > 0 && <AcoesDaHoje proxima={ciclos[0].proxima} />}
       </div>
-      {home.ciclos.length === 0 ? (
-        <div className="panel grid justify-items-start gap-2">
-          <h2>Nenhum ciclo ainda</h2>
-          <p className="text-[.875rem] text-ink-2">
-            Crie um ciclo para o seu concurso e adicione as matérias com a carga horária de cada uma.
-          </p>
-          <Link href="/ciclos/novo" className="btn btn-primary">
-            Criar ciclo
-          </Link>
+
+      <div className="empty:hidden lg:hidden">
+        <CartaoDoCronometro variante="grande" />
+      </div>
+
+      {ciclos.length === 0 ? (
+        <div className="grid justify-items-start gap-3 rounded-3xl bg-background-secondary-default p-6">
+          <h2 className="text-title-3-medium text-text-primary">Nenhum ciclo ainda</h2>
+          <p className="text-body-regular text-text-secondary">Crie um ciclo para o seu concurso e adicione as matérias com a carga horária de cada uma.</p>
+          <ButtonLink href="/ciclos/novo">Criar ciclo</ButtonLink>
         </div>
       ) : (
-        <div className="grid gap-6">
-          <PainelDoCiclo key={atual.id} ciclo={atual} />
-          <div>
-            <div className="mb-3 flex items-baseline justify-between">
-              <h2>Outros ciclos</h2>
-              <Link href="/ciclos/novo" className="btn btn-quiet">
-                Novo ciclo
-              </Link>
-            </div>
-            {outros.length === 0 ? (
-              <p className="text-[.875rem] text-ink-2">Você tem um ciclo só. Crie outro para estudar para dois concursos ao mesmo tempo.</p>
-            ) : (
-              <ul className="grid gap-2 md:grid-cols-2">
-                {outros.map((c) => (
-                  <li key={c.id}>
-                    <Link href={`/?ciclo=${c.id}`} className="panel grid grid-cols-[36px_1fr] items-center gap-x-3 gap-y-2.5 hover:border-accent">
-                      <span className="grid size-9 place-items-center rounded-md bg-accent-soft text-[.75rem] font-bold text-accent-ink">
-                        {c.nome.slice(0, 2).toUpperCase()}
-                      </span>
-                      <span className="grid">
-                        <span className="text-[.875rem] font-semibold">{c.nome}</span>
-                        <span className="text-[.8125rem] text-ink-2">
-                          Volta {c.volta}.{c.proxima ? ` Próxima: ${c.proxima.nome}` : " Sem matérias ainda."}
-                        </span>
-                      </span>
-                      <span className="col-span-2 grid grid-cols-[1fr_auto] items-center gap-2.5 text-[.75rem] font-semibold">
-                        <span className="bar">
-                          <i style={{ width: `${c.percentual}%` }} />
-                        </span>
-                        <span className="tabular-nums" title={`Faltam ${tempo(c.faltaMinutos)} para fechar`}>
-                          {c.percentual}%
-                        </span>
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
+        <>
+          <div className="grid grid-cols-3 gap-2 lg:gap-4">
+            <CartaoDeIndicador
+              compacto
+              icone={RiTimeLine}
+              rotulo="Estudado hoje"
+              rotuloCurto="Hoje"
+              valor={tempo(i.hojeMinutos)}
+              chip={i.diferencaHojeMinutos === null ? null : { texto: rotuloDaDiferenca(i.diferencaHojeMinutos), cor: i.diferencaHojeMinutos > 0 ? "lime" : "rose" }}
+            />
+            <CartaoDeIndicador
+              compacto
+              icone={RiCheckboxCircleFill}
+              rotulo="Questões hoje"
+              rotuloCurto="Questões"
+              valor={String(i.questoesHoje)}
+              chip={i.acertoHoje === null ? null : { texto: `${i.acertoHoje}% de acerto`, cor: "blue" }}
+            />
+            <CartaoDeIndicador
+              compacto
+              icone={RiCalendarLine}
+              rotulo="Nesta semana"
+              rotuloCurto="Semana"
+              valor={tempo(i.semanaMinutos)}
+              chip={i.variacaoSemana === null ? null : { texto: rotuloDaVariacao(i.variacaoSemana), cor: i.variacaoSemana >= 0 ? "lime" : "rose" }}
+            />
           </div>
-        </div>
+
+          <div className="grid gap-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-body-medium text-text-primary lg:text-title-3-medium">
+                <span className="lg:hidden">Próximas etapas</span>
+                <span className="max-lg:hidden">Ciclos ativos</span>
+              </h2>
+              <span className="text-body-regular text-text-secondary lg:hidden">{ciclos.length === 1 ? "1 ciclo" : `${ciclos.length} ciclos`}</span>
+              <ButtonLink href="/ciclos/novo" variant="secondary" leadingIcon={RiAddLine} className="max-lg:hidden">
+                Novo ciclo
+              </ButtonLink>
+            </div>
+            {ciclos.map((c) => (
+              <CartaoDoCiclo key={c.id} ciclo={c} />
+            ))}
+          </div>
+        </>
       )}
     </section>
   );

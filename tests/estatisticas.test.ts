@@ -63,6 +63,8 @@ describe("estatísticas", () => {
     // 23 acertos em 40 questões = 57,5%, arredondado para 58%. Matérias sem questões ficam de fora.
     expect(acertoPorMateria.map((m) => [m.nome, m.questoes, m.acertos, m.percentual])).toEqual([["Português", 40, 23, 58]]);
     expect(totalQuestoes).toBe(40);
+    // A Matéria sem questões continua em "Horas por matéria".
+    expect((await obterEstatisticas(db, ana)).horasPorMateria.map((m) => m.nome)).toContain("Direito");
   });
 
   describe("horas por semana", () => {
@@ -160,5 +162,28 @@ describe("estatísticas", () => {
     expect(deBia.acertoPorMateria).toEqual([]);
     expect(deBia.horasPorSemana.every((s) => s.minutos === 0)).toBe(true);
     await expect(obterEstatisticas(db, bia, { cicloId: deAna.id })).rejects.toThrow(NaoEncontradoError);
+  });
+});
+
+describe("variação semanal", () => {
+  // Quinta-feira, 1/10/2026: a semana atual começa em 28/9 e a anterior em 21/9.
+  beforeEach(() => vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-10-01T15:00:00-03:00") }));
+
+  it("compara a semana atual com a anterior, arredondado", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { materias } = await cicloCom(ana, "TRF", { Português: 6000 });
+    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 700 });
+    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 625, dia: "2026-09-24" });
+
+    expect((await obterEstatisticas(db, ana)).variacaoSemanal).toBe(12);
+  });
+
+  it("semana atual zerada cai 100%; sem semana anterior não há variação", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { materias } = await cicloCom(ana, "TRF", { Português: 6000 });
+    expect((await obterEstatisticas(db, ana)).variacaoSemanal).toBeNull();
+    await registrarEstudo(db, ana, materias.Português, { ...estudo, duracaoMinutos: 120, dia: "2026-09-24" });
+
+    expect((await obterEstatisticas(db, ana)).variacaoSemanal).toBe(-100);
   });
 });

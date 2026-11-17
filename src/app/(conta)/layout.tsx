@@ -1,10 +1,13 @@
-import { Marca } from "@/app/marca";
+import { IconeDaMarca } from "@/app/marca";
 
 export default function LayoutConta({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto grid min-h-screen w-full max-w-[400px] content-center gap-6 px-4 py-10">
-      <Marca />
-      <div className="panel grid gap-4 p-[22px]">{children}</div>
+    <main className="grid min-h-screen content-center justify-items-center gap-4 bg-background-full px-4 py-10">
+      <div className="grid w-full max-w-[420px] gap-5 rounded-3xl border border-separator-border bg-background-primary-default p-8 shadow-xs">
+        <IconeDaMarca className="size-11" />
+        {children}
+      </div>
+      <p className="text-caption-1-regular text-text-tertiary">Instância self-hosted · seus dados ficam no seu servidor</p>
     </main>
   );
 }

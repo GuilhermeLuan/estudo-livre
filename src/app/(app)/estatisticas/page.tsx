@@ -1,42 +1,36 @@
-import Link from "next/link";
+import { RiCalendarLine, RiCheckboxCircleFill, RiClipboardLine, RiTimeLine } from "@remixicon/react";
 import { notFound } from "next/navigation";
+import { BotaoRegistrarEstudo } from "@/app/acoes-da-hoje";
+import { CartaoDeIndicador } from "@/app/cartao-de-indicador";
+import { FiltroDeCiclo } from "@/app/filtro-de-ciclo";
+import { diaMes, quantidade, rotuloDaVariacao, tempo } from "@/app/formato";
 import { NaoEncontradoError, obterEstatisticas } from "@/casos-de-uso";
-import { diaMes, quantidade, tempo } from "@/app/formato";
+import { Chip } from "@/components/base/badges/chip";
+import { ProgressTrack } from "@/components/base/progress/progress";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 
 export const dynamic = "force-dynamic";
 
-/** Abaixo disso o acerto fica em vermelho, como a faixa "Errei" padrão de 60%. */
-const ACERTO_BAIXO_PERCENTUAL = 60;
 /** As barras semanais nunca esticam uma semana curta até a altura toda do gráfico. */
 const ESCALA_MINIMA_MINUTOS = 60;
+const CORES_DAS_MATERIAS = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5", "bg-chart-6", "bg-chart-7", "bg-chart-8", "bg-chart-9"];
 
-/** Matéria com valor e barra proporcional (`fracao` de 0 a 1). */
-function LinhaDaMateria({ nome, ciclo, detalhe, valor, fracao, baixo }: { nome: string; ciclo?: string; detalhe?: string; valor: string; fracao: number; baixo?: boolean }) {
+/** As faixas de acerto padrão: abaixo de 60% errei, até 75% difícil, até 90% bom, a partir daí fácil. */
+const corDoAcerto = (percentual: number) => (percentual >= 90 ? "text-chart-2" : percentual >= 75 ? "text-accent-500" : percentual >= 60 ? "text-chart-8" : "text-chart-3");
+
+const horasDecimais = (minutos: number) => `${(minutos / 60).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}h`;
+
+function Cartao({ titulo, detalhe, className, children }: { titulo: string; detalhe?: string; className?: string; children: React.ReactNode }) {
   return (
-    <li className={baixo ? "low" : undefined}>
-      <span>
-        {nome}
-        {ciclo && <small className="block text-[.75rem] text-ink-2">{ciclo}</small>}
-        {detalhe && <small className="block text-[.75rem] text-ink-2">{detalhe}</small>}
-      </span>
-      <strong className="num">{valor}</strong>
-      <span className="bar" aria-hidden="true">
-        <i style={{ width: `${fracao * 100}%` }} />
-      </span>
-    </li>
+    <section aria-label={titulo} className={`grid content-start gap-3 rounded-3xl bg-background-secondary-default p-4 ${className ?? ""}`}>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-title-3-medium text-text-primary">{titulo}</h2>
+        {detalhe && <span className="text-caption-1-regular text-text-secondary">{detalhe}</span>}
+      </div>
+      <div className="rounded-2xl bg-background-primary-default p-4 shadow-xs">{children}</div>
+    </section>
   );
-}
-
-/** Meta de uma volta (soma das etapas) e, se houver, as horas extras da volta atual. */
-function detalheDasHoras(metaMinutos: number, extraMinutos: number) {
-  if (!metaMinutos) return undefined;
-  return `meta ${tempo(metaMinutos)} por volta${extraMinutos ? `, +${tempo(extraMinutos)} extra nesta volta` : ""}`;
-}
-
-function Vazio({ children }: { children: React.ReactNode }) {
-  return <p className="text-ink-2">{children}</p>;
 }
 
 export default async function Estatisticas({ searchParams }: { searchParams: Promise<{ ciclo?: string }> }) {
@@ -45,98 +39,115 @@ export default async function Estatisticas({ searchParams }: { searchParams: Pro
     if (erro instanceof NaoEncontradoError) notFound();
     throw erro;
   });
-  const { ciclos, horasPorMateria, acertoPorMateria, horasPorSemana } = dados;
+  const { ciclos, horasPorMateria, acertoPorMateria, horasPorSemana, variacaoSemanal } = dados;
   const escolhido = ciclos.find((c) => c.id === cicloId);
   // Com um ciclo só (ou filtrado), o nome do ciclo ao lado de cada matéria seria ruído.
-  const nomeDoCiclo = (ciclo: string) => (!escolhido && ciclos.length > 1 ? ciclo : undefined);
+  const nomeDoCiclo = (ciclo: string) => (!escolhido && ciclos.length > 1 ? ` · ${ciclo}` : "");
+  const totalMinutos = horasPorMateria.reduce((soma, m) => soma + m.minutos, 0);
+  const acertos = acertoPorMateria.reduce((soma, m) => soma + m.acertos, 0);
+  const semanaAtual = horasPorSemana[horasPorSemana.length - 1];
   const maiorSemana = Math.max(ESCALA_MINIMA_MINUTOS, ...horasPorSemana.map((s) => s.minutos));
-  const maiorMateria = Math.max(1, ...horasPorMateria.map((m) => m.minutos));
+  const comEstudo = horasPorMateria.filter((m) => m.minutos > 0);
 
   return (
-    <section aria-labelledby="h-stats">
-      <div className="mb-5">
-        <h1 id="h-stats">Estatísticas</h1>
-        <p className="text-[.875rem] text-ink-2">{escolhido ? escolhido.nome : "Todos os ciclos"}</p>
+    <section aria-labelledby="h-stats" className="grid gap-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 id="h-stats" className="text-title-1-medium text-text-primary max-lg:sr-only">
+            Estatísticas
+          </h1>
+          <p className="text-body-regular text-text-secondary">Horas e acerto dos seus registros de estudo</p>
+        </div>
+        {ciclos.length > 0 && <FiltroDeCiclo ciclos={ciclos} escolhido={escolhido?.id} />}
       </div>
 
-      {ciclos.length > 0 && (
-        <div className="chips mb-5" role="group" aria-label="Filtrar por ciclo">
-          <Link href="/estatisticas" className="chip" aria-current={escolhido ? undefined : "true"}>
-            Todos
-          </Link>
-          {ciclos.map((c) => (
-            <Link key={c.id} href={`/estatisticas?ciclo=${c.id}`} className="chip" aria-current={c.id === escolhido?.id ? "true" : undefined}>
-              {c.nome}
-            </Link>
-          ))}
+      {totalMinutos === 0 ? (
+        <div className="grid justify-items-start gap-3 rounded-3xl bg-background-secondary-default p-6">
+          <h2 className="text-title-3-medium text-text-primary">Nenhum estudo registrado</h2>
+          <p className="text-body-regular text-text-secondary">Registre um estudo para ver as horas por semana, o acerto e onde o tempo está indo.</p>
+          <BotaoRegistrarEstudo />
         </div>
-      )}
-
-      <div className="stats-grid">
-        <div className="panel">
-          <div className="panel-head">
-            <h2>Horas por semana</h2>
-            <span className="text-[.8125rem] text-ink-2">média {tempo(dados.mediaSemanalMinutos)}, últimas {horasPorSemana.length} semanas</span>
+      ) : (
+        <>
+          <div className="grid gap-4 lg:grid-cols-4">
+            <CartaoDeIndicador icone={RiTimeLine} rotulo="Horas estudadas" valor={tempo(totalMinutos)} />
+            <CartaoDeIndicador
+              icone={RiCalendarLine}
+              rotulo="Nesta semana"
+             
+              valor={tempo(semanaAtual.minutos)}
+              chip={variacaoSemanal === null ? null : { texto: rotuloDaVariacao(variacaoSemanal), cor: variacaoSemanal >= 0 ? "lime" : "rose" }}
+            />
+            <CartaoDeIndicador icone={RiCheckboxCircleFill} rotulo="Acerto geral" valor={dados.totalQuestoes ? `${Math.round((acertos * 100) / dados.totalQuestoes)}%` : "—"} />
+            <CartaoDeIndicador icone={RiClipboardLine} rotulo="Questões" valor={dados.totalQuestoes.toLocaleString("pt-BR")} />
           </div>
-          <div className="week-bars" style={{ gridTemplateColumns: `repeat(${horasPorSemana.length}, 1fr)` }}>
-            {horasPorSemana.map((s, i) => (
-              <div key={s.inicio} className={i === horasPorSemana.length - 1 ? "now" : undefined}>
-                <b className="num">{tempo(s.minutos)}</b>
-                <i style={{ height: `${(s.minutos / maiorSemana) * 100}%` }} />
-                <span>{i === horasPorSemana.length - 1 ? "esta" : diaMes(s.inicio)}</span>
+
+          <div className="grid items-start gap-4 lg:grid-cols-[3fr_2fr]">
+            <Cartao titulo="Horas por semana" detalhe={`Últimas ${horasPorSemana.length} semanas`}>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-title-1-medium text-text-primary">{tempo(semanaAtual.minutos)}</span>
+                {variacaoSemanal !== null && (
+                  <Chip variant="caption" color={variacaoSemanal >= 0 ? "lime" : "rose"}>
+                    {rotuloDaVariacao(variacaoSemanal)} vs. semana anterior
+                  </Chip>
+                )}
               </div>
-            ))}
-          </div>
-        </div>
+              <ol className="mt-4 grid h-52 items-end gap-2" style={{ gridTemplateColumns: `repeat(${horasPorSemana.length}, minmax(0, 1fr))` }}>
+                {horasPorSemana.map((s, i) => {
+                  const atual = i === horasPorSemana.length - 1;
+                  return (
+                    <li key={s.inicio} className="flex h-full flex-col items-center justify-end gap-1">
+                      <span className="text-caption-2-regular text-text-secondary">{horasDecimais(s.minutos)}</span>
+                      <span className={`w-full rounded-lg ${atual ? "bg-button-primary" : "bg-accent-200"}`} style={{ height: `${Math.max(2, (s.minutos / maiorSemana) * 78)}%` }} />
+                      <span className="text-caption-2-regular text-text-secondary">{diaMes(s.inicio)}</span>
+                    </li>
+                  );
+                })}
+              </ol>
+            </Cartao>
 
-        <div className="panel">
-          <div className="panel-head">
-            <h2>Acerto por matéria</h2>
-            <span className="text-[.8125rem] text-ink-2">
-              {quantidade(dados.totalQuestoes, "questão", "questões")}, todas as voltas
-            </span>
+            <Cartao titulo="Acerto por matéria" detalhe="Questões">
+              {acertoPorMateria.length === 0 ? (
+                <p className="text-body-regular text-text-secondary">Registre estudos com questões e acertos para ver o desempenho de cada matéria.</p>
+              ) : (
+                <ul className="grid gap-3">
+                  {acertoPorMateria.map((m) => (
+                    <li key={m.id} className="grid gap-1">
+                      <div className="flex items-baseline justify-between gap-3 text-body-regular">
+                        <span className="min-w-0 truncate text-body-medium text-text-primary">
+                          {m.nome}
+                          {nomeDoCiclo(m.ciclo)}
+                        </span>
+                        <span className="shrink-0 text-text-secondary">
+                          {quantidade(m.questoes, "questão", "questões")} <b className="ms-1 text-body-semibold text-text-primary">{m.percentual}%</b>
+                        </span>
+                      </div>
+                      <ProgressTrack percentage={m.percentual} size="sm" className={corDoAcerto(m.percentual)} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Cartao>
           </div>
-          {acertoPorMateria.length === 0 ? (
-            <Vazio>Registre estudos com questões e acertos para ver o desempenho de cada matéria.</Vazio>
-          ) : (
-            <ul className="acc-list">
-              {acertoPorMateria.map((m) => (
-                <LinhaDaMateria
-                  key={m.id}
-                  nome={m.nome}
-                  ciclo={nomeDoCiclo(m.ciclo)}
-                  valor={`${m.percentual}%`}
-                  fracao={m.percentual / 100}
-                  baixo={m.percentual < ACERTO_BAIXO_PERCENTUAL}
-                />
+
+          <Cartao titulo="Horas por matéria" detalhe={`${tempo(totalMinutos)} no total`}>
+            <div className="flex h-3 gap-1 overflow-hidden rounded-full" role="img" aria-label="Divisão das horas por matéria">
+              {comEstudo.map((m, i) => (
+                <span key={m.id} className={`${CORES_DAS_MATERIAS[i % CORES_DAS_MATERIAS.length]} rounded-full`} style={{ flexGrow: m.minutos, flexBasis: 0 }} />
+              ))}
+            </div>
+            <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+              {horasPorMateria.map((m, i) => (
+                <li key={m.id} className="flex items-center gap-2 text-body-regular text-text-secondary">
+                  <span className={`size-2 rounded-full ${CORES_DAS_MATERIAS[comEstudo.findIndex((c) => c.id === m.id) % CORES_DAS_MATERIAS.length] ?? "bg-background-tertiary-default"}`} aria-hidden />
+                  {m.nome}
+                  {nomeDoCiclo(m.ciclo)} <b className="text-body-medium text-text-primary">{tempo(m.minutos)}</b>
+                </li>
               ))}
             </ul>
-          )}
-        </div>
-
-        <div className="panel stats-largo">
-          <div className="panel-head">
-            <h2>Horas por matéria</h2>
-            <span className="text-[.8125rem] text-ink-2">todas as voltas</span>
-          </div>
-          {horasPorMateria.length === 0 ? (
-            <Vazio>Adicione matérias a um ciclo e registre seus estudos para ver onde o tempo está indo.</Vazio>
-          ) : (
-            <ul className="acc-list">
-              {horasPorMateria.map((m) => (
-                <LinhaDaMateria
-                  key={m.id}
-                  nome={m.nome}
-                  ciclo={nomeDoCiclo(m.ciclo)}
-                  detalhe={detalheDasHoras(m.metaMinutos, m.extraMinutos)}
-                  valor={tempo(m.minutos)}
-                  fracao={m.minutos / maiorMateria}
-                />
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+          </Cartao>
+        </>
+      )}
     </section>
   );
 }

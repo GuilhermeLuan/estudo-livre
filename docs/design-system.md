@@ -1,112 +1,73 @@
 # Design System
 
-Fonte da verdade visual do Estudo Livre. Derivado do protótipo em `prototype/index.html`: quando este documento e o protótipo divergirem, o protótipo vence e este documento deve ser corrigido.
+Referência visual: o arquivo Figma **Estudo Livre — BoardUI** (`ig7Pq2uPxPWjeWuCKmTuBW`). Quando o Figma e este documento divergirem, o Figma vence e o documento é corrigido no mesmo PR.
 
-Vocabulário de domínio segue o `CONTEXT.md` (Ciclo, Matéria, Volta, Registro de estudo, Revisão…).
+O app usa o **BoardUI** como código-fonte do repositório: tokens e tipografia em `src/styles/`, componentes em `src/components/`, mesclagem de classes com `cx()` de `src/utils/cx.ts`. As regras de uso (tokens semânticos, tipografia composta, ícones Remix) estão no bloco BoardUI do `AGENTS.md`.
 
 ## Princípios
 
-1. **O ciclo é o centro.** O disco do ciclo (fatias proporcionais à carga horária, preenchidas pelo progresso da volta) é o único elemento visual "forte". Todo o resto é discreto.
-2. **Escuro por padrão.** O tema escuro é o padrão; o claro é alternativa via `data-theme="light"` no `<html>`.
-3. **Densidade de painel.** Texto pequeno (15px base, 13–14px em listas), cards com borda fina, pouca sombra.
-4. **Cor tem significado.** Azul = ação/progresso/atual; verde = concluído; vermelho = atrasado/erro/acerto baixo. Nunca usar cor só para decorar.
-5. **Escrita direta, pt-BR, em sentence case.** Botões dizem o que acontece ("Salvar registro", "Iniciar cronômetro"). Mensagens de vazio dizem o que fazer.
+- Interface calma e densa de informação: cartões arredondados sobre um fundo neutro, uma única cor de ação (azul).
+- Só tokens semânticos. Nada de hex, de paleta crua (`text-gray-500`) nem de `dark:` com cor literal: o escuro vem da troca dos tokens pela classe `dark`.
+- Textos em pt-BR, com o vocabulário do `CONTEXT.md`. Sentence case.
+- Toda ação nomeia o que faz ("Salvar registro", não "Enviar"), e o aviso depois dela usa o mesmo verbo.
+
+## Tema
+
+Dois temas, escolhidos pelo sistema operacional na primeira visita e trocáveis à mão (Claro, Escuro, Sistema). A classe `dark` no `<html>` é decidida por um script no `<head>`, antes da primeira pintura. A escolha manual fica no `localStorage` do aparelho, chave `tema`, com `"claro"` ou `"escuro"`; sem a chave, o app segue `prefers-color-scheme`, inclusive quando o sistema muda com a página aberta. O `theme-color` do PWA acompanha o fundo do tema ativo.
 
 ## Tokens
 
-Definidos como variáveis CSS em `:root`. Em código (Tailwind), mapeie estes nomes para o tema; não use cores literais nos componentes.
+O modo claro é o **Claro suave** do Figma (o "Light" original do BoardUI não é usado).
 
-### Cores
+| Token | Claro suave | Escuro |
+| --- | --- | --- |
+| `background-full` (fundo da página) | `#ebebe8` | `#121212` |
+| `background-secondary-default` (cartões, Sidebar) | `#e2e2df` | `neutral-900` |
+| `background-primary-default` (cartão interno, botão secundário) | `#f5f5f3` | `neutral-800` |
+| `background-tertiary-default` (trilho do Segmented) | `#d9d9d6` | `neutral-800` |
+| `text-primary` | `#1c1c1b` | `neutral-50` |
+| `text-secondary` | `neutral-500` | do tema escuro |
+| `border-button-default`, `separator-border`, `border-table` | `#dcdcd8` | do tema escuro |
+| ação (`bg-button-primary`, `accent-500`) | azul BoardUI | azul BoardUI |
+| gráficos | `chart-1` a `chart-9` | idem |
 
-| Token | Escuro (padrão) | Claro | Uso |
-|---|---|---|---|
-| `--paper` | `#0B0F19` | `#F4F6FA` | Fundo da página, fundo de inputs |
-| `--surface` | `#121826` | `#FFFFFF` | Cards, painéis, diálogos |
-| `--surface-2` | `#182033` | `#F0F3F8` | Superfície secundária: botões neutros, métricas, painel do disco |
-| `--ink` | `#F1F4F9` | `#0F172A` | Texto principal |
-| `--ink-2` | `#A7B0C0` | `#4B5568` | Texto secundário, rótulos |
-| `--line` | `#222B3D` | `#E2E7EF` | Bordas, divisores, trilho de barras e do disco |
-| `--accent` | `#2F6BFF` | `#2457E6` | Botão primário, progresso, item ativo |
-| `--accent-ink` | `#6E9BFF` | `#2457E6` | Texto/links em azul sobre fundo escuro |
-| `--accent-soft` | `#172447` | `#E6EDFF` | Fundo de pílula azul, aba ativa, foco de input |
-| `--green` / `--green-soft` | `#34D27B` / `#12301F` | `#138A4B` / `#E2F5EA` | Matéria concluída na volta |
-| `--red` / `--red-soft` | `#FF6B6B` / `#3A1A1F` | `#C83A3A` / `#FBE7E7` | Revisão atrasada, erro, acerto baixo, nota "Errei" |
-| `--on-accent` | `#FFFFFF` | `#FFFFFF` | Texto e ícones sobre `--accent` |
-| `--focus` | `#6E9BFF` | `#2457E6` | Anel de foco |
-| `--scrim` | `rgba(3,6,12,.7)` | `rgba(15,23,42,.45)` | Fundo atrás do diálogo |
-| `--shadow-float` | `0 12px 30px -10px rgba(0,0,0,.6)` | `0 12px 30px -10px rgba(15,23,42,.25)` | Sombra de elementos flutuantes (toast) |
+Tokens de estado (`status-*` nos Chips, `state-success-*`, `text-error-primary`) vêm do BoardUI. Os valores completos estão em `src/styles/theme.css`; o bloco `:root` guarda o Claro suave e `.dark` o Escuro.
 
-Texto sobre `--accent` é branco. Texto sobre `--red` sólido usa `--paper`. Contraste mínimo: 4.5:1 para texto, mire 7:1 no texto principal.
+## Tipografia
 
-### Tipografia
+Inter (`next/font/google`, variável `--font-inter`). Só as classes compostas de `src/styles/typography.css`, que fixam tamanho, peso, entrelinha e espaçamento juntos: `text-title-1-medium` (título da tela), `text-title-2-medium`, `text-title-3-medium` (título de cartão), `text-headline-medium`, `text-body-regular`/`-medium`/`-semibold` (texto corrente), `text-caption-1-regular` (apoio) e `text-caption-2-regular` (rótulos de gráfico). Números que mudam usam `tabular-nums`.
 
-- **Geist** (400–700) para toda a interface; **Geist Mono** apenas para o tempo do cronômetro.
-- Escala: `h1` 22px/600 · `h2` 16px/600 · corpo 15px · listas e formulários 14px · meta 13px · pílulas 11–12px/600.
-- `letter-spacing: -0.015em` em títulos. Números de tempo e contagem com `font-variant-numeric: tabular-nums`.
-- Sem caixa alta em rótulos, sem itálico de destaque.
+## Forma e espaço
 
-### Forma e espaço
-
-- Raios: `--r-sm` 6px (pílulas, itens de lista) · `--r-control` 8px (botões, inputs, chips) · `--r-md` 10px (blocos internos) · `--r-lg` 14px (cards, diálogo).
-- Espaçamento base 4px; gaps comuns 6, 8, 12, 16, 24. Padding de card 18px (14px no mobile).
-- Bordas 1px `--line`. Sombra só em elementos flutuantes (cronômetro, toast, botão primário com brilho azul).
+Cartões e painéis em `rounded-3xl`; campos e linhas de menu em `rounded-xl`; chips em `rounded-md`; avatar e barras em `rounded-full`. Espaçamento na escala do Tailwind (`gap-3`, `p-4`).
 
 ## Layout
 
-- **Desktop:** barra superior fixa (marca à esquerda, navegação: Hoje, Ciclos, Revisões, Estatísticas; tema e avatar à direita). Conteúdo centralizado, `max-width: 1220px`.
-- **Tela Hoje:** grade `1fr 340px`. Coluna principal: card do ciclo atual + "Outros ciclos". Coluna lateral: sequência de dias e "Revisões de hoje".
-- **≤ 960px:** a coluna lateral desce abaixo da principal.
-- **≤ 760px (celular):** navegação vira barra inferior com ícones; o disco vai para o topo do card do ciclo; cronômetro flutua acima da barra inferior. Nunca pode haver rolagem horizontal (testar em 298–375px).
+Um único ponto de quebra: **1024px**.
 
-## Componentes
+- **A partir de 1024px**: Sidebar flutuante de 260px à esquerda e conteúdo ao lado, com no máximo 1160px.
+- **Abaixo de 1024px**: Sidebar oculta; cabeçalho com a marca, o título e o avatar (menu com Ciclos, Novo ciclo, Usuários, tema e Sair); barra de abas inferior com Hoje, o botão central "+" e Estatísticas. Os cartões das telas empilham em uma coluna.
 
-### Disco do ciclo
-SVG, um arco por Etapa (uma Matéria pode ter várias) com comprimento proporcional à carga horária, separados por pequeno espaço. Trilho em `--line`, preenchimento em `--accent` proporcional ao Progresso da etapa (máx. 100%). A Próxima etapa recebe um arco externo fino em `--ink`. Centro: "Volta N", tempo que falta (grande, 600) e "para fechar". Passar o mouse/focar uma matéria na lista esmaece as fatias das outras matérias (as Etapas da matéria em foco ficam em evidência). Precisa de `aria-label` descrevendo o progresso de cada etapa. Os textos do centro são desenhados em unidades do `viewBox` 260×260 (rótulos 15, tempo 34/600) e escalam com o disco, por isso ficam fora da escala tipográfica em px.
+## Componentes do BoardUI
 
-### Card do ciclo (hero)
-Padding de 22px (como o card de login) e nome do ciclo em 22px/600, como o `h1`. Duas colunas: à esquerda pílulas (Volta, nº de etapas, etapas concluídas), nome do ciclo, "Próxima etapa", meta de tempo/tópicos, ações (primário "Iniciar cronômetro", secundário "Registrar estudo") e a lista de matérias com barras; à direita o disco sobre `--surface-2` com um leve brilho azul radial no canto.
+Instalados de `list_components` do MCP do BoardUI: Button, IconButton, LinkButton, Input, Textarea, Select, SegmentedControl, Chip, Counter, Avatar, Modal e AlertDialog, Progress, Table, Dropdown, CloseButton. Antes de escrever um elemento à mão, procure-o em `src/components/`; se faltar, instale-o em vez de imitá-lo.
 
-### Lista de matérias / barras
-Uma linha por Matéria (não por Etapa), com nome, `feito / carga` (a carga é a soma das Etapas) e barra de 5px. As horas além da carga aparecem ao lado como "+1h05 extra", em `--accent-ink`, sem estender a barra. Matéria concluída: barra verde, nome em `--ink-2`. Matéria da Próxima etapa: pílula "próxima" azul ao lado do nome.
+- Chip: `lime` = positivo ou concluído, `rose` = queda, `blue` = informação, `purple` = horas extras, `yellow` = pausado, `neutral` = sem estado.
+- Progress: trilho `ProgressTrack`; azul no andamento, `text-chart-2` (verde) quando a etapa fecha 100%.
+- Modal: no computador centralizado; abaixo de 1024px abre como folha colada ao rodapé (`sheetOnMobile`).
 
-### Card de ciclo compacto
-Iniciais em quadrado `--accent-soft` (36px), nome, "Volta N. Próxima: X", barra com porcentagem. Clicar torna o ciclo o principal.
+## Componentes do produto
 
-### Botões
-- **Primário:** fundo `--accent`, texto branco, brilho azul. Uma ação primária por área.
-- **Secundário:** `--surface-2` com borda `--line`.
-- **Discreto (link):** sem borda, texto `--accent-ink` ("Ver todas").
-- Altura 38px (32px dentro de listas). Nada de setas no texto.
-
-### Pílulas e chips
-- **Pílula** (informação): 11–12px/600, raio 6px; variantes neutra, azul, verde, vermelha.
-- **Chip** (seleção, `aria-pressed`): borda `--line`; selecionado com borda e texto azul sobre `--accent-soft`.
-
-### Lista de revisões
-Tópico em 600, pílula de prazo ("vence hoje" azul, "atrasada há N dias" vermelha), linha meta com matéria, ciclo e último desempenho, botão "Revisar" à direita.
-
-### Formulário de registro (diálogo)
-Rótulos 13px `--ink-2`, inputs 40px em `--paper`, foco com borda azul + halo `--accent-soft`. Bloco "Nota da revisão" em `--surface-2` com quatro botões (Errei, Difícil, Bom, Fácil); selecionado em azul, "Errei" selecionado em vermelho. A dica abaixo explica a sugestão ("80% de acerto sugere Bom, pela faixa do ciclo"), o caso de menos de 5 questões e o caso sem questões.
-
-### Cronômetro
-Card flutuante no canto inferior direito (desktop) ou acima da navegação (mobile), borda azul e halo. Tempo em Geist Mono azul; matéria e ciclo ao lado; ações "Pausar/Retomar", "Parar e registrar" (primário), "Descartar" (discreto). Pausado: tempo com opacidade reduzida. O estado vive no servidor (sobrevive a fechar a aba e vale em qualquer aparelho); o card aparece em todas as telas do app. "Parar e registrar" pausa o cronômetro e abre o formulário "Registrar sessão cronometrada" com a duração preenchida e a matéria travada; o cronômetro só some quando o registro é salvo, e cancelar o formulário o deixa pausado (diverge do protótipo, que o apaga ao parar, para não perder o tempo). "Descartar" não cria registro. Com o cronômetro ativo o app relê o estado do servidor a cada 15s e ao voltar para a aba, para refletir o que foi feito em outro aparelho.
-
-### Telas de conta (Entrar, Criar conta)
-Sem barra de navegação. Marca no topo e um card (`--surface`, padding 22px) centralizado, largura máx. 400px, com título `h1`, campos no padrão do formulário e um único botão primário de largura total. Erro em `--red` 13px acima do botão (`role="alert"`). Link discreto para a outra tela no rodapé; "Criar conta" some quando o cadastro está fechado.
-
-### Estado vazio
-Painel com `h2` dizendo o que falta e uma linha em `--ink-2` dizendo o que fazer ("Nenhum ciclo ainda" / "Crie um ciclo…").
-
-### Toast
-Topo central, `--surface-2` com borda; confirma a ação com o mesmo verbo do botão, é global (renderizado no `body`, nunca dentro de um card com `overflow: hidden`) e some sozinho em 5s ("Estudo registrado.", "Cronômetro descartado. Nada foi registrado.").
-
-### Métricas e estatísticas
-Blocos de métrica em `--surface-2` (rótulo 13px, valor 20px/600). Barras semanais em `--accent-soft` com a semana atual em `--accent`. Acerto por matéria com barras azuis; abaixo de 60% em vermelho.
-
-**Tela Estatísticas** (`/estatisticas`): título, subtítulo com o ciclo filtrado ("Todos os ciclos" por padrão) e, abaixo, chips de filtro por ciclo ("Todos" + um por ciclo; navegação por link, o selecionado leva `aria-current="true"` e o estilo do chip pressionado). Grade de duas colunas (uma em ≤ 760px) com "Horas por semana" (8 semanas, de segunda a domingo em Brasília; rótulo `d/m`, a atual "esta"; média no cabeçalho) e "Acerto por matéria" (só registros com questões). Um terceiro painel de largura total, "Horas por matéria" (todas as voltas), usa a mesma lista de barras do acerto, com a barra proporcional à matéria mais estudada. Sob o nome vai "meta 4h55 por volta" (soma das Etapas) e, havendo horas extras na volta atual, ", +1h05 extra nesta volta". Com mais de um ciclo e sem filtro, o nome do ciclo aparece sob a matéria. A altura das barras semanais é proporcional à maior semana, com escala mínima de 1h (o protótipo usa 20h fixas). Painéis sem dados mostram uma linha em `--ink-2` dizendo o que registrar.
+- **Sidebar** (`src/app/navegacao.tsx`): marca, Hoje, Estatísticas, a seção Ciclos (um item por Ciclo e um "+" para `/ciclos/novo`), o cartão do Cronômetro, Usuários (só Admin), Sair e o cartão do usuário (abre o seletor de tema). O item da rota atual usa o gradiente do botão primário e `aria-current="page"`.
+- **Cronômetro** (`src/app/cronometro.tsx`): o provedor guarda o estado e o modal de registro; `CartaoDoCronometro` desenha o cartão da Sidebar, o cartão grande da Hoje no celular e a faixa compacta acima da barra de abas.
+- **StatCard** (`src/app/cartao-de-indicador.tsx`): ícone, rótulo, valor e Chip de variação. Na Hoje, abaixo de 1024px vira o cartão pequeno só com rótulo curto e valor.
+- **EtapaRow** (`src/app/lista-etapas.tsx`): alça de arrastar, posição, Matéria, carga, barra com percentual e um Chip de Situação (Concluída, Próxima etapa com a linha realçada, Em andamento, Não iniciada ou "+<tempo> extra"), mais o menu ⋮ com Editar e Remover etapa.
+- **Cartão do Ciclo** (`src/app/cartao-do-ciclo.tsx`): nome, Volta, progresso da Volta e o bloco da Próxima etapa com "Registrar" e "Iniciar".
+- **Registrar estudo** (`src/app/formulario-de-registro.tsx`): Matéria, Conteúdo, Data, Duração (Horas e Minutos), Tipo de estudo, Questões, Acertos, o campo calculado Acerto e Anotação; o erro do servidor aparece sob o campo a que se refere.
+- **Telas de conta**: cartão central de 420px com a marca, título, descrição, campos, botão de largura total e o link para a tela irmã.
+- **Estados vazios**: cartão com título, uma frase que diz o que fazer e o botão da ação ("Criar ciclo", "Adicionar etapa", "Registrar estudo"). Sem gráficos zerados.
+- **Aviso** (`src/app/aviso.tsx`): passageiro, no topo, some em 5s.
 
 ## Acessibilidade e movimento
 
-- Foco visível sempre (`--focus`, 2px). Alvos de toque ≥ 38px.
-- Estados de seleção via `aria-pressed`/`aria-current`, não só por cor.
-- Movimento só em resposta a ação (abrir diálogo, barra/disco atualizando). Respeitar `prefers-reduced-motion`.
+Foco visível em tudo que se opera (`focus-visible:ring-2 ring-border-focus-ring`), alvos de toque de pelo menos 36px, `aria-current="page"` na navegação, rótulos acessíveis nos botões só com ícone. As animações do BoardUI respeitam `prefers-reduced-motion`.

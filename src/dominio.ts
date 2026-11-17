@@ -38,3 +38,15 @@ export function preencherEtapas<E extends { materiaId: string; cargaMinutos: num
   });
   return { etapas: preenchidas, extraPorMateria: restante };
 }
+
+/** Variação percentual arredondada (meio ponto se afasta do zero) contra o período anterior; sem período anterior (0) não há variação. */
+export function variacaoPercentual(atual: number, anterior: number): number | null {
+  if (anterior <= 0) return null;
+  const percentual = ((atual - anterior) / anterior) * 100;
+  return Math.sign(percentual) * Math.round(Math.abs(percentual)); // meio ponto se afasta do zero nos dois sinais
+}
+
+/** Acerto arredondado de 0 a 100; sem questões não há acerto. */
+export function percentualDeAcerto(acertos: number | null, questoes: number | null): number | null {
+  return questoes ? Math.round(((acertos ?? 0) * 100) / questoes) : null;
+}

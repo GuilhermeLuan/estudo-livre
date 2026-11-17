@@ -1,12 +1,32 @@
-import { and, asc, eq, max, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, max, sql } from "drizzle-orm";
 import type { Db, Tx } from "@/db";
 import { ciclo, etapa, materia, registroDeEstudo, volta } from "@/db/schema";
+import { concluida } from "@/dominio";
+import { progressoDosCiclos, type Executor, type MateriaComProgresso } from "./progresso";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
 
 export type EtapaDoCiclo = { id: string; materiaId: string; nome: string; cargaMinutos: number; posicao: number };
 
-export type CicloDetalhe = { id: string; nome: string; etapas: EtapaDoCiclo[] };
+/** `feitoMinutos` é o progresso da Etapa na Volta atual. */
+export type EtapaDetalhada = EtapaDoCiclo & { feitoMinutos: number };
+
+export type CicloDetalhe = {
+  id: string;
+  nome: string;
+  etapas: EtapaDetalhada[];
+  materias: MateriaComProgresso[];
+  /** A Volta aberta; `inicio` é nulo na Volta 1. */
+  volta: { numero: number; inicio: Date | null };
+  cargaMinutos: number;
+  feitoMinutos: number;
+  /** Horas extras da Volta atual, somadas de todas as Matérias. */
+  extraMinutos: number;
+  /** Fração da carga cumprida na Volta atual, de 0 a 100. */
+  percentual: number;
+  /** A Próxima etapa: a primeira, na ordem do ciclo, que ainda não chegou a 100%. */
+  proximaEtapaId: string | null;
+};
 
 const CARGA_MAXIMA_MINUTOS = 10_000 * 60;
 
@@ -22,7 +42,7 @@ function cargaValida(minutos: number) {
   return minutos;
 }
 
-async function exigirCiclo(db: Db, usuario: Usuario, cicloId: string) {
+async function exigirCiclo(db: Executor, usuario: Usuario, cicloId: string) {
   const [linha] = await db
     .select()
     .from(ciclo)
@@ -86,14 +106,31 @@ export async function renomearCiclo(db: Db, usuario: Usuario, cicloId: string, d
 }
 
 export async function obterCiclo(db: Db, usuario: Usuario, cicloId: string): Promise<CicloDetalhe> {
-  const { id, nome } = await exigirCiclo(db, usuario, cicloId);
-  const etapas = await db
-    .select({ id: etapa.id, materiaId: etapa.materiaId, nome: materia.nome, cargaMinutos: etapa.cargaMinutos, posicao: etapa.posicao })
-    .from(etapa)
-    .innerJoin(materia, eq(materia.id, etapa.materiaId))
-    .where(eq(etapa.cicloId, cicloId))
-    .orderBy(asc(etapa.posicao));
-  return { id, nome, etapas };
+  // Uma leitura consistente: as Etapas, o progresso e a Volta vêm do mesmo instante.
+  return db.transaction(
+    async (tx) => {
+      const { id, nome } = await exigirCiclo(tx, usuario, cicloId);
+      const posicoes = await tx.select({ id: etapa.id, posicao: etapa.posicao }).from(etapa).where(eq(etapa.cicloId, cicloId));
+      const posicaoDe = new Map(posicoes.map((e) => [e.id, e.posicao]));
+      const progresso = (await progressoDosCiclos(tx, eq(ciclo.id, cicloId))).get(cicloId) ?? { etapas: [], materias: [] };
+      const [aberta] = await tx.select({ numero: volta.numero, inicio: volta.inicio }).from(volta).where(and(eq(volta.cicloId, cicloId), isNull(volta.fim)));
+      const carga = progresso.etapas.reduce((soma, e) => soma + e.cargaMinutos, 0);
+      const feito = progresso.etapas.reduce((soma, e) => soma + e.feitoMinutos, 0);
+      return {
+        id,
+        nome,
+        etapas: progresso.etapas.map((e) => ({ ...e, posicao: posicaoDe.get(e.id)! })),
+        materias: progresso.materias,
+        volta: aberta,
+        cargaMinutos: carga,
+        feitoMinutos: feito,
+        extraMinutos: progresso.materias.reduce((soma, m) => soma + m.extraMinutos, 0),
+        percentual: carga ? Math.round((feito / carga) * 100) : 0,
+        proximaEtapaId: progresso.etapas.find((e) => !concluida(e))?.id ?? null,
+      };
+    },
+    { isolationLevel: "repeatable read", accessMode: "read only" },
+  );
 }
 
 /** Acrescenta uma Etapa ao fim do Ciclo; a Matéria é reaproveitada se o Ciclo já tem uma com esse nome. */
