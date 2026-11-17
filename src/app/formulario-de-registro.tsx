@@ -1,7 +1,7 @@
 "use client";
 
 import { RiCheckLine, RiTimerLine } from "@remixicon/react";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { SugestaoDeRegistro } from "@/casos-de-uso";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
@@ -49,7 +49,15 @@ function Formulario({
   const [acertos, setAcertos] = useState("");
   const cronometrado = !!sessaoCronometrada;
   const duracaoInicial = sessaoCronometrada?.duracaoMinutos ?? 60;
-  const [estado, enviar, enviando] = useActionState<EstadoRegistro, FormData>(registrar, {});
+  const [estado, setEstado] = useState<EstadoRegistro>({});
+  const [enviando, iniciar] = useTransition();
+
+  // Sem `<form action>`: o React 19 limparia os campos depois de um envio recusado.
+  function enviar(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const dados = new FormData(e.currentTarget);
+    iniciar(async () => setEstado(await registrar(estado, dados)));
+  }
 
   useEffect(() => {
     if (estado.aviso) aoSalvar(estado.aviso);
@@ -61,8 +69,9 @@ function Formulario({
   const campo = campoDoErro(estado.erro);
   const erroDe = (nome: string) => (campo === nome ? { isInvalid: true, errorMessage: estado.erro } : {});
 
+  // Editar qualquer campo limpa o erro do servidor: um campo inválido não deixaria o navegador reenviar.
   return (
-    <form action={enviar} className="flex min-h-0 flex-col gap-4">
+    <form onSubmit={enviar} onChange={() => estado.erro && setEstado({ enviado: estado.enviado })} className="flex min-h-0 flex-col gap-4">
       <ModalHeader
         title="Registrar estudo"
         description={
@@ -75,7 +84,7 @@ function Formulario({
         }
         closeLabel="Fechar"
       />
-      <ModalBody className="grid gap-4 py-2">
+      <ModalBody className="grid grid-cols-[minmax(0,1fr)] gap-4 py-2">
         {cronometrado && (
           <>
             <input type="hidden" name="materiaId" value={materiaId} />
@@ -100,7 +109,7 @@ function Formulario({
 
         <Input label="Conteúdo" name="conteudoLivre" maxLength={conteudoLivreMaximo} placeholder="Opcional. Ex.: crase antes de horas" {...erroDe("conteudo")} />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Input label="Data" name="data" type="date" defaultValue={hojeEmBrasilia()} isRequired {...erroDe("data")} />
           <div className="grid grid-cols-2 gap-2">
             <Input label="Horas" name="horas" type="number" inputMode="numeric" defaultValue={String(Math.floor(duracaoInicial / 60))} {...erroDe("duracao")} />
@@ -115,7 +124,7 @@ function Formulario({
           <span className="text-body-medium text-text-primary" id="rotulo-tipo">
             Tipo de estudo
           </span>
-          <SegmentedControl aria-labelledby="rotulo-tipo" selectedKeys={[tipo]} onSelectionChange={(chaves) => setTipo([...chaves][0] as TipoDeEstudo)} className="w-full flex-wrap">
+          <SegmentedControl aria-labelledby="rotulo-tipo" selectedKeys={[tipo]} onSelectionChange={(chaves) => setTipo([...chaves][0] as TipoDeEstudo)} className="max-w-full overflow-x-auto">
             {TIPOS_DE_ESTUDO.map((t) => (
               <SegmentedControlItem key={t} id={t}>
                 {t}
@@ -125,10 +134,10 @@ function Formulario({
           <input type="hidden" name="tipo" value={tipo} />
         </div>
 
-        <div className="grid grid-cols-[1fr_1fr_auto] items-end gap-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-start gap-3">
           <Input label="Questões" name="questoes" type="number" inputMode="numeric" placeholder="Opcional" value={questoes} onChange={setQuestoes} {...erroDe("questoes")} />
           <Input label="Acertos" name="acertos" type="number" inputMode="numeric" placeholder="Opcional" value={acertos} onChange={setAcertos} {...erroDe("acertos")} />
-          <div className="grid h-14 min-w-24 content-center rounded-xl bg-background-secondary-default px-3" aria-live="polite">
+          <div className="mt-6 grid h-14 min-w-20 content-center rounded-xl bg-background-secondary-default px-3" aria-live="polite">
             <span className="text-caption-1-regular text-text-secondary">Acerto</span>
             <span className="text-headline-medium text-text-primary">{acerto === null ? "—" : `${acerto}%`}</span>
           </div>

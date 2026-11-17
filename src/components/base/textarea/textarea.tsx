@@ -74,8 +74,8 @@ const textareaStyles = sortCx({
   field: [
     "relative flex w-full flex-col",
     "rounded-2lg",
-    "bg-background-tertiary-default text-foreground-icon-tertiary",
-    "ring-2 ring-inset ring-transparent",
+    "bg-background-primary-default text-foreground-icon-tertiary",
+    "ring-1 ring-inset ring-border-button-default",
     "transition-[background-color,box-shadow,color] duration-[var(--input-transition-ms)] ease",
   ].join(" "),
 

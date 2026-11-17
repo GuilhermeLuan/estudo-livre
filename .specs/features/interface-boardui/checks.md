@@ -230,6 +230,7 @@ Proof: `grep -q "ig7Pq2uPxPWjeWuCKmTuBW" AGENTS.md && grep -q "Figma vence" AGEN
 
 - **Settled mid-build:** "Aprovado!" (the plan, 2026-11-17); the three unconfirmed assumptions stand as written.
 - **Dispatched:** none yet
-- **Boundary:** backend C17-C19, C26, C27, C32, C44 closed at `5915f5d`; UI built and committed at `fef2f18` (typecheck and build green). Nothing run in a browser.
-- **Abandoned:** running the app and the tests against a database: the Docker daemon (OrbStack) stopped answering, so `vitest` (its global setup starts Postgres) and the dev server could not be started; a pglite stand-in was refused by auto mode.
-- **Walked:** nothing yet. The pictures `captures/*.running.png` and the walk checks are open.
+- **Boundary:** all code and docs committed; tests 88/88 green; build green.
+- **Abandoned:** a first Docker outage blocked tests and the app for one turn; it passed on its own. Found and fixed in the walk: the Registrar estudo modal overflowed at 390px, `<form action>` cleared the fields after a refused save, and a server error left the field invalid so the browser would not resubmit.
+- **Walked:** production build (`next start`) on a throwaway Postgres, seeded with 2 Ciclos, 9 Etapas and 7 Registros, logged in as Marina (Admin), Chrome for Testing at 1440x960 and 390x844, pt-BR, America/Sao_Paulo. Pictures saved: `entrar`, `hoje-claro-suave`, `hoje-escuro`, `pwa-hoje`, `ciclo`, `estatisticas`, `registrar-estudo` (`*.running.png`). Visited: Iniciar (C21), Parar opening the modal with the note (C37), Registrar with Acertos greater than Questões showing the message under the field, then fixing and saving, Hoje totals updated and the toast (C39 C40), the Acerto field (C38: 150% then 80%), Escuro from the user card applied at once (C4), Adicionar etapa modal (C29), the avatar menu with Ciclos, Novo ciclo, Usuários, tema and Sair (C12), the "+" sheet at 390px (C11 C41), the tab bar and big Cronômetro card (C10).
+- **Not walked:** C3 C5 C6 (OS change, theme-color), C8, C13, C14, C22, C23, C24, C28 (drag), C30, C31, C33, C35, C43, C45, C47, C49, C50, C51.

@@ -135,8 +135,8 @@ const inputStyles = sortCx({
   field: [
     "relative flex w-full items-center",
     "rounded-2lg",
-    "bg-background-tertiary-default text-foreground-icon-tertiary",
-    "ring-2 ring-inset ring-transparent",
+    "bg-background-primary-default text-foreground-icon-tertiary",
+    "ring-1 ring-inset ring-border-button-default",
     "transition-[background-color,box-shadow,color] duration-[var(--input-transition-ms)] ease",
   ].join(" "),
 
@@ -303,11 +303,11 @@ export function Input({
         (!label && typeof placeholder === "string" ? placeholder : undefined)
       }
     >
-      {({ isRequired, isInvalid }) => (
+      {({ isInvalid }) => (
         <>
           {label && (
             <Label
-              isRequired={isRequired}
+              isRequired={false /* o Figma não desenha o asterisco; o campo segue obrigatório */}
               isInvalid={isInvalid}
               tooltip={tooltip}
             >
