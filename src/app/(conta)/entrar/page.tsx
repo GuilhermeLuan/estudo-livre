@@ -9,10 +9,11 @@ export default function PaginaEntrar() {
   return (
     <FormularioConta
       acao={entrar}
-      titulo="Entrar"
+      titulo="Entrar no Estudo Livre"
+      descricao="Use o e-mail e a senha da sua conta nesta instância."
       botao="Entrar"
       esqueci={smtpConfigurado()}
-      rodape={cadastroAberto() ? { texto: "Ainda não tem conta?", link: "Criar conta", href: "/cadastrar" } : null}
+      rodape={cadastroAberto() ? { texto: "Não tem conta?", link: "Criar conta", href: "/cadastrar" } : null}
     />
   );
 }

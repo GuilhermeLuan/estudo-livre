@@ -1,6 +1,6 @@
 import { FUSO, hojeEmBrasilia } from "@/dia";
 
-/** Minutos no formato do protótipo: 1h30, 2h, 45min, 0h. */
+/** Minutos como 1h30, 2h, 45min, 0h. */
 export function tempo(minutos: number) {
   const m = Math.round(minutos);
   const h = Math.floor(m / 60);
@@ -10,12 +10,18 @@ export function tempo(minutos: number) {
   return r ? `${r}min` : "0h";
 }
 
+/** Minutos sempre com horas e minutos, como nas barras de progresso: 1h10, 2h00, 0h00. */
+export function tempoHM(minutos: number) {
+  const m = Math.round(minutos);
+  return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, "0")}`;
+}
+
 /** "1 matéria" / "3 matérias". */
 export function quantidade(n: number, singular: string, plural: string) {
   return `${n} ${n === 1 ? singular : plural}`;
 }
 
-/** "2026-09-28" -> "28/9", como no rótulo das semanas do protótipo. */
+/** "2026-09-28" -> "28/9", como no rótulo das semanas. */
 export function diaMes(dia: string) {
   const [, mes, diaDoMes] = dia.split("-");
   return `${Number(diaDoMes)}/${Number(mes)}`;

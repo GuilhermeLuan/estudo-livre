@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LinkButton } from "@/components/base/buttons/link-button";
 import { redefinirComToken } from "@/app/acoes-conta";
 import { FormularioSimples } from "@/app/formulario-simples";
 
@@ -7,11 +7,11 @@ export default async function PaginaRedefinirSenha({ searchParams }: { searchPar
   if (!token)
     return (
       <div className="grid gap-4">
-        <h1>Link inválido</h1>
-        <p className="text-[.8125rem] text-ink-2">O link para redefinir a senha é inválido ou expirou.</p>
-        <Link href="/entrar" className="btn btn-quiet self-start text-[.8125rem]">
+        <h1 className="text-title-2-medium text-text-primary">Link inválido</h1>
+        <p className="text-body-regular text-text-secondary">O link para redefinir a senha é inválido ou expirou.</p>
+        <LinkButton href="/entrar" size="small" className="justify-self-center">
           Voltar para Entrar
-        </Link>
+        </LinkButton>
       </div>
     );
   return (

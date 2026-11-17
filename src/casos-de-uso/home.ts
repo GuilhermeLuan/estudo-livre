@@ -38,7 +38,7 @@ export type Indicadores = {
 };
 
 export type Home = {
-  usuario: { nome: string; admin: boolean };
+  usuario: { nome: string; email: string; admin: boolean };
   ciclos: CicloDaHome[];
   indicadores: Indicadores;
 };
@@ -97,7 +97,7 @@ export async function obterHome(db: Db, usuario: Usuario): Promise<Home> {
   // Uma leitura consistente: as Voltas e o progresso das Etapas vêm do mesmo instante.
   return db.transaction(
     async (tx) => {
-      const [linha] = await tx.select({ nome: user.name, admin: user.admin }).from(user).where(eq(user.id, usuario.id));
+      const [linha] = await tx.select({ nome: user.name, email: user.email, admin: user.admin }).from(user).where(eq(user.id, usuario.id));
       if (!linha) throw new Error("Usuário não encontrado");
       const ciclos = await tx
         .select({ id: ciclo.id, nome: ciclo.nome, volta: volta.numero })

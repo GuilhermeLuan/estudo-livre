@@ -1,7 +1,5 @@
-import { sair } from "@/app/acoes-conta";
-import { Cronometro } from "@/app/cronometro";
-import { Marca } from "@/app/marca";
-import { Navegacao } from "@/app/navegacao";
+import { BarraDeAbas, CabecalhoMovel, FaixaMovelDoCronometro, Sidebar } from "@/app/navegacao";
+import { ProvedorDoCronometro } from "@/app/cronometro";
 import { obterCronometro, obterHome } from "@/casos-de-uso";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
@@ -9,22 +7,15 @@ import { exigirUsuario } from "@/sessao";
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const usuarioLogado = await exigirUsuario();
   const [{ usuario, ciclos }, ativo] = await Promise.all([obterHome(obterDb(), usuarioLogado), obterCronometro(obterDb(), usuarioLogado)]);
-  const cicloDoCronometro = ativo ? (ciclos.find((c) => c.id === ativo.cicloId) ?? null) : null;
+  const materias = ciclos.flatMap((c) => c.materias.map((m) => ({ id: m.id, nome: m.nome, ciclo: c.nome })));
+  const menu = { usuario, ciclos: ciclos.map((c) => ({ id: c.id, nome: c.nome })) };
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-30 flex items-center border-b border-line bg-[color-mix(in_srgb,var(--paper)_88%,transparent)] px-[clamp(16px,3vw,32px)] py-2.5 backdrop-blur-[10px]">
-        <Marca />
-        <Navegacao admin={usuario.admin} formato="topo" />
-        <div className="flex-1" />
-        <form action={sair}>
-          <button type="submit" className="btn btn-quiet">
-            Sair
-          </button>
-        </form>
-      </header>
-      <Navegacao admin={usuario.admin} formato="base" />
-      <main className="mx-auto max-w-[1220px] px-[clamp(16px,3vw,32px)] pt-7 pb-36">{children}</main>
-      <Cronometro ativo={ativo} ciclo={cicloDoCronometro} />
-    </div>
+    <ProvedorDoCronometro ativo={ativo} materias={materias} materiaPadrao={ciclos[0]?.proxima?.materiaId ?? materias[0]?.id ?? ""}>
+      <Sidebar {...menu} />
+      <CabecalhoMovel {...menu} />
+      <main className="mx-auto max-w-[1160px] px-4 pt-2 pb-40 lg:ml-[284px] lg:px-6 lg:pt-8 lg:pb-12">{children}</main>
+      <FaixaMovelDoCronometro />
+      <BarraDeAbas />
+    </ProvedorDoCronometro>
   );
 }

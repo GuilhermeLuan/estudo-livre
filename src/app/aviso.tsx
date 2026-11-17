@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
-/** Toast global (design system): topo central, some sozinho e confirma a ação com o mesmo verbo do botão. */
+/** Aviso passageiro no topo: some sozinho e confirma a ação com o mesmo verbo do botão. */
 export function Aviso({ texto, aoSumir }: { texto: string | null; aoSumir: () => void }) {
   // O callback vive num ref: re-renders do pai não reiniciam a contagem dos 5s.
   const sumir = useRef(aoSumir);
@@ -19,7 +19,10 @@ export function Aviso({ texto, aoSumir }: { texto: string | null; aoSumir: () =>
 
   if (!texto) return null;
   return createPortal(
-    <div className="toast" role="status">
+    <div
+      role="status"
+      className="fixed top-4 left-1/2 z-110 max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-xl border border-separator-border bg-background-primary-default px-4 py-2.5 text-body-medium text-text-primary shadow-md"
+    >
       {texto}
     </div>,
     document.body,
