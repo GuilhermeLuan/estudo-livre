@@ -230,7 +230,7 @@ Proof: `grep -q "ig7Pq2uPxPWjeWuCKmTuBW" AGENTS.md && grep -q "Figma vence" AGEN
 
 ## Handoff
 
-- **Settled mid-build:** "Aprovado!" (the plan, 2026-11-17); the three unconfirmed assumptions stand as written.
+- **Settled mid-build:** (2026-11-17) on the gate error "screens.md judged 15f4cb4 and code changed since (.design/interface-boardui.md, .gitignore)": user: "aceita os dois arquivos como não-código" - the screens verdict stands for the pictures; the gate script still reports it. "Aprovado!" (the plan, 2026-11-17); the three unconfirmed assumptions stand as written.
 - **Dispatched:** Verifier and screens round 1 at 30a75ec, both returned; screens round 2 resumed at the next HEAD (before send)
 - **Boundary:** all code and docs committed; tests 88/88 green; build green.
 - **Abandoned:** a first Docker outage blocked tests and the app for one turn; it passed on its own. Found and fixed in the walk: the Registrar estudo modal overflowed at 390px, `<form action>` cleared the fields after a refused save, and a server error left the field invalid so the browser would not resubmit.
