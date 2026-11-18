@@ -193,10 +193,10 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Editar, excluir, lançar retroativo, trocar Matéria ou Tópico e deixar de ter questões dão o Cartão do recálculo do zero
-- [ ] Excluir o último Registro remove Cartão e log
-- [ ] Cartões de outro Usuário não mudam
-- [ ] Gate check passes: `npx vitest run`
+- [x] Editar, excluir, lançar retroativo, trocar Matéria ou Tópico e deixar de ter questões dão o Cartão do recálculo do zero
+- [x] Excluir o último Registro remove Cartão e log
+- [x] Cartões de outro Usuário não mudam
+- [x] Gate check passes: `npx vitest run`
 
 **Tests**: integration
 **Gate**: full

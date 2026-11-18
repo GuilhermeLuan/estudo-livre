@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { adicionarEtapa, criarCiclo, criarTopico, obterCartao, recalcularTopico, registrarEstudo, ValidacaoError } from "@/casos-de-uso";
+import { adicionarEtapa, criarCiclo, criarTopico, editarRegistro, excluirRegistro, excluirTopico, listarRegistros, NaoEncontradoError, obterCartao, recalcularTopico, registrarEstudo, ValidacaoError } from "@/casos-de-uso";
 import { cartaoDeRevisao, logDeRevisao, registroDeEstudo } from "@/db/schema";
 import { hojeEmBrasilia } from "@/dia";
 import { recalcularCartao, type Nota } from "@/revisao";
@@ -139,5 +139,125 @@ describe("nota", () => {
     await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 2, acertos: 2 }); // 100%
     await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 10, acertos: 8 }); // 80%: Fácil
     expect((await registros()).map((r) => r.nota)).toEqual(["Fácil", "Fácil"]);
+  });
+});
+
+/** O Cartão e o log que sairiam de lançar estas notas, um a um, na ordem. */
+const reaplicado = (notas: { nota: Nota; dia: string }[]) => recalcularCartao(notas.map((n) => ({ nota: n.nota, revisadoEm: meioDia(n.dia) })));
+const cartaoIgual = async (usuario: { id: string }, topicoId: string, notas: { nota: Nota; dia: string }[]) => {
+  const esperado = reaplicado(notas);
+  const cartao = await obterCartao(db, usuario, topicoId);
+  expect(cartao?.proximaRevisao).toEqual(esperado.proximaRevisao);
+  expect(cartao?.estado).toEqual(JSON.parse(JSON.stringify(esperado.estado)));
+};
+
+describe("recálculo", () => {
+  it("criar, editar e excluir dão o Cartão do recálculo do zero", async () => {
+    const { usuario, materiaId, topicoId } = await cenario();
+    const [d1, d2, d3] = [diaDaquiA(-9), diaDaquiA(-6), diaDaquiA(-3)];
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16, dia: d1 });
+    const { id } = await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 10, dia: d2 });
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 20, dia: d3 });
+    await cartaoIgual(usuario, topicoId, [{ nota: "Bom", dia: d1 }, { nota: "Errei", dia: d2 }, { nota: "Fácil", dia: d3 }]);
+
+    await editarRegistro(db, usuario, id, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 18, dia: d2 });
+    await cartaoIgual(usuario, topicoId, [{ nota: "Bom", dia: d1 }, { nota: "Fácil", dia: d2 }, { nota: "Fácil", dia: d3 }]);
+
+    await excluirRegistro(db, usuario, id);
+    await cartaoIgual(usuario, topicoId, [{ nota: "Bom", dia: d1 }, { nota: "Fácil", dia: d3 }]);
+  });
+
+  it("trocar Matéria ou Tópico recalcula os dois Cartões", async () => {
+    const { usuario, cicloId, materiaId, topicoId } = await cenario();
+    const { id: outroTopico } = await criarTopico(db, usuario, materiaId, { nome: "Pontuação" });
+    const { materiaId: outraMateria } = await adicionarEtapa(db, usuario, cicloId, { nome: "Direito", cargaMinutos: 60 });
+    const { id: topicoDaOutra } = await criarTopico(db, usuario, outraMateria, { nome: "Atos" });
+    const d1 = diaDaquiA(-8);
+    const d2 = diaDaquiA(-4);
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16, dia: d1 });
+    const { id } = await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 20, dia: d2 });
+
+    await editarRegistro(db, usuario, id, materiaId, { ...estudo, topicoId: outroTopico, questoes: 20, acertos: 20, dia: d2 });
+    await cartaoIgual(usuario, topicoId, [{ nota: "Bom", dia: d1 }]);
+    await cartaoIgual(usuario, outroTopico, [{ nota: "Fácil", dia: d2 }]);
+
+    await editarRegistro(db, usuario, id, outraMateria, { ...estudo, topicoId: topicoDaOutra, questoes: 20, acertos: 20, dia: d2 });
+    expect(await obterCartao(db, usuario, outroTopico)).toBeNull();
+    await cartaoIgual(usuario, topicoDaOutra, [{ nota: "Fácil", dia: d2 }]);
+  });
+
+  it("registro retroativo entra na ordem cronológica", async () => {
+    const { usuario, materiaId, topicoId } = await cenario();
+    const [antigo, recente] = [diaDaquiA(-12), diaDaquiA(-2)];
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16, dia: recente });
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 20, dia: antigo });
+    await cartaoIgual(usuario, topicoId, [{ nota: "Fácil", dia: antigo }, { nota: "Bom", dia: recente }]);
+  });
+
+  it("excluir o último registro remove o Cartão e o log", async () => {
+    const { usuario, materiaId, topicoId } = await cenario();
+    const { id } = await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16 });
+    expect(await db.select().from(logDeRevisao)).toHaveLength(1);
+    await excluirRegistro(db, usuario, id);
+    expect(await obterCartao(db, usuario, topicoId)).toBeNull();
+    expect(await db.select().from(logDeRevisao)).toEqual([]);
+  });
+
+  it("editar para sem questões apaga a nota", async () => {
+    const { usuario, materiaId, topicoId } = await cenario();
+    const [d1, d2] = [diaDaquiA(-6), diaDaquiA(-3)];
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16, dia: d1 });
+    const { id } = await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 20, dia: d2 });
+    await editarRegistro(db, usuario, id, materiaId, { ...estudo, topicoId, dia: d2, nota: "Fácil" });
+    expect((await db.select().from(registroDeEstudo).where(eq(registroDeEstudo.id, id)))[0].nota).toBeNull();
+    await cartaoIgual(usuario, topicoId, [{ nota: "Bom", dia: d1 }]);
+  });
+
+  it("excluir o Tópico remove Cartão e log e mantém os Registros", async () => {
+    const { usuario, materiaId, topicoId } = await cenario();
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16 });
+    await excluirTopico(db, usuario, topicoId);
+    expect(await db.select().from(cartaoDeRevisao)).toEqual([]);
+    expect(await db.select().from(logDeRevisao)).toEqual([]);
+    expect(await registros()).toHaveLength(1);
+  });
+
+  it("Cartão e Registros de outro Usuário não mudam", async () => {
+    const ana = await cenario("ana@exemplo.com");
+    const bia = await cenario("bia@exemplo.com");
+    const dia = diaDaquiA(-5);
+    const { id } = await registrarEstudo(db, ana.usuario, ana.materiaId, { ...estudo, topicoId: ana.topicoId, questoes: 20, acertos: 16, dia });
+    await registrarEstudo(db, bia.usuario, bia.materiaId, { ...estudo, topicoId: bia.topicoId, questoes: 20, acertos: 20, dia });
+
+    await expect(editarRegistro(db, bia.usuario, id, bia.materiaId, { ...estudo, topicoId: bia.topicoId, questoes: 20, acertos: 0 })).rejects.toThrow(NaoEncontradoError);
+    await expect(excluirRegistro(db, bia.usuario, id)).rejects.toThrow(NaoEncontradoError);
+    expect(await obterCartao(db, bia.usuario, ana.topicoId)).toBeNull();
+    await cartaoIgual(ana.usuario, ana.topicoId, [{ nota: "Bom", dia }]);
+    await cartaoIgual(bia.usuario, bia.topicoId, [{ nota: "Fácil", dia }]);
+  });
+});
+
+describe("log", () => {
+  it("um item por registro com nota", async () => {
+    const { usuario, materiaId, topicoId } = await cenario();
+    const [d1, d2, d3] = [diaDaquiA(-9), diaDaquiA(-6), diaDaquiA(-3)];
+    const a = await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16, dia: d1 });
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, dia: d2 }); // sem questões: sem item
+    const c = await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 20, dia: d3 });
+    const esperado = reaplicado([{ nota: "Bom", dia: d1 }, { nota: "Fácil", dia: d3 }]);
+
+    const log = await db.select().from(logDeRevisao).where(eq(logDeRevisao.topicoId, topicoId)).orderBy(logDeRevisao.revisadoEm);
+    expect(log.map((l) => [l.registroId, l.nota, l.revisadoEm])).toEqual([[a.id, "Bom", meioDia(d1)], [c.id, "Fácil", meioDia(d3)]]);
+    expect(log.map((l) => [l.antes, l.depois])).toEqual(JSON.parse(JSON.stringify(esperado.log.map((i) => [i.antes, i.depois]))));
+  });
+});
+
+describe("nota", () => {
+  it("o histórico devolve a nota gravada do Registro", async () => {
+    const { usuario, materiaId, topicoId } = await cenario();
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16, nota: "Fácil" });
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId });
+    const { registros: lista } = await listarRegistros(db, usuario, {});
+    expect(lista.map((r) => r.nota).sort()).toEqual(["Fácil", null]);
   });
 });
