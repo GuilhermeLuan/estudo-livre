@@ -21,7 +21,9 @@ function inteiroOpcional(dados: FormData, campo: string) {
 export async function registrar(estado: EstadoRegistro, dados: FormData): Promise<EstadoRegistro> {
   const usuario = await exigirUsuario();
   const materiaId = texto(dados, "materiaId");
+  const modo = texto(dados, "conteudo"); // "topico" | "livre" | "nenhum"
   const duracaoMinutos = Number(texto(dados, "horas") || 0) * 60 + Number(texto(dados, "minutos") || 0);
+  if (modo === "topico" && !texto(dados, "topicoId")) return { erro: "Escolha um tópico.", enviado: estado.enviado };
   try {
     const { materia, ciclo, voltaFechada } = await registrarEstudo(obterDb(), usuario, materiaId, {
       tipo: texto(dados, "tipo") as TipoDeEstudo, // o caso de uso rejeita o que não for um tipo válido
@@ -30,7 +32,8 @@ export async function registrar(estado: EstadoRegistro, dados: FormData): Promis
       questoes: inteiroOpcional(dados, "questoes"),
       acertos: inteiroOpcional(dados, "acertos"),
       anotacao: texto(dados, "anotacao"),
-      conteudoLivre: texto(dados, "conteudoLivre"),
+      conteudoLivre: modo === "livre" ? texto(dados, "conteudoLivre") : "",
+      topicoId: modo === "topico" ? texto(dados, "topicoId") : null,
     }, { cronometro: dados.has(CAMPO_CRONOMETRO) });
     revalidatePath("/", "layout");
     return {

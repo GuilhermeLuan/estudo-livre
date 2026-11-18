@@ -17,7 +17,9 @@ import { registrar, type EstadoRegistro } from "./acoes-estudo";
 const { duracaoMaximaMinutos, questoesMaximas, anotacaoMaxima, conteudoLivreMaximo } = LIMITES_DO_REGISTRO;
 
 /** Uma Matéria que se pode escolher, com o Ciclo dela. */
-export type MateriaParaRegistro = { id: string; nome: string; ciclo: string };
+export type MateriaParaRegistro = { id: string; nome: string; ciclo: string; topicos: { id: string; nome: string }[] };
+
+type ModoDoConteudo = "topico" | "livre" | "nenhum";
 
 /** A mensagem do servidor fica sob o campo a que se refere; sem campo reconhecível, abaixo dos campos. */
 function campoDoErro(erro: string | undefined) {
@@ -26,7 +28,7 @@ function campoDoErro(erro: string | undefined) {
   if (/quest/i.test(erro)) return "questoes";
   if (/dura|hora|minuto/i.test(erro)) return "duracao";
   if (/data/i.test(erro)) return "data";
-  if (/conte/i.test(erro)) return "conteudo";
+  if (/t[óo]pico|conte/i.test(erro)) return "conteudo";
   if (/anota/i.test(erro)) return "anotacao";
   return null;
 }
@@ -45,6 +47,9 @@ function Formulario({
   const fechar = useModalClose();
   const [materiaId, setMateriaId] = useState(materiaInicial);
   const [tipo, setTipo] = useState<TipoDeEstudo>("Teoria");
+  const topicos = materias.find((m) => m.id === materiaId)?.topicos ?? [];
+  const [modo, setModo] = useState<ModoDoConteudo>(topicos.length ? "topico" : "livre");
+  const [topicoId, setTopicoId] = useState("");
   const [questoes, setQuestoes] = useState("");
   const [acertos, setAcertos] = useState("");
   const cronometrado = !!sessaoCronometrada;
@@ -95,7 +100,12 @@ function Formulario({
           label="Matéria"
           name={cronometrado ? undefined : "materiaId"}
           selectedKey={materiaId}
-          onSelectionChange={(chave) => setMateriaId(String(chave))}
+          onSelectionChange={(chave) => {
+            const nova = String(chave);
+            setMateriaId(nova);
+            setTopicoId("");
+            if (modo === "topico" && !materias.find((m) => m.id === nova)?.topicos.length) setModo("livre");
+          }}
           isDisabled={cronometrado}
           className="w-full"
           triggerClassName="w-full"
@@ -107,7 +117,35 @@ function Formulario({
           ))}
         </Select>
 
-        <Input label="Conteúdo" name="conteudoLivre" maxLength={conteudoLivreMaximo} placeholder="Opcional. Ex.: crase antes de horas" {...erroDe("conteudo")} />
+        <div className="grid gap-1">
+          <span className="text-body-medium text-text-primary" id="rotulo-conteudo">
+            Conteúdo
+          </span>
+          <SegmentedControl aria-labelledby="rotulo-conteudo" selectedKeys={[modo]} onSelectionChange={(chaves) => chaves.size && setModo([...chaves][0] as ModoDoConteudo)} className="w-full [&>*]:flex-1">
+            <SegmentedControlItem id="topico" isDisabled={topicos.length === 0}>
+              Tópico
+            </SegmentedControlItem>
+            <SegmentedControlItem id="livre">Conteúdo livre</SegmentedControlItem>
+            <SegmentedControlItem id="nenhum">Sem conteúdo</SegmentedControlItem>
+          </SegmentedControl>
+          <input type="hidden" name="conteudo" value={modo} />
+          {topicos.length === 0 && <p className="text-caption-1-regular text-text-secondary">Esta matéria ainda não tem tópicos.</p>}
+        </div>
+        {modo === "topico" && (
+          <Select aria-label="Tópico" name="topicoId" placeholder="Escolha um tópico" selectedKey={topicoId || null} onSelectionChange={(chave) => setTopicoId(chave ? String(chave) : "")} className="w-full" triggerClassName="w-full">
+            {topicos.map((t) => (
+              <SelectItem key={t.id} id={t.id} textValue={t.nome}>
+                {t.nome}
+              </SelectItem>
+            ))}
+          </Select>
+        )}
+        {modo !== "livre" && campo === "conteudo" && (
+          <p role="alert" className="-mt-2 text-caption-1-medium text-text-error-primary">
+            {estado.erro}
+          </p>
+        )}
+        {modo === "livre" && <Input aria-label="Conteúdo livre" name="conteudoLivre" maxLength={conteudoLivreMaximo} placeholder="Opcional. Ex.: crase antes de horas" {...erroDe("conteudo")} />}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Input label="Data" name="data" type="date" defaultValue={hojeEmBrasilia()} isRequired {...erroDe("data")} />
