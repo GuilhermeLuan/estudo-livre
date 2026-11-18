@@ -42,6 +42,24 @@ export function descricaoDaVolta(numero: number, inicio: Date | null, agora = ne
   return `Iniciada em ${data} · ${dias === 0 ? "hoje" : `há ${quantidade(dias, "dia", "dias")}`}`;
 }
 
+/** Dias de calendário, em Brasília, entre dois instantes. */
+const diasEntre = (de: Date, ate: Date) => Math.round((Date.parse(hojeEmBrasilia(ate)) - Date.parse(hojeEmBrasilia(de))) / 86_400_000);
+
+/** A data de uma Volta no histórico: 02/11/2026, no dia de Brasília. */
+export function dataDaVolta(data: Date) {
+  const [ano, mes, dia] = hojeEmBrasilia(data).split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
+/** A Duração de uma Volta no histórico: "Mesmo dia", "1 dia", "N dias"; a Volta aberta (`fim` nulo) conta até `agora`. */
+export function duracaoDaVolta(inicio: Date, fim: Date | null, agora = new Date()) {
+  const dias = diasEntre(inicio, fim ?? agora);
+  return dias === 0 ? "Mesmo dia" : quantidade(dias, "dia", "dias");
+}
+
+/** O aviso quando uma mudança de Etapa fecha a Volta (AD-018). */
+export const avisoDaVoltaConcluida = (numero: number) => `Volta ${numero} concluída. A Volta ${numero + 1} começou.`;
+
 /** A Situação de uma Etapa: o chip da linha. `extraMinutos` são as horas extras da Matéria dela. */
 export function situacaoDaEtapa(etapa: { cargaMinutos: number; feitoMinutos: number }, { proxima, extraMinutos }: { proxima: boolean; extraMinutos: number }) {
   if (etapa.feitoMinutos >= etapa.cargaMinutos) return extraMinutos > 0 ? `+${tempo(extraMinutos)} extra` : "Concluída";

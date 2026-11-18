@@ -2,7 +2,7 @@ import { and, asc, eq, isNull, max, sql } from "drizzle-orm";
 import type { Db, Tx } from "@/db";
 import { ciclo, etapa, materia, registroDeEstudo, topico, volta } from "@/db/schema";
 import { concluida } from "@/dominio";
-import { progressoDosCiclos, type Executor, type MateriaComProgresso } from "./progresso";
+import { avaliarFechamentoDaVolta, progressoDosCiclos, type Executor, type MateriaComProgresso } from "./progresso";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
 
@@ -62,7 +62,7 @@ async function exigirEtapa(db: Db, usuario: Usuario, etapaId: string) {
 }
 
 /** Trava o Ciclo para que alterações simultâneas nas Etapas não repitam posição nem dupliquem Matérias. */
-async function travarCiclo(tx: Tx, usuario: Usuario, cicloId: string) {
+export async function travarCiclo(tx: Tx, usuario: Usuario, cicloId: string) {
   const [linha] = await tx
     .select({ id: ciclo.id })
     .from(ciclo)
@@ -147,7 +147,7 @@ export async function adicionarEtapa(
   usuario: Usuario,
   cicloId: string,
   dados: { nome: string; cargaMinutos: number },
-): Promise<{ id: string; materiaId: string }> {
+): Promise<{ id: string; materiaId: string; voltaFechada: number | null }> {
   const nome = nomeValido(dados.nome, "da matéria");
   const cargaMinutos = cargaValida(dados.cargaMinutos);
   return db.transaction(async (tx) => {
@@ -158,31 +158,33 @@ export async function adicionarEtapa(
       .insert(etapa)
       .values({ cicloId, materiaId, cargaMinutos, posicao: (ultima ?? -1) + 1 })
       .returning({ id: etapa.id });
-    return { id: linha.id, materiaId };
+    return { id: linha.id, materiaId, voltaFechada: await avaliarFechamentoDaVolta(tx, cicloId) };
   });
 }
 
 /** Muda a carga da Etapa e, se o nome mudou, a aponta para outra Matéria do Ciclo (criada se não existir). */
-export async function editarEtapa(db: Db, usuario: Usuario, etapaId: string, dados: { nome: string; cargaMinutos: number }) {
+export async function editarEtapa(db: Db, usuario: Usuario, etapaId: string, dados: { nome: string; cargaMinutos: number }): Promise<number | null> {
   const nome = nomeValido(dados.nome, "da matéria");
   const cargaMinutos = cargaValida(dados.cargaMinutos);
   const { cicloId } = await exigirEtapa(db, usuario, etapaId);
-  await db.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     await travarCiclo(tx, usuario, cicloId);
     const [atual] = await tx.select({ materiaId: etapa.materiaId }).from(etapa).where(eq(etapa.id, etapaId));
     if (!atual) throw new NaoEncontradoError("Etapa");
     const materiaId = await materiaDoCiclo(tx, cicloId, nome);
     await tx.update(etapa).set({ materiaId, cargaMinutos }).where(eq(etapa.id, etapaId));
     if (materiaId !== atual.materiaId) await descartarMateriaSemUso(tx, atual.materiaId);
+    return avaliarFechamentoDaVolta(tx, cicloId);
   });
 }
 
-export async function removerEtapa(db: Db, usuario: Usuario, etapaId: string) {
+export async function removerEtapa(db: Db, usuario: Usuario, etapaId: string): Promise<number | null> {
   const { cicloId } = await exigirEtapa(db, usuario, etapaId);
-  await db.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     await travarCiclo(tx, usuario, cicloId);
     const [removida] = await tx.delete(etapa).where(eq(etapa.id, etapaId)).returning({ materiaId: etapa.materiaId });
     if (removida) await descartarMateriaSemUso(tx, removida.materiaId);
+    return avaliarFechamentoDaVolta(tx, cicloId);
   });
 }
 

@@ -9,13 +9,15 @@ import {
   NaoEncontradoError,
   removerEtapa,
   renomearCiclo,
+  reiniciarVolta,
   reordenarEtapas,
   ValidacaoError,
 } from "@/casos-de-uso";
 import { obterDb } from "@/db";
+import { avisoDaVoltaConcluida } from "./formato";
 import { exigirUsuario } from "@/sessao";
 
-export type EstadoCiclo = { erro?: string };
+export type EstadoCiclo = { erro?: string; aviso?: string };
 
 function texto(dados: FormData, campo: string) {
   return String(dados.get(campo) ?? "").trim();
@@ -26,15 +28,19 @@ function minutos(dados: FormData) {
   return Math.round(Number(texto(dados, "horas").replace(",", ".")) * 60);
 }
 
-async function executar(operacao: () => Promise<void>): Promise<EstadoCiclo> {
+/** `operacao` devolve o número da Volta que fechou, se fechou: vira o aviso da tela (AD-018). */
+async function executar(operacao: () => Promise<unknown>): Promise<EstadoCiclo> {
+  let fechada: number | null = null;
   try {
-    await operacao();
+    const resultado = await operacao();
+    const numero = resultado && typeof resultado === "object" && "voltaFechada" in resultado ? resultado.voltaFechada : resultado;
+    if (typeof numero === "number") fechada = numero;
   } catch (erro) {
     if (erro instanceof ValidacaoError) return { erro: erro.message };
     if (erro instanceof NaoEncontradoError) return { erro: "Não encontramos este item. Atualize a página." };
     throw erro;
   }
-  return {};
+  return fechada ? { aviso: avisoDaVoltaConcluida(fechada) } : {};
 }
 
 export async function novoCiclo(_: EstadoCiclo, dados: FormData): Promise<EstadoCiclo> {
@@ -57,7 +63,7 @@ export async function renomear(cicloId: string, _: EstadoCiclo, dados: FormData)
 export async function novaEtapa(cicloId: string, _: EstadoCiclo, dados: FormData): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
   const estado = await executar(async () => {
-    await adicionarEtapa(obterDb(), usuario, cicloId, { nome: texto(dados, "nome"), cargaMinutos: minutos(dados) });
+    return adicionarEtapa(obterDb(), usuario, cicloId, { nome: texto(dados, "nome"), cargaMinutos: minutos(dados) });
   });
   revalidatePath("/", "layout");
   return estado;
@@ -83,6 +89,14 @@ export async function excluirEtapa(etapaId: string): Promise<EstadoCiclo> {
 export async function moverEtapa(cicloId: string, ids: string[]): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
   const estado = await executar(() => reordenarEtapas(obterDb(), usuario, cicloId, ids));
+  revalidatePath("/", "layout");
+  return estado;
+}
+
+/** `numero` é a Volta que o Usuário viu aberta; se já mudou, o caso de uso recusa (reinício duplicado). */
+export async function reiniciar(cicloId: string, numero: number): Promise<EstadoCiclo> {
+  const usuario = await exigirUsuario();
+  const estado = await executar(async () => void (await reiniciarVolta(obterDb(), usuario, cicloId, numero)));
   revalidatePath("/", "layout");
   return estado;
 }

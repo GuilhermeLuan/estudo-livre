@@ -6,11 +6,13 @@ import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { Modal, ModalHeader } from "@/components/base/modal/modal";
 import { novaEtapa, renomear } from "./acoes-ciclos";
+import { Aviso } from "./aviso";
 import { FormularioNome } from "./formulario-ciclo";
 
 /** "Adicionar etapa": abre o modal com Matéria e carga horária; a nova Etapa entra no fim da lista. */
 export function AdicionarEtapa({ cicloId }: { cicloId: string }) {
   const [aberto, setAberto] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
   return (
     <>
       <Button leadingIcon={RiAddLine} onClick={() => setAberto(true)}>
@@ -18,8 +20,13 @@ export function AdicionarEtapa({ cicloId }: { cicloId: string }) {
       </Button>
       <Modal isOpen={aberto} onOpenChange={setAberto} size="sm" aria-label="Adicionar etapa">
         <ModalHeader title="Adicionar etapa" closeLabel="Fechar" />
-        <FormularioNome emModal acao={novaEtapa.bind(null, cicloId)} botao="Adicionar etapa" comCarga rotuloNome="Nome da matéria" />
+        <FormularioNome emModal acao={async (anterior, dados) => {
+            const estado = await novaEtapa(cicloId, anterior, dados);
+            if (estado.aviso) setAviso(estado.aviso);
+            return estado;
+          }} botao="Adicionar etapa" comCarga rotuloNome="Nome da matéria" />
       </Modal>
+      <Aviso texto={aviso} aoSumir={() => setAviso(null)} />
     </>
   );
 }

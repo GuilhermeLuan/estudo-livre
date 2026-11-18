@@ -20,6 +20,7 @@ import { AlertDialog, Modal, ModalHeader } from "@/components/base/modal/modal";
 import { ProgressTrack } from "@/components/base/progress/progress";
 import { cx } from "@/utils/cx";
 import { excluirEtapa, moverEtapa, salvarEtapa } from "./acoes-ciclos";
+import { Aviso } from "./aviso";
 import { FormularioNome } from "./formulario-ciclo";
 import { situacaoDaEtapa, tempoHM } from "./formato";
 import { AdicionarEtapa } from "./dialogos-do-ciclo";
@@ -82,6 +83,7 @@ function Linha({ etapa, posicao, proxima, aoEditar, aoRemover }: { etapa: EtapaI
 export function ListaEtapas({ cicloId, etapas, proximaId }: { cicloId: string; etapas: EtapaItem[]; proximaId?: string }) {
   const [itens, setItens] = useState(etapas);
   const [erro, setErro] = useState<string>();
+  const [aviso, setAviso] = useState<string | null>(null);
   const [editando, setEditando] = useState<EtapaItem | null>(null);
   const [removendo, setRemovendo] = useState<EtapaItem | null>(null);
   const [, iniciar] = useTransition();
@@ -146,7 +148,11 @@ export function ListaEtapas({ cicloId, etapas, proximaId }: { cicloId: string; e
         {editando && (
           <>
             <ModalHeader title="Editar etapa" closeLabel="Fechar" />
-            <FormularioNome emModal acao={salvarEtapa.bind(null, editando.id)} botao="Salvar etapa" nome={editando.nome} horas={editando.cargaMinutos / 60} comCarga rotuloNome="Nome da matéria" />
+            <FormularioNome emModal acao={async (anterior, dados) => {
+              const estado = await salvarEtapa(editando.id, anterior, dados);
+              if (estado.aviso) setAviso(estado.aviso);
+              return estado;
+            }} botao="Salvar etapa" nome={editando.nome} horas={editando.cargaMinutos / 60} comCarga rotuloNome="Nome da matéria" />
           </>
         )}
       </Modal>
@@ -160,8 +166,10 @@ export function ListaEtapas({ cicloId, etapas, proximaId }: { cicloId: string; e
         onConfirm={async () => {
           const estado = removendo ? await excluirEtapa(removendo.id) : {};
           if (estado.erro) setErro(estado.erro);
+          if (estado.aviso) setAviso(estado.aviso);
         }}
       />
+      <Aviso texto={aviso} aoSumir={() => setAviso(null)} />
     </div>
   );
 }
