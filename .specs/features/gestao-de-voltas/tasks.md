@@ -259,9 +259,9 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] A tela de `.specs/features/gestao-de-voltas/captures/ciclo.png` está montada, só com as abas "Etapas" e "Voltas" e sem "Arquivar" nem "Faixas de acerto" (AD-001)
-- [ ] Após reiniciar, a tela continua na aba em que estava e mostra a Volta N+1
-- [ ] Gate passes: `npm run typecheck; npm run build; npx vitest run`
+- [x] A tela de `.specs/features/gestao-de-voltas/captures/ciclo.png` está montada, só com as abas "Etapas" e "Voltas" e sem "Arquivar" nem "Faixas de acerto" (AD-001)
+- [x] Após reiniciar, a tela continua na aba em que estava e mostra a Volta N+1
+- [x] Gate passes: `npm run typecheck; npm run build; npx vitest run`
 
 **Tests**: none
 **Gate**: build
