@@ -1,13 +1,13 @@
 # gestao-de-voltas proofs
 
-**HEAD**: 3e6c60d
+**HEAD**: afdac58
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 30 pass, 1 fail
+**Result**: 31 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
-| C1 | `browser captures/ciclo.running.png` | **diverges** (screens.md) |
+| C1 | `browser captures/ciclo.running.png` | pass |
 | C2 | `run unit / ✓ tests/voltas.test.ts > Voltas > lista a Volta aberta primeiro e as fechadas da mais recente à mai` | pass |
 | C2 | `walk - abrir a aba "Voltas" e ver as colunas Volta, Início, Fim e Duração na ordem` | pass (Walked) |
 | C3 | `run unit / ✓ tests/formato.test.ts > Histórico de Voltas > datas em dd/mm/aaaa e duração em dias de calendário` | pass |
@@ -46,17 +46,17 @@
 ```
 
 stderr | tests/voltas.test.ts > Voltas e carga horária > editar a Etapa devolve o número da Volta fechada
-2026-11-18T01:30:21.702Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T01:31:13.653Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/voltas.test.ts > Voltas e carga horária > remover a última Etapa mantém a Volta aberta
-2026-11-18T01:30:21.775Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T01:31:13.734Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/voltas.test.ts > Voltas e carga horária > mudar a carga não reabre nem altera a Volta fechada
-2026-11-18T01:30:21.847Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T01:31:13.796Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/voltas.test.ts > Voltas e carga horária > reordenar as Etapas não muda as Voltas
-2026-11-18T01:30:21.937Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T01:31:13.859Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/voltas.test.ts > Voltas e carga horária > registro e mudança de Etapa simultâneos fecham a Volta uma vez
-2026-11-18T01:30:22.018Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T01:31:13.927Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 ```
