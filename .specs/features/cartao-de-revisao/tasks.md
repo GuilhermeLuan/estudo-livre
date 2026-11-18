@@ -133,9 +133,9 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] `node scripts/migrar.mjs` contra um banco com dados antigos cria os Cartões
-- [ ] `Dockerfile` tem o `COPY` de `src/revisao.ts`
-- [ ] Gate check passes: `npm run typecheck; npx vitest run`
+- [x] `node scripts/migrar.mjs` contra um banco com dados antigos cria os Cartões
+- [x] `Dockerfile` tem o `COPY` de `src/revisao.ts`
+- [x] Gate check passes: `npm run typecheck; npx vitest run`
 
 **Tests**: none
 **Gate**: build
@@ -543,7 +543,7 @@ Proof: run unit | ✓ tests/topicos.test.ts > próxima revisão > a Matéria tra
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started
+**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started; returned
 **Walked:** none
 
 ---

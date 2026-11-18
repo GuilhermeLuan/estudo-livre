@@ -14,5 +14,6 @@ COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/src/revisao.ts ./src/revisao.ts
 EXPOSE 3000
 CMD ["sh", "-c", "node scripts/migrar.mjs && npx next start -p 3000"]
