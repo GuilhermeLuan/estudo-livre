@@ -171,8 +171,8 @@ T4 → T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] `src/app/lista-de-registros.tsx` e `src/app/cronometro.tsx` recebem `materiasArquivadas` e a edição usa a Matéria atual do Registro mesmo arquivada
-- [ ] Gate build passes: `npm run typecheck; npm run build`
+- [x] `src/app/lista-de-registros.tsx` e `src/app/cronometro.tsx` recebem `materiasArquivadas` e a edição usa a Matéria atual do Registro mesmo arquivada
+- [x] Gate build passes: `npm run typecheck; npm run build`
 
 **Tests**: none
 **Gate**: build
