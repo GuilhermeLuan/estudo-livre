@@ -69,9 +69,10 @@ describe("cartão", () => {
   it("o primeiro registro de um Tópico cria o Cartão", async () => {
     const { usuario, materiaId, topicoId } = await cenario();
     expect(await obterCartao(db, usuario, topicoId)).toBeNull();
-    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16, dia: diaDaquiA(-3) });
+    const dia = diaDaquiA(-3);
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16, dia });
     const cartao = await obterCartao(db, usuario, topicoId);
-    expect(cartao?.proximaRevisao).toBeInstanceOf(Date);
+    expect(cartao?.proximaRevisao).toEqual(recalcularCartao([{ nota: "Bom", revisadoEm: meioDia(dia) }]).proximaRevisao);
   });
 
   it("primeiro registro sem questões cria o Cartão sem data", async () => {
@@ -112,9 +113,10 @@ describe("nota", () => {
 
   it("abaixo do mínimo vale a nota escolhida", async () => {
     const { usuario, materiaId, topicoId } = await cenario();
-    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 4, acertos: 4, nota: "Difícil" });
+    const dia = diaDaquiA(-2);
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 4, acertos: 4, nota: "Difícil", dia });
     expect((await registros())[0].nota).toBe("Difícil");
-    expect((await obterCartao(db, usuario, topicoId))?.proximaRevisao).toBeInstanceOf(Date);
+    expect((await obterCartao(db, usuario, topicoId))?.proximaRevisao).toEqual(recalcularCartao([{ nota: "Difícil", revisadoEm: meioDia(dia) }]).proximaRevisao);
   });
 
   it("abaixo do mínimo sem nota recusa e não grava nada", async () => {
