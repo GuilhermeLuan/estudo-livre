@@ -113,9 +113,9 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Banco no formato da migração 0005 com Registros (com e sem questões) migra e ganha Cartões e notas
-- [ ] Rodar de novo não muda nada
-- [ ] Gate check passes: `npx vitest run tests/migracao-cartoes.test.ts`
+- [x] Banco no formato da migração 0005 com Registros (com e sem questões) migra e ganha Cartões e notas
+- [x] Rodar de novo não muda nada
+- [x] Gate check passes: `npx vitest run tests/migracao-cartoes.test.ts`
 
 **Tests**: integration
 **Gate**: full
