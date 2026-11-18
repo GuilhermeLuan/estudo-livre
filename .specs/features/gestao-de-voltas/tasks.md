@@ -352,11 +352,12 @@ Proof: run unit | ✓ tests/voltas.test.ts > Voltas e carga horária > registro 
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** Verifier e sub-agente de telas (rodada 1), em paralelo, sobre o `HEAD` do commit seguinte a 188e0e6 (proofs.md); ainda não retornaram.
+**Dispatched:** Verifier e sub-agente de telas (rodada 1), em paralelo, sobre o `HEAD` do commit seguinte a 188e0e6 (proofs.md); retornaram (Verifier: FAIL com 1 finding, fechado em ed80488; telas: 4 linhas `differs`). Rodada 2 de telas (`**Round**: 2`, só as 4 linhas `differs`) despachada sobre o HEAD do commit "docs(voltas): fecha achados"; ainda não retornou.
 **Walked:** App em `http://localhost:3100` (`next dev`, banco dev `postgres://postgres:dev@localhost:54330/dev`), entrar com `voltas@exemplo.com` / `senha-de-teste-123`, Ciclo "TRT 2ª Região — Analista" em `/ciclos/d096c67a-327d-4e2d-965c-543706d42093`, janela de 1440x960.
 - Histórico de Voltas: aba "Voltas" mostra Volta, Início, Fim, Duração; a aberta primeiro com "Em andamento"; as fechadas com `dd/mm/aaaa` e "Mesmo dia".
 - Reiniciar volta: o botão abre "Reiniciar volta?" com o texto da spec e "Cancelar"/"Reiniciar volta"; cancelar mantém a tabela; confirmar abre a Volta seguinte e a tela fica na aba "Voltas".
 - Carga horária: na aba "Etapas", menu "Ações de TI" > "Editar", carga 0,5 h > "Salvar etapa" fecha a Volta 3 e mostra o aviso "Volta 3 concluída. A Volta 4 começou."; a Volta 4 abre em 0%.
+- Estados que dependem de dados ou do papel: o card Cronômetro só aparece com um cronômetro rodando (há um em "Direito Constitucional"); a contagem de Tópicos só aparece com Tópicos cadastrados (as 3 Matérias têm); o link "Usuários" só aparece para o Admin, e `voltas@exemplo.com` não é Admin.
 - Estado desenhado: `captures/ciclo.running.png` (aba "Etapas") tirada em 1440x960 com o Ciclo na Volta 2.
 
 ---

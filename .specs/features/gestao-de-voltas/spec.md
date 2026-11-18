@@ -153,6 +153,7 @@ O Usuário só vê a Volta atual de cada Ciclo e não pode recomeçá-la quando 
 | Botão "Arquivar" | Não aparece | y - AD-001 |
 | Cartão "Faixas de acerto" ao lado de "Matérias" | Não aparece | y - AD-001 |
 | Selo "Revisões" na Sidebar e "Arquivados" | Não aparecem | y - AD-001 |
+| Nenhum controle "Renomear" ao lado do título | O app mantém "Renomear" ao lado do título do Ciclo | y - AD-001 |
 
 ## Sources
 
