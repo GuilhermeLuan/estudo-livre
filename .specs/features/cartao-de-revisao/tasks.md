@@ -153,9 +153,9 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Registros inseridos direto no banco geram o Cartão esperado, em ordem cronológica e desempate por `criadoEm` e `id`
-- [ ] Sem Registros, nenhum Cartão e nenhum log
-- [ ] Gate check passes: `npx vitest run tests/cartoes.test.ts`
+- [x] Registros inseridos direto no banco geram o Cartão esperado, em ordem cronológica e desempate por `criadoEm` e `id`
+- [x] Sem Registros, nenhum Cartão e nenhum log
+- [x] Gate check passes: `npx vitest run tests/cartoes.test.ts`
 
 **Tests**: integration
 **Gate**: full
@@ -543,7 +543,7 @@ Proof: run unit | ✓ tests/topicos.test.ts > próxima revisão > a Matéria tra
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started; returned
+**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started; returned; batch 2 (Phase 2, T5-T10) worker, sent at HEAD 3f04a7b
 **Walked:** none
 
 ---

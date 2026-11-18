@@ -30,6 +30,7 @@ export {
 export { obterEstatisticas, type Estatisticas, type MateriaNasEstatisticas } from "./estatisticas";
 export { instanteDoDia, registrarEstudo, type DadosDoEstudo, type OpcoesDoRegistro } from "./estudo";
 export { editarRegistro, excluirRegistro, listarRegistros, LIMITE_DA_LISTA, type RegistroDoHistorico, type FiltroDeRegistros, type ListaDeRegistros } from "./registros";
+export { obterCartao, recalcularTopico } from "./revisao";
 export { listarVoltas, reiniciarVolta, type VoltaDoHistorico } from "./voltas";
 export { NaoEncontradoError, ValidacaoError } from "./erros";
 export {
