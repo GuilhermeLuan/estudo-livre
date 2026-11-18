@@ -151,9 +151,9 @@ T4 → T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] `src/app/(app)/layout.tsx` monta `materias` só dos ativos e `materiasArquivadas` dos arquivados, e passa `arquivados` ao menu
-- [ ] Sidebar como em `.specs/features/arquivar-ciclo/captures/ciclo.png`, selecionada em `/ciclos/arquivados`
-- [ ] Gate build passes: `npm run typecheck; npm run build`
+- [x] `src/app/(app)/layout.tsx` monta `materias` só dos ativos e `materiasArquivadas` dos arquivados, e passa `arquivados` ao menu
+- [x] Sidebar como em `.specs/features/arquivar-ciclo/captures/ciclo.png`, selecionada em `/ciclos/arquivados`
+- [x] Gate build passes: `npm run typecheck; npm run build`
 
 **Tests**: none
 **Gate**: build

@@ -37,6 +37,8 @@ function Tempo({ segundos, rodando, className }: { segundos: number; rodando: bo
 type Contexto = {
   ativo: CronometroAtivo | null;
   materias: MateriaParaRegistro[];
+  /** Matérias de Ciclos arquivados: só a edição de um Registro antigo as usa. */
+  materiasArquivadas: MateriaParaRegistro[];
   /** A Matéria da Próxima etapa do primeiro Ciclo, ou a primeira Matéria que existir. */
   materiaPadrao: string;
   pendente: boolean;
@@ -58,12 +60,13 @@ export function useCronometro() {
 type Props = {
   ativo: CronometroAtivo | null;
   materias: MateriaParaRegistro[];
+  materiasArquivadas: MateriaParaRegistro[];
   materiaPadrao: string;
   children: React.ReactNode;
 };
 
 /** O estado do Cronômetro e o modal de registro, compartilhados pela Sidebar, pela barra de abas e pelas telas. */
-export function ProvedorDoCronometro({ ativo, materias, materiaPadrao, children }: Props) {
+export function ProvedorDoCronometro({ ativo, materias, materiasArquivadas, materiaPadrao, children }: Props) {
   const router = useRouter();
   const [pendente, executar] = useTransition();
   const [aviso, setAviso] = useState<string | null>(null);
@@ -101,6 +104,7 @@ export function ProvedorDoCronometro({ ativo, materias, materiaPadrao, children 
   const contexto: Contexto = {
     ativo,
     materias,
+    materiasArquivadas,
     materiaPadrao,
     pendente,
     abrirRegistro: (materiaId) => abrir(materiaId ?? materiaPadrao),

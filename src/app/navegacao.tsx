@@ -2,6 +2,7 @@
 
 import {
   RiAddLine,
+  RiArchiveLine,
   RiBarChartBoxLine,
   RiFlag2Line,
   RiFileListLine,
@@ -14,6 +15,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Chip } from "@/components/base/badges/chip";
+import { Counter } from "@/components/base/badges/counter";
 import { Dropdown, DropdownDivider, DropdownGroup, DropdownItem, DropdownPopover, DropdownTrigger } from "@/components/base/dropdown/dropdown";
 import { cx } from "@/utils/cx";
 import { sair } from "./acoes-conta";
@@ -24,6 +26,8 @@ import { SeletorDeTema } from "./tema";
 export type DadosDoMenu = {
   usuario: { nome: string; email: string; admin: boolean };
   ciclos: { id: string; nome: string }[];
+  /** Quantos Ciclos arquivados; o item "Arquivados" mostra o Counter só quando há. */
+  arquivados: number;
 };
 
 const iniciais = (nome: string) =>
@@ -37,7 +41,7 @@ const iniciais = (nome: string) =>
 const ativoEm = (caminho: string, href: string) => caminho === href || (href !== "/" && caminho.startsWith(`${href}/`));
 
 /** O item da Sidebar: selecionado, ganha o gradiente do botão primário e `aria-current="page"`. */
-function ItemDeNavegacao({ href, selecionado, icone: Icone, children }: { href: string; selecionado: boolean; icone: typeof RiHome5Line; children: ReactNode }) {
+function ItemDeNavegacao({ href, selecionado, icone: Icone, contador, children }: { href: string; selecionado: boolean; icone: typeof RiHome5Line; contador?: number; children: ReactNode }) {
   return (
     <Link
       href={href}
@@ -49,6 +53,7 @@ function ItemDeNavegacao({ href, selecionado, icone: Icone, children }: { href: 
     >
       <Icone className="size-5 shrink-0" aria-hidden />
       <span className="min-w-0 flex-1 truncate">{children}</span>
+      {!!contador && <Counter color={selecionado ? "primary" : "neutral"}>{contador}</Counter>}
     </Link>
   );
 }
@@ -79,7 +84,7 @@ function CartaoDoUsuario({ usuario }: Pick<DadosDoMenu, "usuario">) {
 }
 
 /** A Sidebar do computador (≥ 1024px). */
-export function Sidebar({ usuario, ciclos }: DadosDoMenu) {
+export function Sidebar({ usuario, ciclos, arquivados }: DadosDoMenu) {
   const caminho = usePathname();
   return (
     <aside aria-label="Navegação" className="fixed top-3 bottom-3 left-3 z-30 hidden w-[260px] flex-col gap-1 overflow-y-auto rounded-3xl border border-separator-border bg-background-secondary-default p-3 lg:flex">
@@ -110,6 +115,9 @@ export function Sidebar({ usuario, ciclos }: DadosDoMenu) {
             {c.nome}
           </ItemDeNavegacao>
         ))}
+        <ItemDeNavegacao href="/ciclos/arquivados" selecionado={caminho === "/ciclos/arquivados"} icone={RiArchiveLine} contador={arquivados}>
+          Arquivados
+        </ItemDeNavegacao>
       </nav>
       <div className="mt-auto grid gap-2 pt-3">
         <CartaoDoCronometro variante="cartao" />
@@ -132,10 +140,10 @@ export function Sidebar({ usuario, ciclos }: DadosDoMenu) {
   );
 }
 
-const TITULOS: Record<string, string> = { "/": "Hoje", "/registros": "Registros", "/estatisticas": "Estatísticas" };
+const TITULOS: Record<string, string> = { "/": "Hoje", "/registros": "Registros", "/estatisticas": "Estatísticas", "/ciclos/arquivados": "Arquivados" };
 
 /** O topo do celular (< 1024px): a marca, o título da rota e o avatar que abre o menu. */
-export function CabecalhoMovel({ usuario, ciclos }: DadosDoMenu) {
+export function CabecalhoMovel({ usuario, ciclos, arquivados }: DadosDoMenu) {
   const caminho = usePathname();
   const router = useRouter();
   return (
@@ -154,6 +162,9 @@ export function CabecalhoMovel({ usuario, ciclos }: DadosDoMenu) {
               </DropdownItem>
             ))}
             <DropdownItem onSelect={() => router.push("/ciclos/novo")}>Novo ciclo</DropdownItem>
+            <DropdownItem onSelect={() => router.push("/ciclos/arquivados")} selected={caminho === "/ciclos/arquivados"}>
+              {arquivados ? `Arquivados (${arquivados})` : "Arquivados"}
+            </DropdownItem>
           </DropdownGroup>
           <DropdownDivider />
           {usuario.admin && <DropdownItem onSelect={() => router.push("/usuarios")}>Usuários</DropdownItem>}
