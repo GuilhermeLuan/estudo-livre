@@ -94,9 +94,9 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] As três funções exportadas com os valores da spec
-- [ ] Gate passes: `npx vitest run tests/formato.test.ts`
-- [ ] 2 testes novos em `tests/formato.test.ts` passam, sem testes removidos
+- [x] As três funções exportadas com os valores da spec
+- [x] Gate passes: `npx vitest run tests/formato.test.ts`
+- [x] 2 testes novos em `tests/formato.test.ts` passam, sem testes removidos
 
 **Tests**: unit
 **Gate**: quick

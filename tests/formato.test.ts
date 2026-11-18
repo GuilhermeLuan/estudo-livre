@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avisoDaImportacao, descricaoDaVolta, rotuloDaDiferenca, rotuloDaVariacao, situacaoDaEtapa } from "@/app/formato";
+import { avisoDaImportacao, avisoDaVoltaConcluida, dataDaVolta, descricaoDaVolta, duracaoDaVolta, rotuloDaDiferenca, rotuloDaVariacao, situacaoDaEtapa } from "@/app/formato";
 import { conteudoDoRegistro } from "@/app/campos-do-registro";
 import { percentualDeAcerto, variacaoPercentual } from "@/dominio";
 
@@ -61,5 +61,25 @@ describe("Tópicos na interface", () => {
     expect(conteudoDoRegistro("topico", { ...campos, topicoId: "" })).toEqual({ erro: "Escolha um tópico." });
     expect(conteudoDoRegistro("livre", campos)).toEqual({ topicoId: null, conteudoLivre: "crase" });
     expect(conteudoDoRegistro("nenhum", campos)).toEqual({ topicoId: null, conteudoLivre: "" });
+  });
+});
+
+describe("Histórico de Voltas", () => {
+  const em = (iso: string) => new Date(`${iso}-03:00`);
+
+  it("datas em dd/mm/aaaa e duração em dias de calendário", () => {
+    expect(dataDaVolta(em("2026-11-02T10:00:00"))).toBe("02/11/2026");
+    expect(dataDaVolta(new Date("2026-11-03T01:30:00Z"))).toBe("02/11/2026"); // 22h30 em Brasília ainda é dia 2
+    expect(duracaoDaVolta(em("2026-11-02T08:00:00"), em("2026-11-02T22:00:00"))).toBe("Mesmo dia");
+    expect(duracaoDaVolta(em("2026-11-02T23:00:00"), em("2026-11-03T01:00:00"))).toBe("1 dia");
+    expect(duracaoDaVolta(em("2026-11-02T10:00:00"), em("2026-11-16T09:00:00"))).toBe("14 dias");
+    // Volta aberta: conta até hoje
+    expect(duracaoDaVolta(em("2026-11-02T10:00:00"), null, em("2026-11-16T15:00:00"))).toBe("14 dias");
+    expect(duracaoDaVolta(em("2026-11-16T10:00:00"), null, em("2026-11-16T15:00:00"))).toBe("Mesmo dia");
+  });
+
+  it("aviso de Volta concluída", () => {
+    expect(avisoDaVoltaConcluida(1)).toBe("Volta 1 concluída. A Volta 2 começou.");
+    expect(avisoDaVoltaConcluida(9)).toBe("Volta 9 concluída. A Volta 10 começou.");
   });
 });
