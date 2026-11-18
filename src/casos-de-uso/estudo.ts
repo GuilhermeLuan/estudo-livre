@@ -48,7 +48,7 @@ function textoOpcional(texto: string | null | undefined, maximo: number, rotulo:
   return limpo;
 }
 
-function validar(dados: DadosDoEstudo) {
+export function validar(dados: DadosDoEstudo) {
   if (!TIPOS_DE_ESTUDO.includes(dados.tipo)) throw new ValidacaoError("Escolha um tipo de estudo.");
   if (!inteiroEntre(dados.duracaoMinutos, 1, duracaoMaximaMinutos))
     throw new ValidacaoError("A duração precisa ter de 1 minuto a 24 horas.");
