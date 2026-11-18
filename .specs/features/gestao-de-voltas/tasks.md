@@ -199,8 +199,8 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] Salvar ou excluir uma Etapa que fecha a Volta mostra "Volta N concluída. A Volta N+1 começou."
-- [ ] Gate passes: `npm run typecheck; npm run build; npx vitest run`
+- [x] Salvar ou excluir uma Etapa que fecha a Volta mostra "Volta N concluída. A Volta N+1 começou."
+- [x] Gate passes: `npm run typecheck; npm run build; npx vitest run`
 
 **Tests**: none
 **Gate**: build
