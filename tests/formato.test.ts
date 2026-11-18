@@ -73,6 +73,8 @@ describe("Histórico de Voltas", () => {
     expect(duracaoDaVolta(em("2026-11-02T08:00:00"), em("2026-11-02T22:00:00"))).toBe("Mesmo dia");
     expect(duracaoDaVolta(em("2026-11-02T23:00:00"), em("2026-11-03T01:00:00"))).toBe("1 dia");
     expect(duracaoDaVolta(em("2026-11-02T10:00:00"), em("2026-11-16T09:00:00"))).toBe("14 dias");
+    expect(duracaoDaVolta(em("2026-12-31T23:00:00"), em("2027-01-02T01:00:00"))).toBe("2 dias"); // virada de ano
+    expect(duracaoDaVolta(em("2026-02-28T12:00:00"), em("2026-03-01T12:00:00"))).toBe("1 dia"); // fevereiro de 28 dias
     // Volta aberta: conta até hoje
     expect(duracaoDaVolta(em("2026-11-02T10:00:00"), null, em("2026-11-16T15:00:00"))).toBe("14 dias");
     expect(duracaoDaVolta(em("2026-11-16T10:00:00"), null, em("2026-11-16T15:00:00"))).toBe("Mesmo dia");

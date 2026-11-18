@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { adicionarEtapa, criarCiclo, editarEtapa, listarRegistros, listarVoltas, NaoEncontradoError, obterCiclo, registrarEstudo, reiniciarVolta, removerEtapa, reordenarEtapas, ValidacaoError } from "@/casos-de-uso";
-import { ciclo } from "@/db/schema";
+import { ciclo, etapa, registroDeEstudo } from "@/db/schema";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
 const db = bancoDeTeste();
@@ -74,7 +74,8 @@ describe("Voltas", () => {
     expect(fechada.numero).toBe(1);
     expect(fechada.fim).not.toBeNull();
     expect(aberta.inicio).toEqual(fechada.fim);
-    expect((await obterCiclo(db, ana, id)).volta.numero).toBe(2);
+    const depois = await obterCiclo(db, ana, id);
+    expect([depois.volta.numero, depois.percentual]).toEqual([2, 0]);
   });
 
   it("reiniciar sem Registro de estudo é permitido", async () => {
@@ -110,6 +111,7 @@ describe("Voltas", () => {
 
     await expect(reiniciarVolta(db, ana, id, 1)).rejects.toThrow("Esta volta já foi reiniciada. Atualize a página.");
     await expect(reiniciarVolta(db, ana, id, 1)).rejects.toBeInstanceOf(ValidacaoError);
+    for (const invalido of [0, -1, 1.5, Number.NaN]) await expect(reiniciarVolta(db, ana, id, invalido)).rejects.toThrow("Esta volta já foi reiniciada. Atualize a página.");
     expect((await listarVoltas(db, ana, id)).map((v) => [v.numero, v.fim === null])).toEqual([[2, true], [1, false]]);
   });
 
@@ -230,7 +232,13 @@ describe("Voltas e carga horária", () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
     const { id, materias } = await cicloCom(ana, [["Português", 60], ["Direito", 60]]);
     await registrarEstudo(db, ana, materias["Português"], { ...estudo, duracaoMinutos: 60 });
+    // Todas as Etapas a 100% com a Volta ainda aberta (só por escrita direta): reordenar não pode avaliar o fechamento.
+    await db.update(etapa).set({ cargaMinutos: 60 }).where(eq(etapa.materiaId, materias["Direito"]));
+    await db.update(registroDeEstudo).set({ duracaoMinutos: 60 }).where(eq(registroDeEstudo.materiaId, materias["Português"]));
+    await db.insert(registroDeEstudo).values({ materiaId: materias["Direito"], dataHora: new Date(), duracaoMinutos: 60, tipo: "Teoria" });
+    expect((await obterCiclo(db, ana, id)).percentual).toBe(100);
     const antes = await listarVoltas(db, ana, id);
+    expect(antes.map((v) => v.numero)).toEqual([1]);
     const ids = (await obterCiclo(db, ana, id)).etapas.map((e) => e.id).reverse();
 
     await reordenarEtapas(db, ana, id, ids);

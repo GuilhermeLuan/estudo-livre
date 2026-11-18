@@ -20,6 +20,8 @@ export async function listarVoltas(db: Db, usuario: Usuario, cicloId: string): P
  * aberta (reinício duplicado), recusa em vez de fechar a Volta nova. Sempre permitido, mesmo sem estudo (AD-017).
  */
 export async function reiniciarVolta(db: Db, usuario: Usuario, cicloId: string, numero: number): Promise<{ numero: number }> {
+  // O número vem do cliente: um valor que não é inteiro nunca é uma Volta aberta.
+  if (!Number.isInteger(numero)) throw new ValidacaoError("Esta volta já foi reiniciada. Atualize a página.");
   return db.transaction(async (tx) => {
     await travarCiclo(tx, usuario, cicloId);
     const agora = new Date();
