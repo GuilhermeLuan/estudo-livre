@@ -13,11 +13,26 @@ import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_REGISTRO, percentualDeAcerto, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
 import { CAMPO_CRONOMETRO, type ModoDoConteudo } from "./campos-do-registro";
 import { registrar, type EstadoRegistro } from "./acoes-estudo";
+import { editar } from "./acoes-registros";
 
 const { duracaoMaximaMinutos, questoesMaximas, anotacaoMaxima, conteudoLivreMaximo } = LIMITES_DO_REGISTRO;
 
 /** Uma Matéria que se pode escolher, com o Ciclo dela. */
 export type MateriaParaRegistro = { id: string; nome: string; ciclo: string; topicos: { id: string; nome: string }[] };
+
+/** Um Registro existente, como o modal de edição o recebe. */
+export type RegistroParaEdicao = {
+  id: string;
+  materiaId: string;
+  tipo: TipoDeEstudo;
+  duracaoMinutos: number;
+  dia: string;
+  questoes: number | null;
+  acertos: number | null;
+  anotacao: string | null;
+  conteudoLivre: string | null;
+  topicoId: string | null;
+};
 
 /** A mensagem do servidor fica sob o campo a que se refere; sem campo reconhecível, abaixo dos campos. */
 function campoDoErro(erro: string | undefined) {
@@ -35,23 +50,27 @@ function Formulario({
   materias,
   materiaInicial,
   sessaoCronometrada,
+  edicao,
   aoSalvar,
 }: {
   materias: MateriaParaRegistro[];
   materiaInicial: string;
   sessaoCronometrada?: SugestaoDeRegistro;
+  edicao?: RegistroParaEdicao;
   aoSalvar: (aviso: string) => void;
 }) {
   const fechar = useModalClose();
   const [materiaId, setMateriaId] = useState(materiaInicial);
-  const [tipo, setTipo] = useState<TipoDeEstudo>("Teoria");
+  const [tipo, setTipo] = useState<TipoDeEstudo>(edicao?.tipo ?? "Teoria");
   const topicos = materias.find((m) => m.id === materiaId)?.topicos ?? [];
-  const [modo, setModo] = useState<ModoDoConteudo>(topicos.length ? "topico" : "livre");
-  const [topicoId, setTopicoId] = useState("");
-  const [questoes, setQuestoes] = useState("");
-  const [acertos, setAcertos] = useState("");
+  const [modo, setModo] = useState<ModoDoConteudo>(
+    edicao ? (edicao.topicoId && topicos.some((t) => t.id === edicao.topicoId) ? "topico" : edicao.conteudoLivre ? "livre" : "nenhum") : topicos.length ? "topico" : "livre",
+  );
+  const [topicoId, setTopicoId] = useState(edicao?.topicoId ?? "");
+  const [questoes, setQuestoes] = useState(edicao?.questoes?.toString() ?? "");
+  const [acertos, setAcertos] = useState(edicao?.acertos?.toString() ?? "");
   const cronometrado = !!sessaoCronometrada;
-  const duracaoInicial = sessaoCronometrada?.duracaoMinutos ?? 60;
+  const duracaoInicial = edicao?.duracaoMinutos ?? sessaoCronometrada?.duracaoMinutos ?? 60;
   const [estado, setEstado] = useState<EstadoRegistro>({});
   const [enviando, iniciar] = useTransition();
 
@@ -59,7 +78,7 @@ function Formulario({
   function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const dados = new FormData(e.currentTarget);
-    iniciar(async () => setEstado(await registrar(estado, dados)));
+    iniciar(async () => setEstado(await (edicao ? editar : registrar)(estado, dados)));
   }
 
   useEffect(() => {
@@ -76,7 +95,7 @@ function Formulario({
   return (
     <form onSubmit={enviar} onChange={() => estado.erro && setEstado({ enviado: estado.enviado })} className="flex min-h-0 flex-col gap-4">
       <ModalHeader
-        title="Registrar estudo"
+        title={edicao ? "Editar registro" : "Registrar estudo"}
         description={
           cronometrado ? (
             <span className="inline-flex items-center gap-1.5">
@@ -88,6 +107,7 @@ function Formulario({
         closeLabel="Fechar"
       />
       <ModalBody className="grid grid-cols-[minmax(0,1fr)] gap-4 py-2">
+        {edicao && <input type="hidden" name="registroId" value={edicao.id} />}
         {cronometrado && (
           <>
             <input type="hidden" name="materiaId" value={materiaId} />
@@ -143,10 +163,10 @@ function Formulario({
             {estado.erro}
           </p>
         )}
-        {modo === "livre" && <Input aria-label="Conteúdo livre" name="conteudoLivre" maxLength={conteudoLivreMaximo} placeholder="Opcional. Ex.: crase antes de horas" {...erroDe("conteudo")} />}
+        {modo === "livre" && <Input aria-label="Conteúdo livre" name="conteudoLivre" defaultValue={edicao?.conteudoLivre ?? ""} maxLength={conteudoLivreMaximo} placeholder="Opcional. Ex.: crase antes de horas" {...erroDe("conteudo")} />}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Input label="Data" name="data" type="date" defaultValue={hojeEmBrasilia()} isRequired {...erroDe("data")} />
+          <Input label="Data" name="data" type="date" defaultValue={edicao?.dia ?? hojeEmBrasilia()} isRequired {...erroDe("data")} />
           <div className="grid grid-cols-2 gap-2">
             <Input label="Horas" name="horas" type="number" inputMode="numeric" defaultValue={String(Math.floor(duracaoInicial / 60))} {...erroDe("duracao")} />
             <Input label="Minutos" name="minutos" type="number" inputMode="numeric" defaultValue={String(duracaoInicial % 60)} />
@@ -179,7 +199,7 @@ function Formulario({
           </div>
         </div>
 
-        <Textarea label="Anotação" name="anotacao" maxLength={anotacaoMaxima} placeholder="Opcional" {...erroDe("anotacao")} />
+        <Textarea label="Anotação" name="anotacao" defaultValue={edicao?.anotacao ?? ""} maxLength={anotacaoMaxima} placeholder="Opcional" {...erroDe("anotacao")} />
 
         {estado.erro && !campo && (
           <p role="alert" className="text-body-regular text-text-error-primary">
@@ -187,14 +207,16 @@ function Formulario({
           </p>
         )}
       </ModalBody>
-      <ModalFooter>
-        <Button type="button" variant="secondary" onClick={fechar}>
-          Cancelar
-        </Button>
-        <Button type="submit" leadingIcon={RiCheckLine} disabled={enviando}>
-          Salvar registro
-        </Button>
-      </ModalFooter>
+      <div className="border-t border-separator-border pt-4">
+        <ModalFooter>
+          <Button type="button" variant="secondary" onClick={fechar}>
+            Cancelar
+          </Button>
+          <Button type="submit" leadingIcon={RiCheckLine} disabled={enviando}>
+            {edicao ? "Salvar" : "Salvar registro"}
+          </Button>
+        </ModalFooter>
+      </div>
     </form>
   );
 }
@@ -205,6 +227,7 @@ type Props = {
   materias: MateriaParaRegistro[];
   materiaInicial: string;
   sessaoCronometrada?: SugestaoDeRegistro;
+  edicao?: RegistroParaEdicao;
   /** Muda a cada abertura: o formulário é remontado e começa limpo. */
   abertura: number;
   aoSalvar: (aviso: string) => void;
@@ -213,7 +236,7 @@ type Props = {
 /** O modal "Registrar estudo": folha colada ao rodapé abaixo de 1024px. */
 export function RegistroDeEstudo({ aberto, aoMudar, abertura, ...resto }: Props) {
   return (
-    <Modal isOpen={aberto} onOpenChange={aoMudar} size="lg" sheetOnMobile aria-label="Registrar estudo">
+    <Modal isOpen={aberto} onOpenChange={aoMudar} size="lg" sheetOnMobile aria-label={resto.edicao ? "Editar registro" : "Registrar estudo"}>
       <Formulario key={abertura} {...resto} />
     </Modal>
   );

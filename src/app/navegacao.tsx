@@ -4,6 +4,7 @@ import {
   RiAddLine,
   RiBarChartBoxLine,
   RiFlag2Line,
+  RiFileListLine,
   RiHome5Line,
   RiLogoutBoxRLine,
   RiUser3Line,
@@ -90,6 +91,9 @@ export function Sidebar({ usuario, ciclos }: DadosDoMenu) {
         <ItemDeNavegacao href="/" selecionado={caminho === "/"} icone={RiHome5Line}>
           Hoje
         </ItemDeNavegacao>
+        <ItemDeNavegacao href="/registros" selecionado={ativoEm(caminho, "/registros")} icone={RiFileListLine}>
+          Registros
+        </ItemDeNavegacao>
         <ItemDeNavegacao href="/estatisticas" selecionado={ativoEm(caminho, "/estatisticas")} icone={RiBarChartBoxLine}>
           Estatísticas
         </ItemDeNavegacao>
@@ -128,7 +132,7 @@ export function Sidebar({ usuario, ciclos }: DadosDoMenu) {
   );
 }
 
-const TITULOS: Record<string, string> = { "/": "Hoje", "/estatisticas": "Estatísticas" };
+const TITULOS: Record<string, string> = { "/": "Hoje", "/registros": "Registros", "/estatisticas": "Estatísticas" };
 
 /** O topo do celular (< 1024px): a marca, o título da rota e o avatar que abre o menu. */
 export function CabecalhoMovel({ usuario, ciclos }: DadosDoMenu) {
@@ -184,7 +188,7 @@ function Aba({ href, selecionada, icone: Icone, children }: { href: string; sele
   );
 }
 
-/** A barra de abas do celular: Hoje, o "+" central que registra estudo e Estatísticas. */
+/** A barra de abas do celular: Hoje e Registros, o "+" central que registra estudo e Estatísticas. */
 export function BarraDeAbas() {
   const caminho = usePathname();
   const { abrirRegistro, materias } = useCronometro();
@@ -192,6 +196,9 @@ export function BarraDeAbas() {
     <nav aria-label="Principal (celular)" className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-separator-border bg-background-full px-6 pt-2 pb-[max(env(safe-area-inset-bottom),12px)] lg:hidden">
       <Aba href="/" selecionada={caminho === "/"} icone={RiHome5Line}>
         Hoje
+      </Aba>
+      <Aba href="/registros" selecionada={ativoEm(caminho, "/registros")} icone={RiFileListLine}>
+        Registros
       </Aba>
       <button
         type="button"
