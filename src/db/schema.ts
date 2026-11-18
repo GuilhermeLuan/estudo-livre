@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { TIPOS_DE_ESTUDO } from "@/dominio";
-import { boolean, integer, index, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { NOTAS } from "@/revisao";
+import { boolean, integer, index, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 // Tabelas do Better Auth. "user" é o Usuário do domínio.
 export const user = pgTable("user", {
@@ -59,6 +60,11 @@ export const ciclo = pgTable("ciclo", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   usuarioId: text("usuario_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   nome: text("nome").notNull(),
+  // Faixas de acerto que viram a Nota da revisão e Mínimo de questões para sugeri-la (limites superiores exclusivos).
+  faixaErreiAte: integer("faixa_errei_ate").notNull().default(60),
+  faixaDificilAte: integer("faixa_dificil_ate").notNull().default(75),
+  faixaBomAte: integer("faixa_bom_ate").notNull().default(90),
+  minimoDeQuestoes: integer("minimo_de_questoes").notNull().default(5),
   criadoEm: timestamp("criado_em").notNull().defaultNow(),
 }, (t) => [index("ciclo_usuario").on(t.usuarioId)]);
 
@@ -102,6 +108,7 @@ export const topico = pgTable("topico", {
 ]);
 
 export const tipoDeEstudo = pgEnum("tipo_de_estudo", TIPOS_DE_ESTUDO);
+export const notaDaRevisao = pgEnum("nota_da_revisao", NOTAS);
 
 export const registroDeEstudo = pgTable("registro_de_estudo", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -112,11 +119,30 @@ export const registroDeEstudo = pgTable("registro_de_estudo", {
   questoes: integer("questoes"),
   acertos: integer("acertos"),
   anotacao: text("anotacao"),
+  nota: notaDaRevisao("nota"),
   conteudoLivre: text("conteudo_livre"),
   // Excluir o Tópico mantém o Registro, sem conteúdo (AD-009).
   topicoId: text("topico_id").references(() => topico.id, { onDelete: "set null" }),
   criadoEm: timestamp("criado_em").notNull().defaultNow(),
 }, (t) => [index("registro_materia_data").on(t.materiaId, t.dataHora)]);
+
+// Valor derivado dos Registros do Tópico com nota (ADR-0002): refeito do zero a cada mudança. Existe se o Tópico
+// tem Registros; `proximaRevisao` nulo = ainda sem data.
+export const cartaoDeRevisao = pgTable("cartao_de_revisao", {
+  topicoId: text("topico_id").primaryKey().references(() => topico.id, { onDelete: "cascade" }),
+  proximaRevisao: timestamp("proxima_revisao", { withTimezone: true }),
+  estado: jsonb("estado"),
+});
+
+export const logDeRevisao = pgTable("log_de_revisao", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  topicoId: text("topico_id").notNull().references(() => topico.id, { onDelete: "cascade" }),
+  registroId: text("registro_id").notNull(),
+  nota: notaDaRevisao("nota").notNull(),
+  revisadoEm: timestamp("revisado_em", { withTimezone: true }).notNull(),
+  antes: jsonb("antes").notNull(),
+  depois: jsonb("depois").notNull(),
+}, (t) => [index("log_de_revisao_topico").on(t.topicoId, t.revisadoEm)]);
 
 // Cronômetro do Usuário: no máximo um (a chave é o Usuário). O tempo decorrido é
 // `acumuladoSegundos` + o intervalo desde `rodandoDesde`; nulo significa pausado.

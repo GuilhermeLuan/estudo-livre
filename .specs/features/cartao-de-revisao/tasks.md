@@ -93,9 +93,9 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] `npm run db:generate` produz `drizzle/0006_*.sql` com o `UPDATE` de notas
-- [ ] Os Ciclos ganham 60/75/90 e Mínimo 5 por `DEFAULT`
-- [ ] Gate check passes: `npm run typecheck; npx vitest run`
+- [x] `npm run db:generate` produz `drizzle/0006_*.sql` com o `UPDATE` de notas
+- [x] Os Ciclos ganham 60/75/90 e Mínimo 5 por `DEFAULT`
+- [x] Gate check passes: `npm run typecheck; npx vitest run`
 
 **Tests**: none
 **Gate**: build
