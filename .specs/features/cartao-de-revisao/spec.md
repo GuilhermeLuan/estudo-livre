@@ -45,6 +45,7 @@ O app registra estudo, mas não sabe quando um Tópico precisa ser revisto. A is
 | Conteúdo da aba "Faixas de acerto" | O mesmo cartão "Faixas de acerto" da captura, na largura da aba | A captura mostra a aba e o cartão; só o cartão está desenhado | n |
 | Edição das Faixas | Modal "Editar faixas de acerto" aberto pelo botão "Editar" do cartão, com os três limites e o Mínimo de questões | A captura desenha o botão "Editar" e nenhuma tela de edição | n |
 | Mudar as Faixas | Só afeta Registros salvos depois | A nota fica gravada no Registro | n |
+| Nota gravada na edição | Conta como escolhida pelo Usuário: mudar acertos ou questões em "Editar registro" não a troca; só o chip "Sugerida" e a frase acompanham as Faixas atuais | O Usuário a deu ou a aceitou ao salvar | n |
 
 **Open questions:** none - all resolved or logged above.
 
@@ -181,6 +182,8 @@ O app registra estudo, mas não sabe quando um Tópico precisa ser revisto. A is
 | Campo único Duração "1h 10min" no modal | Horas e Minutos separados | y - AD-001 |
 | Título "Registrar estudo" e botão "Salvar registro" na edição | "Editar registro" e "Salvar" | y - AD-013 |
 | Aba "Matérias" e botão "Arquivar" na tela do Ciclo | Não aparecem até as issues delas | y - AD-001 |
+| Cartão do Cronômetro na Sidebar sem lixeira | O cartão mantém o botão "Descartar cronômetro" | y - AD-006 |
+| Título do Ciclo sem controle ao lado | Link "Renomear" ao lado do título | y - AD-001 |
 | Ciclos e Revisões com contador na Sidebar, cartão "Revisões de hoje" ao fundo | Não aparecem até a #12 | y - AD-001 |
 
 ## Sources
