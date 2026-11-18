@@ -219,8 +219,8 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] O aviso sobrevive ao fechamento do modal e some sozinho
-- [ ] Gate passes: `npm run typecheck; npm run build; npx vitest run`
+- [x] O aviso sobrevive ao fechamento do modal e some sozinho
+- [x] Gate passes: `npm run typecheck; npm run build; npx vitest run`
 
 **Tests**: none
 **Gate**: build
