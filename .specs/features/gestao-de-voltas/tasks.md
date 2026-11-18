@@ -178,9 +178,9 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] A tabela mostra uma linha por Volta, na ordem recebida, com os textos da spec
-- [ ] Usa tokens semânticos do BoardUI e textos em pt-BR
-- [ ] Gate passes: `npm run typecheck; npm run build; npx vitest run`
+- [x] A tabela mostra uma linha por Volta, na ordem recebida, com os textos da spec
+- [x] Usa tokens semânticos do BoardUI e textos em pt-BR
+- [x] Gate passes: `npm run typecheck; npm run build; npx vitest run`
 
 **Tests**: none
 **Gate**: build
