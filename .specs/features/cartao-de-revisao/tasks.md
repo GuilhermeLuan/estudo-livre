@@ -234,9 +234,9 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Ciclo novo vem com 60/75/90 e Mínimo 5; salvar válido grava; inválido recusa e mantém
-- [ ] Notas já gravadas não mudam; Ciclo de outro Usuário dá `NaoEncontradoError`
-- [ ] Gate check passes: `npx vitest run`
+- [x] Ciclo novo vem com 60/75/90 e Mínimo 5; salvar válido grava; inválido recusa e mantém
+- [x] Notas já gravadas não mudam; Ciclo de outro Usuário dá `NaoEncontradoError`
+- [x] Gate check passes: `npx vitest run`
 
 **Tests**: integration
 **Gate**: full
