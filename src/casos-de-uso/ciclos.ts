@@ -14,6 +14,7 @@ export type EtapaDetalhada = EtapaDoCiclo & { feitoMinutos: number };
 export type CicloDetalhe = {
   id: string;
   nome: string;
+  arquivado: boolean;
   etapas: EtapaDetalhada[];
   materias: (MateriaComProgresso & { topicos: { estudados: number; total: number } })[];
   /** A Volta aberta; `inicio` é nulo na Volta 1. */
@@ -110,7 +111,7 @@ export async function obterCiclo(db: Db, usuario: Usuario, cicloId: string): Pro
   // Uma leitura consistente: as Etapas, o progresso e a Volta vêm do mesmo instante.
   return db.transaction(
     async (tx) => {
-      const { id, nome } = await exigirCiclo(tx, usuario, cicloId);
+      const { id, nome, arquivadoEm } = await exigirCiclo(tx, usuario, cicloId);
       const posicoes = await tx.select({ id: etapa.id, posicao: etapa.posicao }).from(etapa).where(eq(etapa.cicloId, cicloId));
       const posicaoDe = new Map(posicoes.map((e) => [e.id, e.posicao]));
       const progresso = (await progressoDosCiclos(tx, eq(ciclo.id, cicloId))).get(cicloId) ?? { etapas: [], materias: [] };
@@ -127,6 +128,7 @@ export async function obterCiclo(db: Db, usuario: Usuario, cicloId: string): Pro
       return {
         id,
         nome,
+        arquivado: arquivadoEm !== null,
         etapas: progresso.etapas.map((e) => ({ ...e, posicao: posicaoDe.get(e.id)! })),
         materias: progresso.materias.map((m) => ({ ...m, topicos: topicosDe.get(m.id) ?? { estudados: 0, total: 0 } })),
         volta: aberta,

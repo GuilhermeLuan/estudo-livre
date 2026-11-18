@@ -8,6 +8,9 @@ import {
   iniciarCronometro,
   NaoEncontradoError,
   obterCiclo,
+  obterEstatisticas,
+  obterHome,
+  listarRegistros,
   reativarCiclo,
   registrarEstudo,
   ValidacaoError,
@@ -47,6 +50,7 @@ describe("arquivar e reativar", () => {
     await arquivarCiclo(db, usuario, cicloId);
     expect(await arquivadoEm(cicloId)).toBeInstanceOf(Date);
     expect(await arquivadoEm(outroId)).toBeNull();
+    expect((await obterHome(db, usuario)).ciclos.map((c) => c.id)).toEqual([outroId]);
   });
 
   it("recusa arquivar com o Cronômetro do Ciclo ativo", async () => {
@@ -111,7 +115,66 @@ describe("arquivar e reativar", () => {
     await reativarCiclo(db, usuario, cicloId);
     expect(await arquivadoEm(cicloId)).toBeNull();
     expect(await obterCiclo(db, usuario, cicloId)).toEqual(antes);
+    expect((await obterHome(db, usuario)).ciclos.map((c) => c.id)).toContain(cicloId);
     expect(antes.volta.numero).toBe(1);
     expect(antes.feitoMinutos).toBe(60);
+  });
+});
+
+describe("leituras", () => {
+  it("o Ciclo arquivado sai da Hoje e da Próxima etapa", async () => {
+    const { usuario, cicloId, outroId, materiaId, outraMateriaId } = await cenario();
+    const antes = await obterHome(db, usuario);
+    expect(antes.ciclos.map((c) => c.id)).toEqual([cicloId, outroId]);
+    expect(antes.ciclos[0].proxima?.materiaId).toBe(materiaId);
+    await arquivarCiclo(db, usuario, cicloId);
+    const depois = await obterHome(db, usuario);
+    expect(depois.ciclos.map((c) => c.id)).toEqual([outroId]);
+    expect(depois.ciclos[0].proxima?.materiaId).toBe(outraMateriaId);
+    expect(depois.arquivados.map((c) => c.id)).toEqual([cicloId]);
+  });
+
+  it("a Hoje descreve cada arquivado com nome, Volta, Etapas e Matérias", async () => {
+    const { usuario, cicloId, materiaId } = await cenario();
+    await arquivarCiclo(db, usuario, cicloId);
+    const [arquivado] = (await obterHome(db, usuario)).arquivados;
+    expect(arquivado).toEqual({ id: cicloId, nome: "TRF", volta: 1, totalEtapas: 1, materias: [{ id: materiaId, nome: "Português" }] });
+  });
+
+  it("obterCiclo diz se o Ciclo está arquivado", async () => {
+    const { usuario, cicloId } = await cenario();
+    expect((await obterCiclo(db, usuario, cicloId)).arquivado).toBe(false);
+    await arquivarCiclo(db, usuario, cicloId);
+    expect((await obterCiclo(db, usuario, cicloId)).arquivado).toBe(true);
+  });
+
+  it("arquivados do mais recente ao mais antigo", async () => {
+    const { usuario, cicloId, outroId } = await cenario();
+    const { id: terceiro } = await criarCiclo(db, usuario, { nome: "TRT" });
+    for (const id of [cicloId, outroId, terceiro]) await arquivarCiclo(db, usuario, id);
+    const quando = { [cicloId]: "2026-05-02", [outroId]: "2026-05-03", [terceiro]: "2026-05-01" };
+    for (const [id, dia] of Object.entries(quando)) await db.execute(sql`update ciclo set arquivado_em = ${dia + "T12:00:00Z"} where id = ${id}`);
+    expect((await obterHome(db, usuario)).arquivados.map((c) => c.id)).toEqual([outroId, cicloId, terceiro]);
+  });
+
+  it("Registros e Estatísticas seguem contando o Ciclo arquivado", async () => {
+    const { usuario, cicloId, materiaId } = await cenario();
+    await arquivarCiclo(db, usuario, cicloId);
+    expect((await listarRegistros(db, usuario, {})).total).toBe(1);
+    expect((await listarRegistros(db, usuario, { cicloId })).total).toBe(1);
+    const estatisticas = await obterEstatisticas(db, usuario);
+    expect(estatisticas.ciclos.map((c) => c.id)).toContain(cicloId);
+    expect(estatisticas.horasPorMateria.find((m) => m.id === materiaId)?.minutos).toBe(60);
+    expect((await obterEstatisticas(db, usuario, { cicloId })).totalQuestoes).toBe(10);
+  });
+
+  it("indicadores da Hoje seguem somando o Ciclo arquivado", async () => {
+    const { usuario, cicloId } = await cenario();
+    const antes = (await obterHome(db, usuario)).indicadores;
+    expect(antes.hojeMinutos).toBe(60);
+    await arquivarCiclo(db, usuario, cicloId);
+    const depois = (await obterHome(db, usuario)).indicadores;
+    expect(depois).toEqual(antes);
+    expect(depois.questoesHoje).toBe(10);
   });
 });

@@ -92,8 +92,8 @@ T4 → T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] Testes (grupo `leituras`) passam: `ciclos` e Próxima etapa sem o arquivado, `arquivados` na ordem pedida, `obterCiclo` com `arquivado`, `listarRegistros`, `obterEstatisticas` (inclui o Ciclo nos filtros) e indicadores somam o Ciclo arquivado
-- [ ] Gate full passes: `npx vitest run`
+- [x] Testes (grupo `leituras`) passam: `ciclos` e Próxima etapa sem o arquivado, `arquivados` na ordem pedida, `obterCiclo` com `arquivado`, `listarRegistros`, `obterEstatisticas` (inclui o Ciclo nos filtros) e indicadores somam o Ciclo arquivado
+- [x] Gate full passes: `npx vitest run`
 
 **Tests**: integration
 **Gate**: full

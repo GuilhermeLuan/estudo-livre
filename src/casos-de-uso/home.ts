@@ -1,6 +1,6 @@
-import { and, asc, eq, isNull, sql, type AnyColumn } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, sql, type AnyColumn } from "drizzle-orm";
 import type { Db, Tx } from "@/db";
-import { ciclo, materia, registroDeEstudo, user, volta } from "@/db/schema";
+import { ciclo, etapa, materia, registroDeEstudo, user, volta } from "@/db/schema";
 import { FUSO, hojeEmBrasilia, segundaDaSemana, somarDias } from "@/dia";
 import { concluida, percentualDeAcerto, variacaoPercentual } from "@/dominio";
 import { progressoDosCiclos, type EtapaComProgresso, type MateriaComProgresso } from "./progresso";
@@ -25,6 +25,9 @@ export type CicloDaHome = {
   faltaMinutos: number;
 };
 
+/** Um Ciclo arquivado (AD-026): o que a lista de arquivados e os filtros precisam, sem o progresso. */
+export type CicloArquivado = { id: string; nome: string; volta: number; totalEtapas: number; materias: { id: string; nome: string }[] };
+
 /** Os números do dia e da semana (segunda a domingo, em Brasília), somados em todos os Ciclos do Usuário. */
 export type Indicadores = {
   hojeMinutos: number;
@@ -39,7 +42,10 @@ export type Indicadores = {
 
 export type Home = {
   usuario: { nome: string; email: string; admin: boolean };
+  /** Só os Ciclos ativos. */
   ciclos: CicloDaHome[];
+  /** Do arquivado mais recentemente ao mais antigo. */
+  arquivados: CicloArquivado[];
   indicadores: Indicadores;
 };
 
@@ -93,6 +99,21 @@ function resumir(base: { id: string; nome: string; volta: number }, { etapas, ma
   };
 }
 
+async function arquivadosDoUsuario(tx: Tx, usuarioId: string): Promise<CicloArquivado[]> {
+  const lista = await tx
+    .select({ id: ciclo.id, nome: ciclo.nome, volta: volta.numero })
+    .from(ciclo)
+    .innerJoin(volta, and(eq(volta.cicloId, ciclo.id), isNull(volta.fim)))
+    .where(and(eq(ciclo.usuarioId, usuarioId), isNotNull(ciclo.arquivadoEm)))
+    .orderBy(desc(ciclo.arquivadoEm), asc(ciclo.id));
+  if (lista.length === 0) return [];
+  const ids = lista.map((c) => c.id);
+  const materias = await tx.select({ id: materia.id, nome: materia.nome, cicloId: materia.cicloId }).from(materia).where(inArray(materia.cicloId, ids)).orderBy(asc(materia.nome));
+  const etapas = await tx.select({ cicloId: etapa.cicloId, total: sql<number>`count(*)::int` }).from(etapa).where(inArray(etapa.cicloId, ids)).groupBy(etapa.cicloId);
+  const totais = new Map(etapas.map((e) => [e.cicloId, e.total]));
+  return lista.map((c) => ({ ...c, totalEtapas: totais.get(c.id) ?? 0, materias: materias.filter((m) => m.cicloId === c.id).map(({ id, nome }) => ({ id, nome })) }));
+}
+
 export async function obterHome(db: Db, usuario: Usuario): Promise<Home> {
   // Uma leitura consistente: as Voltas e o progresso das Etapas vêm do mesmo instante.
   return db.transaction(
@@ -103,12 +124,13 @@ export async function obterHome(db: Db, usuario: Usuario): Promise<Home> {
         .select({ id: ciclo.id, nome: ciclo.nome, volta: volta.numero })
         .from(ciclo)
         .innerJoin(volta, and(eq(volta.cicloId, ciclo.id), isNull(volta.fim)))
-        .where(eq(ciclo.usuarioId, usuario.id))
+        .where(and(eq(ciclo.usuarioId, usuario.id), isNull(ciclo.arquivadoEm)))
         .orderBy(asc(ciclo.criadoEm), asc(ciclo.id));
-      const progresso = await progressoDosCiclos(tx, eq(ciclo.usuarioId, usuario.id));
+      const progresso = await progressoDosCiclos(tx, and(eq(ciclo.usuarioId, usuario.id), isNull(ciclo.arquivadoEm)));
       return {
         usuario: linha,
         ciclos: ciclos.map((c) => resumir(c, progresso.get(c.id) ?? { etapas: [], materias: [] })),
+        arquivados: await arquivadosDoUsuario(tx, usuario.id),
         indicadores: await indicadoresDoUsuario(tx, usuario.id),
       };
     },
