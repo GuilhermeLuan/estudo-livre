@@ -1,7 +1,7 @@
 # Registros checks
 
 Build: `npm run typecheck`; `npm run build`
-Run unit: `npx vitest run tests/registros.test.ts --reporter=verbose`
+Run unit: `npx vitest run tests/registros.test.ts tests/estudo.test.ts --reporter=verbose`
 Plan: `.specs/features/registros/plan.md`
 
 36 checks in 5 slices · 0 one-way doors · 0 open
