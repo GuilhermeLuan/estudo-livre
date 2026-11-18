@@ -67,17 +67,25 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
         <ListaEtapas cicloId={id} etapas={itens} proximaId={ciclo.proximaEtapaId ?? undefined} />
         {materias.length > 0 && (
           <aside aria-label="Matérias" className="grid gap-3 rounded-3xl bg-background-secondary-default p-4">
-            <h2 className="text-title-3-medium text-text-primary">Matérias</h2>
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-title-3-medium text-text-primary">Matérias</h2>
+              <span className="text-caption-1-regular text-text-secondary">Tópicos estudados</span>
+            </div>
             <ul className="grid gap-3">
               {materias.map((m) => (
-                <li key={m.id} className="grid gap-1.5">
-                  <div className="grid">
-                    <span className="text-body-medium text-text-primary">{m.nome}</span>
+                <li key={m.id} className="flex items-start justify-between gap-3">
+                  <div className="grid min-w-0">
+                    <Link href={`/ciclos/${id}/materias/${m.id}`} className="text-body-medium text-text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-border-focus-ring">
+                      {m.nome}
+                    </Link>
                     <span className="text-caption-1-regular text-text-secondary">
                       {quantidade(m.etapas, "etapa", "etapas")} · {tempoHM(m.cargaMinutos)}
                     </span>
                   </div>
-                  <ProgressTrack percentage={(m.feitoMinutos / m.cargaMinutos) * 100} size="sm" className={concluida(m) ? "text-chart-2" : "text-accent-500"} />
+                  <div className="grid w-16 shrink-0 justify-items-end gap-1.5 pt-3.5">
+                    <span className="text-body-regular text-text-secondary">{m.topicos.total ? `${m.topicos.estudados}/${m.topicos.total}` : "—"}</span>
+                    {m.topicos.total > 0 && <ProgressTrack percentage={(m.topicos.estudados / m.topicos.total) * 100} size="sm" className={m.topicos.estudados === m.topicos.total ? "text-chart-2" : "text-accent-500"} />}
+                  </div>
                 </li>
               ))}
             </ul>

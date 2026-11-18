@@ -30,3 +30,14 @@ export {
 export { obterEstatisticas, type Estatisticas, type MateriaNasEstatisticas } from "./estatisticas";
 export { instanteDoDia, registrarEstudo, type DadosDoEstudo, type OpcoesDoRegistro } from "./estudo";
 export { NaoEncontradoError, ValidacaoError } from "./erros";
+export {
+  criarTopico,
+  excluirTopico,
+  importarTopicos,
+  listarTopicosDasMaterias,
+  marcarTopico,
+  obterMateria,
+  renomearTopico,
+  type MateriaComTopicos,
+  type TopicoDaMateria,
+} from "./topicos";

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { descricaoDaVolta, rotuloDaDiferenca, rotuloDaVariacao, situacaoDaEtapa } from "@/app/formato";
+import { avisoDaImportacao, descricaoDaVolta, rotuloDaDiferenca, rotuloDaVariacao, situacaoDaEtapa } from "@/app/formato";
+import { conteudoDoRegistro } from "@/app/campos-do-registro";
 import { percentualDeAcerto, variacaoPercentual } from "@/dominio";
 
 describe("variação e acerto", () => {
@@ -44,5 +45,21 @@ describe("Volta e Situação da Etapa", () => {
     expect(situacaoDaEtapa(e(20), { proxima: true, extraMinutos: 0 })).toBe("Próxima etapa");
     expect(situacaoDaEtapa(e(20), { proxima: false, extraMinutos: 0 })).toBe("Em andamento");
     expect(situacaoDaEtapa(e(0), { proxima: false, extraMinutos: 0 })).toBe("Não iniciada");
+  });
+});
+
+describe("Tópicos na interface", () => {
+  it("o aviso da importação concorda com o número", () => {
+    expect(avisoDaImportacao(2, 2)).toBe("2 importados, 2 ignorados.");
+    expect(avisoDaImportacao(1, 1)).toBe("1 importado, 1 ignorado.");
+    expect(avisoDaImportacao(0, 3)).toBe("0 importados, 3 ignorados.");
+  });
+
+  it("o segmento do Conteúdo grava só o campo do segmento escolhido", () => {
+    const campos = { topicoId: "t1", conteudoLivre: "crase" };
+    expect(conteudoDoRegistro("topico", campos)).toEqual({ topicoId: "t1", conteudoLivre: "" });
+    expect(conteudoDoRegistro("topico", { ...campos, topicoId: "" })).toEqual({ erro: "Escolha um tópico." });
+    expect(conteudoDoRegistro("livre", campos)).toEqual({ topicoId: null, conteudoLivre: "crase" });
+    expect(conteudoDoRegistro("nenhum", campos)).toEqual({ topicoId: null, conteudoLivre: "" });
   });
 });

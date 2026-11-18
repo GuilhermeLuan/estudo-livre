@@ -10,6 +10,8 @@ export const LIMITES_DO_REGISTRO = {
   conteudoLivreMaximo: 200,
 } as const;
 
+export const LIMITES_DO_TOPICO = { nomeMaximo: 120, importacaoMaxima: 200 } as const;
+
 /** Carga horária e progresso de uma Etapa ou de uma Matéria: a mesma regra de 100% vale para as duas. */
 export type ComProgresso = { cargaMinutos: number; feitoMinutos: number };
 
