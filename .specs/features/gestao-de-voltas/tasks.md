@@ -115,10 +115,10 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] As três funções devolvem `voltaFechada`; `removerEtapa` e `editarEtapa` deixam de devolver `void`
-- [ ] Ciclo sem Etapas depois da remoção mantém a Volta aberta
-- [ ] Gate passes: `npx vitest run`
-- [ ] 8 testes novos em `tests/voltas.test.ts` passam (total 17), sem testes removidos
+- [x] As três funções devolvem `voltaFechada`; `removerEtapa` e `editarEtapa` deixam de devolver `void`
+- [x] Ciclo sem Etapas depois da remoção mantém a Volta aberta
+- [x] Gate passes: `npx vitest run`
+- [x] 10 testes novos em `tests/voltas.test.ts` passam (total 19), sem testes removidos
 
 **Tests**: integration
 **Gate**: full

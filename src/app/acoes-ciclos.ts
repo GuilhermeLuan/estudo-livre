@@ -26,7 +26,7 @@ function minutos(dados: FormData) {
   return Math.round(Number(texto(dados, "horas").replace(",", ".")) * 60);
 }
 
-async function executar(operacao: () => Promise<void>): Promise<EstadoCiclo> {
+async function executar(operacao: () => Promise<unknown>): Promise<EstadoCiclo> {
   try {
     await operacao();
   } catch (erro) {
