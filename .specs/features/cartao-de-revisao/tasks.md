@@ -312,8 +312,8 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Ações finas, só traduzem `FormData` e erros do caso de uso
-- [ ] Gate check passes: `npm run typecheck`
+- [x] Ações finas, só traduzem `FormData` e erros do caso de uso
+- [x] Gate check passes: `npm run typecheck`
 
 **Tests**: none
 **Gate**: build
