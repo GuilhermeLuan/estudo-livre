@@ -211,8 +211,8 @@ T4 → T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] Reativar tira o Ciclo da lista e ele volta à Hoje e à Sidebar
-- [ ] Gate build passes: `npm run typecheck; npm run build`
+- [x] Reativar tira o Ciclo da lista e ele volta à Hoje e à Sidebar
+- [x] Gate build passes: `npm run typecheck; npm run build`
 
 **Tests**: none
 **Gate**: build
