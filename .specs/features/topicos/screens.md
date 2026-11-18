@@ -2,12 +2,12 @@
 
 **Verifier**: independent sub-agent (author != verifier)
 **Round**: 2
-**HEAD**: 0f63ece
+**HEAD**: f5acb2b
 
 | Screen | Compared with | Verdict | Finding |
 | --- | --- | --- | --- |
 | `captures/ciclo.running.png` | `captures/ciclo.png` | matches | 0 rows differ |
-| `captures/registrar-estudo.running.png` | `captures/registrar-estudo.png` | diverges | 1 row differs |
+| `captures/registrar-estudo.running.png` | `captures/registrar-estudo.png` | diverges | 1 row differs (regression) |
 
 ### `captures/ciclo.running.png`
 
@@ -47,10 +47,10 @@ Approved departures applied: "Nota da revisão", "Sugerida" chip, scale, hint, "
 | dimmed Hoje page behind a centered modal | same | |
 | modal title `Registrar estudo` at top left | same | |
 | subtitle `Duração preenchida pelo cronômetro` with clock icon under the title | same | shown only when a timer fills the duration; not this state |
-| close button on the top right | differs | still a filled grey circle with `×` |
+| close button on the top right | same | light rounded square with `×` |
 | `Matéria` label + select `<matéria> · <ciclo>` with chevron | same | |
 | `Conteúdo` label + segmented control Tópico / Conteúdo livre / Sem conteúdo, Tópico selected | same | |
-| Tópico select with chevron, full width | same | |
+| Tópico select with chevron, full width | differs - regression | caught mid-transition: grey background, spinner-like glyph instead of the chevron, faint ghost option text overlapping the Data row; retake with the select at rest |
 | `Data` field | same | date only, native `mm/dd/yyyy` with calendar icon; time omitted per AD-007 |
 | `Duração` as one field (`1h 10min`) beside Data | same | Horas and Minutos, approved departure |
 | `Tipo de estudo` segmented: Teoria, Exercícios, Revisão, Videoaula, Leitura de lei | same | |
