@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { adicionarEtapa, criarCiclo, criarTopico, editarRegistro, excluirRegistro, excluirTopico, listarRegistros, NaoEncontradoError, obterCartao, recalcularTopico, registrarEstudo, ValidacaoError } from "@/casos-de-uso";
+import { adicionarEtapa, criarCiclo, criarTopico, editarRegistro, estimarProximaRevisao, excluirRegistro, excluirTopico, listarRegistros, NaoEncontradoError, obterCartao, recalcularTopico, registrarEstudo, ValidacaoError } from "@/casos-de-uso";
 import { cartaoDeRevisao, logDeRevisao, registroDeEstudo } from "@/db/schema";
 import { hojeEmBrasilia } from "@/dia";
 import { recalcularCartao, type Nota } from "@/revisao";
@@ -259,5 +259,42 @@ describe("nota", () => {
     await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId });
     const { registros: lista } = await listarRegistros(db, usuario, {});
     expect(lista.map((r) => r.nota).sort()).toEqual(["Fácil", null]);
+  });
+});
+
+describe("estimativa", () => {
+  it("a data estimada é a do Cartão depois de salvar", async () => {
+    const { usuario, materiaId, topicoId } = await cenario();
+    const diaDoCartao = async () => hojeEmBrasilia((await obterCartao(db, usuario, topicoId))!.proximaRevisao!);
+    await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16, dia: diaDaquiA(-9) });
+
+    // Registro novo, hoje e retroativo.
+    for (const [dia, acertos] of [[undefined, 20], [diaDaquiA(-5), 10], [diaDaquiA(-30), 20]] as const) {
+      const rascunho = { materiaId, topicoId, dia, questoes: 20, acertos };
+      const estimada = await estimarProximaRevisao(db, usuario, rascunho);
+      await registrarEstudo(db, usuario, materiaId, { ...estudo, ...rascunho });
+      expect(estimada).toBe(await diaDoCartao());
+    }
+
+    // Edição: o rascunho substitui o Registro.
+    const { id } = await registrarEstudo(db, usuario, materiaId, { ...estudo, topicoId, questoes: 20, acertos: 16, dia: diaDaquiA(-2) });
+    for (const dia of [diaDaquiA(-2), diaDaquiA(-7)]) {
+      const rascunho = { materiaId, topicoId, dia, questoes: 20, acertos: 0, registroId: id };
+      const estimada = await estimarProximaRevisao(db, usuario, rascunho);
+      await editarRegistro(db, usuario, id, materiaId, { ...estudo, ...rascunho });
+      expect(estimada).toBe(await diaDoCartao());
+    }
+  });
+
+  it("sem Tópico ou sem data não há estimativa", async () => {
+    const { usuario, materiaId, topicoId } = await cenario();
+    const antes = await registros();
+    expect(await estimarProximaRevisao(db, usuario, { materiaId, questoes: 20, acertos: 16 })).toBeNull(); // sem Tópico
+    expect(await estimarProximaRevisao(db, usuario, { materiaId, topicoId })).toBeNull(); // Cartão sem data
+    expect(await estimarProximaRevisao(db, usuario, { materiaId, topicoId, questoes: 4, acertos: 4 })).toBeNull(); // faltou a nota
+    expect(await estimarProximaRevisao(db, usuario, { materiaId, topicoId, questoes: 4, acertos: 4, nota: "Bom" })).not.toBeNull();
+    expect(await registros()).toEqual(antes);
+    expect(await db.select().from(cartaoDeRevisao)).toEqual([]);
+    expect(await db.select().from(logDeRevisao)).toEqual([]);
   });
 });

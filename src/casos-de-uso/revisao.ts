@@ -1,8 +1,10 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, ne } from "drizzle-orm";
+import { hojeEmBrasilia } from "@/dia";
 import type { Db, Tx } from "@/db";
 import { cartaoDeRevisao, ciclo, logDeRevisao, materia, registroDeEstudo, topico } from "@/db/schema";
 import { NOTAS, recalcularCartao, sugerirNota, type Faixas, type Nota } from "@/revisao";
-import { ValidacaoError } from "./erros";
+import { NaoEncontradoError, ValidacaoError } from "./erros";
+import { instanteDoDia, type DadosDoEstudo } from "./estudo";
 import type { Executor } from "./progresso";
 import type { Usuario } from "./usuario";
 
@@ -53,4 +55,56 @@ export function resolverNota(ciclo: { faixas: Faixas; minimo: number }, d: { top
   const nota = d.nota ?? sugerirNota(d.acertos ?? null, d.questoes, ciclo.faixas, ciclo.minimo);
   if (!nota) throw new ValidacaoError("Escolha a nota da revisão.");
   return nota;
+}
+
+export type RascunhoDeRegistro = Pick<DadosDoEstudo, "dia" | "questoes" | "acertos" | "nota" | "topicoId"> & {
+  materiaId: string;
+  /** Registro em edição: o rascunho o substitui. */
+  registroId?: string;
+};
+
+/**
+ * O dia (Brasília) da próxima revisão que o Tópico teria se o rascunho fosse salvo: a mesma conta do recálculo, sem
+ * gravar. Nulo sem Tópico, com rascunho que seria recusado, ou se o Cartão ficaria sem data.
+ */
+export async function estimarProximaRevisao(db: Db, usuario: Usuario, rascunho: RascunhoDeRegistro): Promise<string | null> {
+  const [alvo] = await db
+    .select({ cicloId: materia.cicloId })
+    .from(materia)
+    .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
+    .where(and(eq(materia.id, rascunho.materiaId), eq(ciclo.usuarioId, usuario.id)));
+  if (!alvo) throw new NaoEncontradoError("Matéria");
+  if (!rascunho.topicoId) return null;
+  const [doTopico] = await db.select({ id: topico.id }).from(topico).where(and(eq(topico.id, rascunho.topicoId), eq(topico.materiaId, rascunho.materiaId)));
+  if (!doTopico) return null;
+
+  let nota: Nota | null;
+  try {
+    nota = resolverNota(await faixasDoCiclo(db, alvo.cicloId), rascunho);
+  } catch (erro) {
+    if (erro instanceof ValidacaoError) return null;
+    throw erro;
+  }
+  // Como o editarRegistro: o mesmo dia mantém o instante do Registro; senão o dia digitado.
+  const [atual] = rascunho.registroId
+    ? await db
+        .select({ dataHora: registroDeEstudo.dataHora, criadoEm: registroDeEstudo.criadoEm })
+        .from(registroDeEstudo)
+        .innerJoin(materia, eq(materia.id, registroDeEstudo.materiaId))
+        .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
+        .where(and(eq(registroDeEstudo.id, rascunho.registroId), eq(ciclo.usuarioId, usuario.id)))
+    : [];
+  if (rascunho.registroId && !atual) throw new NaoEncontradoError("Registro");
+  const agora = new Date();
+  const dataHora = rascunho.dia === undefined || (atual && rascunho.dia === hojeEmBrasilia(atual.dataHora)) ? (atual?.dataHora ?? agora) : instanteDoDia(rascunho.dia, agora);
+
+  const outros = await db
+    .select({ id: registroDeEstudo.id, nota: registroDeEstudo.nota, dataHora: registroDeEstudo.dataHora, criadoEm: registroDeEstudo.criadoEm })
+    .from(registroDeEstudo)
+    .where(and(eq(registroDeEstudo.topicoId, rascunho.topicoId), rascunho.registroId ? ne(registroDeEstudo.id, rascunho.registroId) : undefined));
+  const registros = [...outros, { id: rascunho.registroId ?? "\uffff", nota, dataHora, criadoEm: atual?.criadoEm ?? agora }]
+    .filter((r) => r.nota !== null)
+    .sort((a, b) => +a.dataHora - +b.dataHora || +a.criadoEm - +b.criadoEm || a.id.localeCompare(b.id));
+  const { proximaRevisao } = recalcularCartao(registros.map((r) => ({ nota: r.nota!, revisadoEm: r.dataHora })));
+  return proximaRevisao && hojeEmBrasilia(proximaRevisao);
 }

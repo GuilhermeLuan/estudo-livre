@@ -254,9 +254,9 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] A data estimada é igual à do Tópico depois de salvar o mesmo Registro
-- [ ] Sem Tópico, ou Cartão sem data, devolve nulo; nada é gravado
-- [ ] Gate check passes: `npx vitest run`
+- [x] A data estimada é igual à do Tópico depois de salvar o mesmo Registro
+- [x] Sem Tópico, ou Cartão sem data, devolve nulo; nada é gravado
+- [x] Gate check passes: `npx vitest run`
 
 **Tests**: integration
 **Gate**: full
@@ -543,7 +543,7 @@ Proof: run unit | ✓ tests/topicos.test.ts > próxima revisão > a Matéria tra
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started; returned; batch 2 (Phase 2, T5-T10) worker, sent at HEAD 3f04a7b
+**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started; returned; batch 2 (Phase 2, T5-T10) worker, sent at HEAD 3f04a7b; returned
 **Walked:** none
 
 ---
