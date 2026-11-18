@@ -111,9 +111,9 @@ T4 → T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] `faixas.ts` recebe a mesma guarda no `UPDATE`
-- [ ] Testes (grupo `escritas no Ciclo arquivado`) passam: renomear, adicionar, editar, remover e reordenar Etapa, reiniciar Volta e salvar Faixas recusam com "Ciclo arquivado. Reative para alterar." e nada muda; depois de reativar, voltam a funcionar
-- [ ] Gate full passes: `npx vitest run`
+- [x] `faixas.ts` recebe a mesma guarda no `UPDATE`
+- [x] Testes (grupo `escritas no Ciclo arquivado`) passam: renomear, adicionar, editar, remover e reordenar Etapa, reiniciar Volta e salvar Faixas recusam com "Ciclo arquivado. Reative para alterar." e nada muda; depois de reativar, voltam a funcionar
+- [x] Gate full passes: `npx vitest run`
 
 **Tests**: integration
 **Gate**: full

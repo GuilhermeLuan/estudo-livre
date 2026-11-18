@@ -3,7 +3,7 @@ import type { Db, Tx } from "@/db";
 import { ciclo, etapa, materia, registroDeEstudo, topico, volta } from "@/db/schema";
 import { concluida } from "@/dominio";
 import { avaliarFechamentoDaVolta, progressoDosCiclos, type Executor, type MateriaComProgresso } from "./progresso";
-import { NaoEncontradoError, ValidacaoError } from "./erros";
+import { ESCRITA_EM_ARQUIVADO, NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
 
 export type EtapaDoCiclo = { id: string; materiaId: string; nome: string; cargaMinutos: number; posicao: number };
@@ -65,11 +65,12 @@ async function exigirEtapa(db: Db, usuario: Usuario, etapaId: string) {
 /** Trava o Ciclo para que alterações simultâneas nas Etapas não repitam posição nem dupliquem Matérias. */
 export async function travarCiclo(tx: Tx, usuario: Usuario, cicloId: string) {
   const [linha] = await tx
-    .select({ id: ciclo.id })
+    .select({ id: ciclo.id, arquivadoEm: ciclo.arquivadoEm })
     .from(ciclo)
     .where(and(eq(ciclo.id, cicloId), eq(ciclo.usuarioId, usuario.id)))
     .for("update");
   if (!linha) throw new NaoEncontradoError("Ciclo");
+  if (linha.arquivadoEm) throw new ValidacaoError(ESCRITA_EM_ARQUIVADO);
 }
 
 /** A Matéria do Ciclo com este nome (sem diferenciar maiúsculas), criada se ainda não existir. */
@@ -103,7 +104,8 @@ export async function criarCiclo(db: Db, usuario: Usuario, dados: { nome: string
 
 export async function renomearCiclo(db: Db, usuario: Usuario, cicloId: string, dados: { nome: string }) {
   const nome = nomeValido(dados.nome, "do ciclo");
-  await exigirCiclo(db, usuario, cicloId);
+  const { arquivadoEm } = await exigirCiclo(db, usuario, cicloId);
+  if (arquivadoEm) throw new ValidacaoError(ESCRITA_EM_ARQUIVADO);
   await db.update(ciclo).set({ nome }).where(eq(ciclo.id, cicloId));
 }
 

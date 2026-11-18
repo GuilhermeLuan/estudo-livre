@@ -5,6 +5,13 @@ import {
   arquivarCiclo,
   criarCiclo,
   criarTopico,
+  editarEtapa,
+  obterFaixas,
+  reiniciarVolta,
+  removerEtapa,
+  renomearCiclo,
+  reordenarEtapas,
+  salvarFaixas,
   iniciarCronometro,
   NaoEncontradoError,
   obterCiclo,
@@ -176,5 +183,40 @@ describe("leituras", () => {
     const depois = (await obterHome(db, usuario)).indicadores;
     expect(depois).toEqual(antes);
     expect(depois.questoesHoje).toBe(10);
+  });
+});
+
+const MENSAGEM = "Ciclo arquivado. Reative para alterar.";
+const recusa = async (escrita: () => Promise<unknown>) => {
+  const erro = (await escrita().catch((e) => e)) as Error;
+  expect(erro).toBeInstanceOf(ValidacaoError);
+  expect(erro.message).toBe(MENSAGEM);
+};
+
+describe("escritas no Ciclo arquivado", () => {
+  it("Ciclo, Etapas, Volta e Faixas recusam a escrita", async () => {
+    const { usuario, cicloId } = await cenario();
+    const { etapas } = await obterCiclo(db, usuario, cicloId);
+    const faixas = await obterFaixas(db, usuario, cicloId);
+    await arquivarCiclo(db, usuario, cicloId);
+    const antes = await historico();
+
+    await recusa(() => renomearCiclo(db, usuario, cicloId, { nome: "Outro" }));
+    await recusa(() => adicionarEtapa(db, usuario, cicloId, { nome: "Direito", cargaMinutos: 60 }));
+    await recusa(() => editarEtapa(db, usuario, etapas[0].id, { nome: "Português", cargaMinutos: 30 }));
+    await recusa(() => removerEtapa(db, usuario, etapas[0].id));
+    await recusa(() => reordenarEtapas(db, usuario, cicloId, [etapas[0].id]));
+    await recusa(() => reiniciarVolta(db, usuario, cicloId, 1));
+    await recusa(() => salvarFaixas(db, usuario, cicloId, { ...faixas, minimo: 9 }));
+
+    expect(await historico()).toEqual(antes);
+    expect((await obterCiclo(db, usuario, cicloId)).nome).toBe("TRF");
+    expect(await obterFaixas(db, usuario, cicloId)).toEqual(faixas);
+
+    await reativarCiclo(db, usuario, cicloId);
+    await renomearCiclo(db, usuario, cicloId, { nome: "Outro" });
+    await salvarFaixas(db, usuario, cicloId, { ...faixas, minimo: 9 });
+    expect((await obterFaixas(db, usuario, cicloId)).minimo).toBe(9);
+    expect(await reiniciarVolta(db, usuario, cicloId, 1)).toEqual({ numero: 2 });
   });
 });
