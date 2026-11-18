@@ -173,9 +173,9 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Cada critério REV-01 a REV-06 e a nota inválida têm teste pela fronteira
-- [ ] Testes existentes que registram Tópico com 1–4 questões enviam `nota`
-- [ ] Gate check passes: `npx vitest run`
+- [x] Cada critério REV-01 a REV-06 e a nota inválida têm teste pela fronteira
+- [x] Testes existentes que registram Tópico com 1–4 questões enviam `nota`
+- [x] Gate check passes: `npx vitest run`
 
 **Tests**: integration
 **Gate**: full

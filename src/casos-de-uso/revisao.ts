@@ -1,7 +1,9 @@
 import { and, asc, eq } from "drizzle-orm";
 import type { Db, Tx } from "@/db";
 import { cartaoDeRevisao, ciclo, logDeRevisao, materia, registroDeEstudo, topico } from "@/db/schema";
-import { recalcularCartao } from "@/revisao";
+import { NOTAS, recalcularCartao, sugerirNota, type Faixas, type Nota } from "@/revisao";
+import { ValidacaoError } from "./erros";
+import type { Executor } from "./progresso";
 import type { Usuario } from "./usuario";
 
 /** Apaga e refaz o Cartão e o log do Tópico a partir dos Registros com nota (ADR-0002). Sem Registros, não há Cartão. */
@@ -31,4 +33,24 @@ export async function obterCartao(db: Db, usuario: Usuario, topicoId: string): P
     .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
     .where(and(eq(cartaoDeRevisao.topicoId, topicoId), eq(ciclo.usuarioId, usuario.id)));
   return cartao ?? null;
+}
+
+export async function faixasDoCiclo(db: Executor, cicloId: string): Promise<{ faixas: Faixas; minimo: number }> {
+  const [c] = await db
+    .select({ erreiAte: ciclo.faixaErreiAte, dificilAte: ciclo.faixaDificilAte, bomAte: ciclo.faixaBomAte, minimo: ciclo.minimoDeQuestoes })
+    .from(ciclo)
+    .where(eq(ciclo.id, cicloId));
+  return { faixas: { erreiAte: c.erreiAte, dificilAte: c.dificilAte, bomAte: c.bomAte }, minimo: c.minimo };
+}
+
+/**
+ * A nota que o Registro grava: só há nota com Tópico e questões; a escolhida vale no lugar da sugerida e abaixo do
+ * Mínimo é obrigatória (AD-020).
+ */
+export function resolverNota(ciclo: { faixas: Faixas; minimo: number }, d: { topicoId?: string | null; questoes?: number | null; acertos?: number | null; nota?: Nota | null }): Nota | null {
+  if (d.nota != null && !NOTAS.includes(d.nota)) throw new ValidacaoError("Escolha uma nota válida.");
+  if (!d.topicoId || !d.questoes) return null;
+  const nota = d.nota ?? sugerirNota(d.acertos ?? null, d.questoes, ciclo.faixas, ciclo.minimo);
+  if (!nota) throw new ValidacaoError("Escolha a nota da revisão.");
+  return nota;
 }
