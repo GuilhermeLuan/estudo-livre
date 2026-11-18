@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   adicionarEtapa,
+  arquivarCiclo,
   criarCiclo,
   editarEtapa,
   NaoEncontradoError,
+  reativarCiclo,
   removerEtapa,
   renomearCiclo,
   reiniciarVolta,
@@ -97,6 +99,22 @@ export async function moverEtapa(cicloId: string, ids: string[]): Promise<Estado
 export async function reiniciar(cicloId: string, numero: number): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
   const estado = await executar(async () => void (await reiniciarVolta(obterDb(), usuario, cicloId, numero)));
+  revalidatePath("/", "layout");
+  return estado;
+}
+
+/** Arquiva o Ciclo e leva à Hoje; se o caso de uso recusa (Cronômetro rodando), devolve o erro e fica na tela. */
+export async function arquivar(cicloId: string): Promise<EstadoCiclo> {
+  const usuario = await exigirUsuario();
+  const estado = await executar(() => arquivarCiclo(obterDb(), usuario, cicloId));
+  if (estado.erro) return estado;
+  revalidatePath("/", "layout");
+  redirect("/");
+}
+
+export async function reativar(cicloId: string): Promise<EstadoCiclo> {
+  const usuario = await exigirUsuario();
+  const estado = await executar(() => reativarCiclo(obterDb(), usuario, cicloId));
   revalidatePath("/", "layout");
   return estado;
 }

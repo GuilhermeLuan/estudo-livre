@@ -190,10 +190,10 @@ T4 → T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] `acoes-ciclos.ts` com `arquivar` (vai à Hoje) e `reativar`, devolvendo o erro do caso de uso
-- [ ] `src/app/(app)/ciclos/[id]/page.tsx` mostra "Arquivar" ou "Reativar" e esconde "Adicionar etapa", "Reiniciar volta", "Renomear", o menu e a ordenação das Etapas, "Editar" das Faixas e as ações de Tópicos quando arquivado
-- [ ] Tela como `.specs/features/arquivar-ciclo/captures/ciclo.png`
-- [ ] Gate build passes: `npm run typecheck; npm run build`
+- [x] `acoes-ciclos.ts` com `arquivar` (vai à Hoje) e `reativar`, devolvendo o erro do caso de uso
+- [x] `src/app/(app)/ciclos/[id]/page.tsx` mostra "Arquivar" ou "Reativar" e esconde "Adicionar etapa", "Reiniciar volta", "Renomear", o menu e a ordenação das Etapas, "Editar" das Faixas e as ações de Tópicos quando arquivado
+- [x] Tela como `.specs/features/arquivar-ciclo/captures/ciclo.png`
+- [x] Gate build passes: `npm run typecheck; npm run build`
 
 **Tests**: none
 **Gate**: build

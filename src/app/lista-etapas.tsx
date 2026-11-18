@@ -35,7 +35,7 @@ const COR_DA_SITUACAO: Record<string, ChipColor> = {
 };
 const corDaSituacao = (situacao: string): ChipColor => COR_DA_SITUACAO[situacao] ?? "purple";
 
-function Linha({ etapa, posicao, proxima, aoEditar, aoRemover }: { etapa: EtapaItem; posicao: number; proxima: boolean; aoEditar: () => void; aoRemover: () => void }) {
+function Linha({ etapa, posicao, proxima, somenteLeitura, aoEditar, aoRemover }: { etapa: EtapaItem; posicao: number; proxima: boolean; somenteLeitura: boolean; aoEditar: () => void; aoRemover: () => void }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: etapa.id });
   const percentual = Math.min(100, Math.round((etapa.feitoMinutos / etapa.cargaMinutos) * 100));
   const situacao = situacaoDaEtapa(etapa, { proxima, extraMinutos: etapa.extraMinutos });
@@ -49,7 +49,7 @@ function Linha({ etapa, posicao, proxima, aoEditar, aoRemover }: { etapa: EtapaI
         isDragging && "relative z-10 rounded-xl bg-background-primary-default shadow-md",
       )}
     >
-      <button
+      {somenteLeitura ? <span className="size-7" /> : <button
         ref={setActivatorNodeRef}
         type="button"
         {...attributes}
@@ -58,7 +58,7 @@ function Linha({ etapa, posicao, proxima, aoEditar, aoRemover }: { etapa: EtapaI
         className="grid size-7 cursor-grab touch-none place-items-center rounded-md text-foreground-icon-tertiary outline-none hover:text-foreground-icon-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring active:cursor-grabbing"
       >
         <RiDraggable className="size-4" aria-hidden />
-      </button>
+      </button>}
       <span className="grid size-6 place-items-center rounded-md bg-background-secondary-default text-caption-1-medium text-text-secondary">{posicao}</span>
       <span className="min-w-0 truncate text-body-medium text-text-primary">{etapa.nome}</span>
       <span className="text-body-regular text-text-secondary tabular-nums max-lg:hidden">{tempoHM(etapa.cargaMinutos)}</span>
@@ -67,7 +67,7 @@ function Linha({ etapa, posicao, proxima, aoEditar, aoRemover }: { etapa: EtapaI
       <Chip variant="caption" color={corDaSituacao(situacao)} className="justify-self-start max-lg:hidden">
         {situacao}
       </Chip>
-      <Dropdown>
+      {somenteLeitura ? <span className="size-8" /> : <Dropdown>
         <DropdownTrigger className="grid size-8 place-items-center rounded-lg text-foreground-icon-secondary hover:bg-background-secondary-hover" aria-label={`Ações de ${etapa.nome}`}>
           <RiMore2Fill className="size-5" aria-hidden />
         </DropdownTrigger>
@@ -75,12 +75,13 @@ function Linha({ etapa, posicao, proxima, aoEditar, aoRemover }: { etapa: EtapaI
           <DropdownItem onSelect={aoEditar}>Editar</DropdownItem>
           <DropdownItem onSelect={aoRemover}>Remover etapa</DropdownItem>
         </DropdownPopover>
-      </Dropdown>
+      </Dropdown>}
     </li>
   );
 }
 
-export function ListaEtapas({ cicloId, etapas, proximaId }: { cicloId: string; etapas: EtapaItem[]; proximaId?: string }) {
+/** `somenteLeitura` (Ciclo arquivado) tira a ordenação e o menu de cada Etapa. */
+export function ListaEtapas({ cicloId, etapas, proximaId, somenteLeitura = false }: { cicloId: string; etapas: EtapaItem[]; proximaId?: string; somenteLeitura?: boolean }) {
   const [itens, setItens] = useState(etapas);
   const [erro, setErro] = useState<string>();
   const [aviso, setAviso] = useState<string | null>(null);
@@ -113,7 +114,7 @@ export function ListaEtapas({ cicloId, etapas, proximaId }: { cicloId: string; e
     return (
       <div className="grid justify-items-start gap-3 rounded-3xl bg-background-secondary-default p-6">
         <p className="text-body-regular text-text-secondary">Nenhuma etapa ainda. Adicione a primeira, com a matéria e as horas dela nesta etapa.</p>
-        <AdicionarEtapa cicloId={cicloId} />
+        {!somenteLeitura && <AdicionarEtapa cicloId={cicloId} />}
       </div>
     );
 
@@ -133,7 +134,7 @@ export function ListaEtapas({ cicloId, etapas, proximaId }: { cicloId: string; e
         <SortableContext items={itens.map((e) => e.id)} strategy={verticalListSortingStrategy}>
           <ol className="divide-y divide-border-table">
             {itens.map((e, i) => (
-              <Linha key={e.id} etapa={e} posicao={i + 1} proxima={e.id === proximaId} aoEditar={() => setEditando(e)} aoRemover={() => setRemovendo(e)} />
+              <Linha key={e.id} etapa={e} posicao={i + 1} proxima={e.id === proximaId} somenteLeitura={somenteLeitura} aoEditar={() => setEditando(e)} aoRemover={() => setRemovendo(e)} />
             ))}
           </ol>
         </SortableContext>
