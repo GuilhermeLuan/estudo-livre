@@ -3,7 +3,7 @@ import type { Db, Tx } from "@/db";
 import { cartaoDeRevisao, ciclo, materia, registroDeEstudo, topico } from "@/db/schema";
 import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_TOPICO } from "@/dominio";
-import { NaoEncontradoError, ValidacaoError } from "./erros";
+import { ESCRITA_EM_ARQUIVADO, NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
 
 const { nomeMaximo, importacaoMaxima } = LIMITES_DO_TOPICO;
@@ -35,12 +35,13 @@ function nomeValido(bruto: string) {
 /** A Matéria do Usuário, travada até o fim da transação: criações e importações simultâneas não repetem posição. */
 async function travarMateria(tx: Tx, usuario: Usuario, materiaId: string) {
   const [alvo] = await tx
-    .select({ id: materia.id, nome: materia.nome, cicloId: materia.cicloId, cicloNome: ciclo.nome })
+    .select({ id: materia.id, nome: materia.nome, cicloId: materia.cicloId, cicloNome: ciclo.nome, arquivadoEm: ciclo.arquivadoEm })
     .from(materia)
     .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
     .where(and(eq(materia.id, materiaId), eq(ciclo.usuarioId, usuario.id)))
     .for("update", { of: materia });
   if (!alvo) throw new NaoEncontradoError("Matéria");
+  if (alvo.arquivadoEm) throw new ValidacaoError(ESCRITA_EM_ARQUIVADO);
   return alvo;
 }
 

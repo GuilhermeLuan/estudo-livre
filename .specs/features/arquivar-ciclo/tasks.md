@@ -131,9 +131,9 @@ T4 → T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] `estudo.ts`, `cronometro.ts` e `registros.ts` recebem a guarda nos pontos do design
-- [ ] Testes passam: criar, importar, renomear, excluir e marcar Tópico, registro novo, edição que troca para Matéria do arquivado e início do Cronômetro recusam; editar sem trocar a Matéria e excluir Registro funcionam e recalculam o Cartão; mover um Registro de Ciclo arquivado para um ativo funciona
-- [ ] Gate full passes: `npx vitest run`
+- [x] `estudo.ts`, `cronometro.ts` e `registros.ts` recebem a guarda nos pontos do design
+- [x] Testes passam: criar, importar, renomear, excluir e marcar Tópico, registro novo, edição que troca para Matéria do arquivado e início do Cronômetro recusam; editar sem trocar a Matéria e excluir Registro funcionam e recalculam o Cartão; mover um Registro de Ciclo arquivado para um ativo funciona
+- [x] Gate full passes: `npx vitest run`
 
 **Tests**: integration
 **Gate**: full

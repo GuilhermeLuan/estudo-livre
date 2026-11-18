@@ -5,6 +5,13 @@ import {
   arquivarCiclo,
   criarCiclo,
   criarTopico,
+  editarRegistro,
+  excluirRegistro,
+  excluirTopico,
+  importarTopicos,
+  marcarTopico,
+  obterCartao,
+  renomearTopico,
   editarEtapa,
   obterFaixas,
   reiniciarVolta,
@@ -22,7 +29,7 @@ import {
   registrarEstudo,
   ValidacaoError,
 } from "@/casos-de-uso";
-import { ciclo } from "@/db/schema";
+import { ciclo, registroDeEstudo } from "@/db/schema";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
 const db = bancoDeTeste();
@@ -218,5 +225,58 @@ describe("escritas no Ciclo arquivado", () => {
     await salvarFaixas(db, usuario, cicloId, { ...faixas, minimo: 9 });
     expect((await obterFaixas(db, usuario, cicloId)).minimo).toBe(9);
     expect(await reiniciarVolta(db, usuario, cicloId, 1)).toEqual({ numero: 2 });
+  });
+
+  it("Tópicos recusam a escrita", async () => {
+    const { usuario, cicloId, materiaId, topicoId } = await cenario();
+    await arquivarCiclo(db, usuario, cicloId);
+    const antes = await historico();
+    await recusa(() => criarTopico(db, usuario, materiaId, { nome: "Pontuação" }));
+    await recusa(() => importarTopicos(db, usuario, materiaId, { texto: "Acentuação\nVerbos" }));
+    await recusa(() => renomearTopico(db, usuario, topicoId, { nome: "Crase 2" }));
+    await recusa(() => marcarTopico(db, usuario, topicoId, false));
+    await recusa(() => excluirTopico(db, usuario, topicoId));
+    expect(await historico()).toEqual(antes);
+  });
+
+  it("Registro novo, troca de Matéria e Cronômetro recusam", async () => {
+    const { usuario, cicloId, materiaId, outraMateriaId } = await cenario();
+    await arquivarCiclo(db, usuario, cicloId);
+    const antes = await historico();
+    await recusa(() => registrarEstudo(db, usuario, materiaId, { duracaoMinutos: 30, tipo: "Teoria" }));
+    await recusa(() => iniciarCronometro(db, usuario, materiaId));
+    // Mover o Registro do Ciclo ativo (outroId) para a Matéria do arquivado.
+    const [{ id: novo }] = await db
+      .insert(registroDeEstudo)
+      .values({ materiaId: outraMateriaId, dataHora: new Date(), duracaoMinutos: 15, tipo: "Teoria" })
+      .returning({ id: registroDeEstudo.id });
+    await recusa(() => editarRegistro(db, usuario, novo, materiaId, { duracaoMinutos: 15, tipo: "Teoria" }));
+    expect((await db.select().from(registroDeEstudo).where(sql`${registroDeEstudo.id} = ${novo}`))[0].materiaId).toBe(outraMateriaId);
+    expect((await historico()).tabelas[0]).toHaveLength(antes.tabelas[0].length + 1); // só o Registro inserido à mão
+  });
+
+  it("editar e excluir Registros antigos continua permitido", async () => {
+    const { usuario, cicloId, materiaId, topicoId, outraMateriaId } = await cenario();
+    const [{ id: registroId }] = await db.select({ id: registroDeEstudo.id }).from(registroDeEstudo);
+    await arquivarCiclo(db, usuario, cicloId);
+    const antes = await obterCartao(db, usuario, topicoId);
+    expect(antes).not.toBeNull();
+
+    // Sem trocar a Matéria: o Registro muda e o Cartão é recalculado (8/10 = Bom, 10/10 = Fácil).
+    await editarRegistro(db, usuario, registroId, materiaId, { duracaoMinutos: 90, tipo: "Exercícios", questoes: 10, acertos: 10, topicoId });
+    const [editado] = await db.select().from(registroDeEstudo);
+    expect(editado.duracaoMinutos).toBe(90);
+    expect(editado.nota).toBe("Fácil");
+    expect((await obterCartao(db, usuario, topicoId))?.proximaRevisao).not.toEqual(antes?.proximaRevisao);
+
+    // Mover para uma Matéria de Ciclo ativo também vale.
+    await editarRegistro(db, usuario, registroId, outraMateriaId, { duracaoMinutos: 90, tipo: "Exercícios" });
+    expect((await db.select().from(registroDeEstudo))[0].materiaId).toBe(outraMateriaId);
+    expect(await obterCartao(db, usuario, topicoId)).toBeNull();
+
+    // Excluir um Registro do arquivado.
+    const { id: outroRegistro } = (await db.insert(registroDeEstudo).values({ materiaId, topicoId, dataHora: new Date(), duracaoMinutos: 20, tipo: "Teoria", questoes: 10, nota: "Bom" }).returning({ id: registroDeEstudo.id }))[0];
+    await excluirRegistro(db, usuario, outroRegistro);
+    expect((await db.select().from(registroDeEstudo)).map((r) => r.id)).toEqual([registroId]);
   });
 });

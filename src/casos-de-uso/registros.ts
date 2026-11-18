@@ -4,7 +4,7 @@ import { ciclo, materia, registroDeEstudo, topico, volta } from "@/db/schema";
 import { hojeEmBrasilia } from "@/dia";
 import type { TipoDeEstudo } from "@/dominio";
 import type { Nota } from "@/revisao";
-import { NaoEncontradoError, ValidacaoError } from "./erros";
+import { ESCRITA_EM_ARQUIVADO, NaoEncontradoError, ValidacaoError } from "./erros";
 import { faixasDoCiclo, recalcularTopico, resolverNota } from "./revisao";
 import { instanteDoDia, validar, type DadosDoEstudo } from "./estudo";
 import { avaliarFechamentoDaVolta } from "./progresso";
@@ -83,12 +83,12 @@ export async function listarRegistros(db: Db, usuario: Usuario, filtro: FiltroDe
 
 /** Trava os Ciclos em ordem de id (nunca dois de uma vez em ordem diferente) para duas mudanças não se cruzarem. */
 async function travarCiclos(tx: Parameters<Parameters<Db["transaction"]>[0]>[0], ids: string[]) {
-  await tx.select({ id: ciclo.id }).from(ciclo).where(inArray(ciclo.id, ids)).orderBy(ciclo.id).for("update");
+  return tx.select({ id: ciclo.id, arquivadoEm: ciclo.arquivadoEm }).from(ciclo).where(inArray(ciclo.id, ids)).orderBy(ciclo.id).for("update");
 }
 
 const doUsuario = (tx: Parameters<Parameters<Db["transaction"]>[0]>[0], usuario: Usuario, registroId: string) =>
   tx
-    .select({ cicloId: materia.cicloId, dataHora: registroDeEstudo.dataHora, topicoId: registroDeEstudo.topicoId })
+    .select({ cicloId: materia.cicloId, materiaId: registroDeEstudo.materiaId, dataHora: registroDeEstudo.dataHora, topicoId: registroDeEstudo.topicoId })
     .from(registroDeEstudo)
     .innerJoin(materia, eq(materia.id, registroDeEstudo.materiaId))
     .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
@@ -109,7 +109,9 @@ export async function editarRegistro(db: Db, usuario: Usuario, registroId: strin
       .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
       .where(and(eq(materia.id, materiaId), eq(ciclo.usuarioId, usuario.id)));
     if (!alvo) throw new NaoEncontradoError("Matéria");
-    await travarCiclos(tx, [...new Set([atual.cicloId, alvo.cicloId])]);
+    const travados = await travarCiclos(tx, [...new Set([atual.cicloId, alvo.cicloId])]);
+    // Editar sem trocar a Matéria vale em Ciclo arquivado; trocar para uma Matéria dele não (AD-024).
+    if (materiaId !== atual.materiaId && travados.find((c) => c.id === alvo.cicloId)?.arquivadoEm) throw new ValidacaoError(ESCRITA_EM_ARQUIVADO);
     // Com os Ciclos travados, o Registro não pode ter sumido nem mudado de Ciclo desde a leitura.
     const [travado] = await doUsuario(tx, usuario, registroId);
     if (!travado || travado.cicloId !== atual.cicloId) throw new NaoEncontradoError("Registro");
