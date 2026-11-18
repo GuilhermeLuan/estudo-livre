@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avisoDaImportacao, avisoDaVoltaConcluida, dataDaVolta, descricaoDaVolta, duracaoDaVolta, rotuloDaDiferenca, rotuloDaVariacao, situacaoDaEtapa } from "@/app/formato";
+import { avisoDaImportacao, avisoDaVoltaConcluida, dataDaVolta, descricaoDaVolta, duracaoDaVolta, rotuloDaDiferenca, rotuloDaVariacao, situacaoDaEtapa, textoDaProximaRevisao } from "@/app/formato";
 import { conteudoDoRegistro } from "@/app/campos-do-registro";
 import { percentualDeAcerto, variacaoPercentual } from "@/dominio";
 
@@ -83,5 +83,15 @@ describe("Histórico de Voltas", () => {
   it("aviso de Volta concluída", () => {
     expect(avisoDaVoltaConcluida(1)).toBe("Volta 1 concluída. A Volta 2 começou.");
     expect(avisoDaVoltaConcluida(9)).toBe("Volta 9 concluída. A Volta 10 começou.");
+  });
+});
+
+describe("Próxima revisão", () => {
+  it("texto com a data", () => {
+    expect(textoDaProximaRevisao("2026-11-30")).toBe("Próxima revisão: 30/11/2026");
+  });
+
+  it("sem data", () => {
+    expect(textoDaProximaRevisao(null)).toBe("Sem revisão agendada");
   });
 });

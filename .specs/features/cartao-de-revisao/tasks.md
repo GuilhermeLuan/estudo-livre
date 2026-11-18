@@ -274,8 +274,8 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Data vira "Próxima revisão: 30/11/2026"; nulo vira "Sem revisão agendada"
-- [ ] Gate check passes: `npx vitest run tests/formato.test.ts`
+- [x] Data vira "Próxima revisão: 30/11/2026"; nulo vira "Sem revisão agendada"
+- [x] Gate check passes: `npx vitest run tests/formato.test.ts`
 
 **Tests**: unit
 **Gate**: quick
@@ -543,7 +543,7 @@ Proof: run unit | ✓ tests/topicos.test.ts > próxima revisão > a Matéria tra
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started; returned; batch 2 (Phase 2, T5-T10) worker, sent at HEAD 3f04a7b; returned
+**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started; returned; batch 2 (Phase 2, T5-T10) worker, sent at HEAD 3f04a7b; returned; batch 3 (Phase 3, T11-T18) worker, sent at HEAD a7cf6e1
 **Walked:** none
 
 ---
