@@ -1,9 +1,9 @@
 # topicos proofs
 
-**HEAD**: 76888d3
+**HEAD**: 0f63ece
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 34 pass, 2 fail
+**Result**: 37 pass, 2 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
@@ -28,16 +28,19 @@
 | C12 | `run unit / ✓ tests/topicos.test.ts > Tópicos > duas criações simultâneas do mesmo nome gravam um só` | pass |
 | C13 | `walk - abrir a página nos três tamanhos` | pass (Walked) |
 | C14 | `walk - abrir a página e ver o breadcrumb` | pass (Walked) |
-| C15 | `browser - abrir Registrar estudo numa Matéria com Tópicos a 1440px, salvar .specs/features/topicos/captures/re` | **not judged** (screens.md) |
+| C15 | `browser - abrir Registrar estudo numa Matéria com Tópicos a 1440px, salvar .specs/features/topicos/captures/re` | **diverges** (screens.md) |
 | C16 | `walk - escolher um Tópico, trocar a Matéria e ver o Select limpo com a lista nova` | pass (Walked) |
 | C17 | `walk - abrir o modal numa Matéria sem Tópicos` | pass (Walked) |
 | C18 | `run unit / ✓ tests/topicos.test.ts > Tópicos > o Registro com Tópico grava o topicoId sem Conteúdo livre` | pass |
 | C19 | `run unit / ✓ tests/topicos.test.ts > Tópicos > Conteúdo livre e Sem conteúdo gravam sem Tópico` | pass |
+| C19 | `run unit / ✓ tests/formato.test.ts > Tópicos na interface > o segmento do Conteúdo grava só o campo do segment` | pass |
 | C19 | `walk - alternar os segmentos e ver que o que estava no outro foi descartado` | pass (Walked) |
+| C20 | `run unit / ✓ tests/formato.test.ts > Tópicos na interface > o segmento do Conteúdo grava só o campo do segment` | pass |
 | C20 | `walk - salvar com "Tópico" e nada escolhido e ver a mensagem sob o campo` | pass (Walked) |
 | C21 | `run unit / ✓ tests/topicos.test.ts > Tópicos > registrarEstudo recusa Tópico de outra Matéria, de outro Usuári` | pass |
 | C22 | `run unit / ✓ tests/topicos.test.ts > Tópicos > o Registro com Tópico marca o Tópico como estudado` | pass |
-| C23 | `browser - abrir /ciclos/<id> a 1440px, salvar .specs/features/topicos/captures/ciclo.running.png` | **not judged** (screens.md) |
+| C22 | `run unit / ✓ tests/topicos.test.ts > Tópicos > registrar com Tópico e excluir o Tópico ao mesmo tempo nunca dá` | pass |
+| C23 | `browser - abrir /ciclos/<id> a 1440px, salvar .specs/features/topicos/captures/ciclo.running.png` | **diverges** (screens.md) |
 | C24 | `run unit / ✓ tests/topicos.test.ts > Tópicos > o Ciclo traz estudados e total de Tópicos por Matéria` | pass |
 | C24 | `walk - ver "—" numa Matéria sem Tópicos no cartão` | pass (Walked) |
 | C25 | `run unit / ✓ tests/topicos.test.ts > Tópicos > a Matéria com Tópicos não é descartada ao perder a última Etapa` | pass |
@@ -51,17 +54,17 @@
 ```
 
 stderr | tests/topicos.test.ts > Tópicos > registrarEstudo recusa Tópico de outra Matéria, de outro Usuário e Tópico com Conteúdo livre
-2026-11-18T00:10:05.801Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
-
-stderr | tests/topicos.test.ts > Tópicos > registrarEstudo recusa Tópico de outra Matéria, de outro Usuário e Tópico com Conteúdo livre
-2026-11-18T00:10:05.846Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:14:56.611Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/topicos.test.ts > Tópicos > o Registro com Tópico marca o Tópico como estudado
-2026-11-18T00:10:05.944Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:14:56.697Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+
+stderr | tests/topicos.test.ts > Tópicos > registrar com Tópico e excluir o Tópico ao mesmo tempo nunca dá erro de banco
+2026-11-18T00:14:56.783Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/topicos.test.ts > Tópicos > o Ciclo traz estudados e total de Tópicos por Matéria
-2026-11-18T00:10:06.056Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:14:56.870Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/topicos.test.ts > Tópicos > a Matéria com Tópicos não é descartada ao perder a última Etapa
-2026-11-18T00:10:06.146Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:14:56.928Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 ```
