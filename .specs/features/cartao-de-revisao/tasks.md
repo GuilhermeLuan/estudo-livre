@@ -350,9 +350,9 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] O modal em 1440x960 casa com `.specs/features/cartao-de-revisao/captures/registrar-estudo.png`, nos temas Claro suave e Escuro
-- [ ] A nota só aparece com Tópico e questões; o erro do servidor aparece sob o controle
-- [ ] Gate check passes: `npm run typecheck; npm run build`
+- [x] O modal em 1440x960 casa com `.specs/features/cartao-de-revisao/captures/registrar-estudo.png`, nos temas Claro suave e Escuro
+- [x] A nota só aparece com Tópico e questões; o erro do servidor aparece sob o controle
+- [x] Gate check passes: `npm run typecheck; npm run build`
 
 **Tests**: none
 **Gate**: build
