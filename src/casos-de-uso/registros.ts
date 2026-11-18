@@ -3,7 +3,9 @@ import type { Db } from "@/db";
 import { ciclo, materia, registroDeEstudo, topico, volta } from "@/db/schema";
 import { hojeEmBrasilia } from "@/dia";
 import type { TipoDeEstudo } from "@/dominio";
+import type { Nota } from "@/revisao";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
+import { faixasDoCiclo, recalcularTopico, resolverNota } from "./revisao";
 import { instanteDoDia, validar, type DadosDoEstudo } from "./estudo";
 import { avaliarFechamentoDaVolta } from "./progresso";
 import type { Usuario } from "./usuario";
@@ -27,6 +29,7 @@ export type RegistroDoHistorico = {
   questoes: number | null;
   acertos: number | null;
   anotacao: string | null;
+  nota: Nota | null;
   conteudoLivre: string | null;
   topicoId: string | null;
   topico: string | null;
@@ -57,6 +60,7 @@ export async function listarRegistros(db: Db, usuario: Usuario, filtro: FiltroDe
       questoes: registroDeEstudo.questoes,
       acertos: registroDeEstudo.acertos,
       anotacao: registroDeEstudo.anotacao,
+      nota: registroDeEstudo.nota,
       conteudoLivre: registroDeEstudo.conteudoLivre,
       topicoId: registroDeEstudo.topicoId,
       topico: topico.nome,
@@ -84,7 +88,7 @@ async function travarCiclos(tx: Parameters<Parameters<Db["transaction"]>[0]>[0],
 
 const doUsuario = (tx: Parameters<Parameters<Db["transaction"]>[0]>[0], usuario: Usuario, registroId: string) =>
   tx
-    .select({ cicloId: materia.cicloId, dataHora: registroDeEstudo.dataHora })
+    .select({ cicloId: materia.cicloId, dataHora: registroDeEstudo.dataHora, topicoId: registroDeEstudo.topicoId })
     .from(registroDeEstudo)
     .innerJoin(materia, eq(materia.id, registroDeEstudo.materiaId))
     .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
@@ -117,8 +121,11 @@ export async function editarRegistro(db: Db, usuario: Usuario, registroId: strin
       const [doTopico] = await tx.select({ id: topico.id }).from(topico).where(and(eq(topico.id, registro.topicoId), eq(topico.materiaId, materiaId)));
       if (!doTopico) throw new ValidacaoError("Escolha um tópico desta matéria.");
     }
-    await tx.update(registroDeEstudo).set({ materiaId, ...registro, dataHora }).where(eq(registroDeEstudo.id, registroId));
+    const nota = resolverNota(await faixasDoCiclo(tx, alvo.cicloId), { ...registro, nota: dados.nota });
+    await tx.update(registroDeEstudo).set({ materiaId, ...registro, nota, dataHora }).where(eq(registroDeEstudo.id, registroId));
     if (registro.topicoId) await tx.update(topico).set({ estudado: true }).where(eq(topico.id, registro.topicoId));
+    // O Tópico de origem e o de destino refazem o Cartão (AD-011 permite trocar tudo).
+    for (const id of new Set([travado.topicoId, registro.topicoId])) if (id) await recalcularTopico(tx, id);
     const voltaFechada = await avaliarFechamentoDaVolta(tx, alvo.cicloId);
     return { materia: alvo.nome, ciclo: alvo.cicloNome, voltaFechada };
   });
@@ -129,7 +136,8 @@ export async function excluirRegistro(db: Db, usuario: Usuario, registroId: stri
     const [atual] = await doUsuario(tx, usuario, registroId);
     if (!atual) throw new NaoEncontradoError("Registro");
     await travarCiclos(tx, [atual.cicloId]);
-    const apagados = await tx.delete(registroDeEstudo).where(eq(registroDeEstudo.id, registroId)).returning({ id: registroDeEstudo.id });
+    const apagados = await tx.delete(registroDeEstudo).where(eq(registroDeEstudo.id, registroId)).returning({ id: registroDeEstudo.id, topicoId: registroDeEstudo.topicoId });
     if (apagados.length === 0) throw new NaoEncontradoError("Registro");
+    if (apagados[0].topicoId) await recalcularTopico(tx, apagados[0].topicoId);
   });
 }

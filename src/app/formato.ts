@@ -71,3 +71,10 @@ export function situacaoDaEtapa(etapa: { cargaMinutos: number; feitoMinutos: num
 export function avisoDaImportacao(importados: number, ignorados: number) {
   return `${importados} ${importados === 1 ? "importado" : "importados"}, ${ignorados} ${ignorados === 1 ? "ignorado" : "ignorados"}.`;
 }
+
+/** O texto da próxima revisão de um Tópico: "Próxima revisão: 30/11/2026" ou "Sem revisão agendada". */
+export function textoDaProximaRevisao(dia: string | null) {
+  if (!dia) return "Sem revisão agendada";
+  const [ano, mes, diaDoMes] = dia.split("-");
+  return `Próxima revisão: ${diaDoMes}/${mes}/${ano}`;
+}

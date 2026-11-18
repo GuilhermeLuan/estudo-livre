@@ -1,17 +1,21 @@
 import { BarraDeAbas, CabecalhoMovel, FaixaMovelDoCronometro, Sidebar } from "@/app/navegacao";
 import { ProvedorDoCronometro } from "@/app/cronometro";
-import { listarTopicosDasMaterias, obterCronometro, obterHome } from "@/casos-de-uso";
+import { listarFaixasDosCiclos, listarTopicosDasMaterias, obterCronometro, obterHome } from "@/casos-de-uso";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const usuarioLogado = await exigirUsuario();
-  const [{ usuario, ciclos }, ativo, topicos] = await Promise.all([
+  const [{ usuario, ciclos }, ativo, topicos, faixasDosCiclos] = await Promise.all([
     obterHome(obterDb(), usuarioLogado),
     obterCronometro(obterDb(), usuarioLogado),
     listarTopicosDasMaterias(obterDb(), usuarioLogado),
+    listarFaixasDosCiclos(obterDb(), usuarioLogado),
   ]);
-  const materias = ciclos.flatMap((c) => c.materias.map((m) => ({ id: m.id, nome: m.nome, ciclo: c.nome, topicos: topicos.get(m.id) ?? [] })));
+  const materias = ciclos.flatMap((c) => {
+    const { minimo, ...faixas } = faixasDosCiclos.get(c.id)!;
+    return c.materias.map((m) => ({ id: m.id, nome: m.nome, ciclo: c.nome, faixas, minimo, topicos: topicos.get(m.id) ?? [] }));
+  });
   const menu = { usuario, ciclos: ciclos.map((c) => ({ id: c.id, nome: c.nome })) };
   return (
     <ProvedorDoCronometro ativo={ativo} materias={materias} materiaPadrao={ciclos[0]?.proxima?.materiaId ?? materias[0]?.id ?? ""}>

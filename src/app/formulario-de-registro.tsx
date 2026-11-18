@@ -1,8 +1,9 @@
 "use client";
 
-import { RiCheckLine, RiTimerLine } from "@remixicon/react";
-import { useEffect, useState, useTransition } from "react";
+import { RiCheckLine, RiLoopRightLine, RiTimerLine } from "@remixicon/react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import type { SugestaoDeRegistro } from "@/casos-de-uso";
+import { Chip, type ChipColor } from "@/components/base/badges/chip";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { Modal, ModalBody, ModalFooter, ModalHeader, useModalClose } from "@/components/base/modal/modal";
@@ -11,14 +12,19 @@ import { SegmentedControl, SegmentedControlItem } from "@/components/base/segmen
 import { Textarea } from "@/components/base/textarea/textarea";
 import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_REGISTRO, percentualDeAcerto, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
+import { fraseDaNota, NOTAS, sugerirNota, type Faixas, type Nota } from "@/revisao";
 import { CAMPO_CRONOMETRO, type ModoDoConteudo } from "./campos-do-registro";
+import { estimarRevisao } from "./acoes-revisao";
+import { diaMes } from "./formato";
 import { registrar, type EstadoRegistro } from "./acoes-estudo";
 import { editar } from "./acoes-registros";
 
+const COR_DA_NOTA: Record<Nota, ChipColor> = { Errei: "rose", Difícil: "orange", Bom: "blue", Fácil: "lime" };
+
 const { duracaoMaximaMinutos, questoesMaximas, anotacaoMaxima, conteudoLivreMaximo } = LIMITES_DO_REGISTRO;
 
-/** Uma Matéria que se pode escolher, com o Ciclo dela. */
-export type MateriaParaRegistro = { id: string; nome: string; ciclo: string; topicos: { id: string; nome: string }[] };
+/** Uma Matéria que se pode escolher, com o Ciclo dele e as Faixas de acerto e o Mínimo de questões dele. */
+export type MateriaParaRegistro = { id: string; nome: string; ciclo: string; faixas: Faixas; minimo: number; topicos: { id: string; nome: string }[] };
 
 /** Um Registro existente, como o modal de edição o recebe. */
 export type RegistroParaEdicao = {
@@ -29,6 +35,7 @@ export type RegistroParaEdicao = {
   dia: string;
   questoes: number | null;
   acertos: number | null;
+  nota: Nota | null;
   anotacao: string | null;
   conteudoLivre: string | null;
   topicoId: string | null;
@@ -37,6 +44,7 @@ export type RegistroParaEdicao = {
 /** A mensagem do servidor fica sob o campo a que se refere; sem campo reconhecível, abaixo dos campos. */
 function campoDoErro(erro: string | undefined) {
   if (!erro) return null;
+  if (/nota/i.test(erro)) return "nota";
   if (/acerto/i.test(erro)) return "acertos";
   if (/quest/i.test(erro)) return "questoes";
   if (/dura|hora|minuto/i.test(erro)) return "duracao";
@@ -69,6 +77,11 @@ function Formulario({
   const [topicoId, setTopicoId] = useState(edicao?.topicoId ?? "");
   const [questoes, setQuestoes] = useState(edicao?.questoes?.toString() ?? "");
   const [acertos, setAcertos] = useState(edicao?.acertos?.toString() ?? "");
+  // A nota escolhida à mão vale no lugar da sugerida; sem escolha, vale a sugestão das Faixas.
+  const [notaEscolhida, setNotaEscolhida] = useState<Nota | null>(edicao?.nota ?? null);
+  const [proxima, setProxima] = useState<string | null>(null);
+  const [alterado, setAlterado] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
   const cronometrado = !!sessaoCronometrada;
   const duracaoInicial = edicao?.duracaoMinutos ?? sessaoCronometrada?.duracaoMinutos ?? 60;
   const [estado, setEstado] = useState<EstadoRegistro>({});
@@ -89,11 +102,30 @@ function Formulario({
 
   const acerto = percentualDeAcerto(acertos === "" ? null : Number(acertos), Number(questoes));
   const campo = campoDoErro(estado.erro);
+  const { faixas, minimo } = materias.find((m) => m.id === materiaId)!;
+  const comNota = modo === "topico" && !!topicoId && Number(questoes) > 0;
+  const sugerida = comNota ? sugerirNota(acertos === "" ? null : Number(acertos), Number(questoes), faixas, minimo) : null;
+  const nota = notaEscolhida ?? sugerida;
+
+  // A data estimada vem do servidor, com um pequeno atraso para não perguntar a cada tecla.
+  useEffect(() => {
+    if (!comNota || !formRef.current) return setProxima(null);
+    const dados = new FormData(formRef.current);
+    let valido = true;
+    const espera = setTimeout(async () => {
+      const dia = await estimarRevisao(dados);
+      if (valido) setProxima(dia);
+    }, 300);
+    return () => {
+      valido = false;
+      clearTimeout(espera);
+    };
+  }, [comNota, materiaId, topicoId, alterado, nota]);
   const erroDe = (nome: string) => (campo === nome ? { isInvalid: true, errorMessage: estado.erro } : {});
 
   // Editar qualquer campo limpa o erro do servidor: um campo inválido não deixaria o navegador reenviar.
   return (
-    <form onSubmit={enviar} onChange={() => estado.erro && setEstado({ enviado: estado.enviado })} className="flex min-h-0 flex-col gap-4">
+    <form ref={formRef} onSubmit={enviar} onChange={() => { setAlterado((n) => n + 1); if (estado.erro) setEstado({ enviado: estado.enviado }); }} className="flex min-h-0 flex-col gap-4">
       <ModalHeader
         title={edicao ? "Editar registro" : "Registrar estudo"}
         description={
@@ -199,6 +231,36 @@ function Formulario({
           </div>
         </div>
 
+        {comNota && (
+          <div className="grid gap-1">
+            <div className="flex items-center gap-2">
+              <span className="text-body-medium text-text-primary" id="rotulo-nota">
+                Nota da revisão
+              </span>
+              {sugerida && (
+                <Chip variant="caption" color={COR_DA_NOTA[sugerida]}>
+                  Sugerida: {sugerida}
+                </Chip>
+              )}
+            </div>
+            <SegmentedControl aria-labelledby="rotulo-nota" selectedKeys={nota ? [nota] : []} onSelectionChange={(chaves) => chaves.size && setNotaEscolhida([...chaves][0] as Nota)} className="w-full [&>*]:flex-1">
+              {NOTAS.map((n) => (
+                <SegmentedControlItem key={n} id={n}>
+                  {n}
+                </SegmentedControlItem>
+              ))}
+            </SegmentedControl>
+            {nota && <input type="hidden" name="nota" value={nota} />}
+            {campo === "nota" ? (
+              <p role="alert" className="text-caption-1-medium text-text-error-primary">
+                {estado.erro}
+              </p>
+            ) : (
+              <p className="text-caption-1-regular text-text-secondary">{fraseDaNota(acertos === "" ? null : Number(acertos), Number(questoes), faixas, minimo)}</p>
+            )}
+          </div>
+        )}
+
         <Textarea label="Anotação" name="anotacao" defaultValue={edicao?.anotacao ?? ""} maxLength={anotacaoMaxima} placeholder="Opcional" {...erroDe("anotacao")} />
 
         {estado.erro && !campo && (
@@ -209,6 +271,12 @@ function Formulario({
       </ModalBody>
       <div className="border-t border-separator-border pt-4">
         <ModalFooter>
+          {proxima && (
+            <p className="me-auto inline-flex items-center gap-1.5 text-caption-1-regular text-text-secondary" aria-live="polite">
+              <RiLoopRightLine className="size-4" aria-hidden />
+              Próxima revisão estimada: {diaMes(proxima)}
+            </p>
+          )}
           <Button type="button" variant="secondary" onClick={fechar}>
             Cancelar
           </Button>

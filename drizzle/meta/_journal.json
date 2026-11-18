@@ -43,6 +43,13 @@
       "when": 1794960140792,
       "tag": "0005_topicos",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795029780472,
+      "tag": "0006_dashing_the_enforcers",
+      "breakpoints": true
     }
   ]
 }

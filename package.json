@@ -25,7 +25,8 @@
     "react": "^19.3.0",
     "react-aria-components": "^1.22.1",
     "react-dom": "^19.3.0",
-    "tailwind-merge": "^3.7.0"
+    "tailwind-merge": "^3.7.0",
+    "ts-fsrs": "^5.4.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",

@@ -3,8 +3,10 @@ import type { Db } from "@/db";
 import { ciclo, cronometro, materia, registroDeEstudo, topico } from "@/db/schema";
 import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_REGISTRO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
+import type { Nota } from "@/revisao";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
 import { avaliarFechamentoDaVolta } from "./progresso";
+import { faixasDoCiclo, recalcularTopico, resolverNota } from "./revisao";
 import type { Usuario } from "./usuario";
 
 export type DadosDoEstudo = {
@@ -18,6 +20,8 @@ export type DadosDoEstudo = {
   conteudoLivre?: string | null;
   /** Um Tópico da Matéria; exclui o Conteúdo livre. */
   topicoId?: string | null;
+  /** Nota da revisão: obrigatória com Tópico e questões abaixo do Mínimo do Ciclo; vale no lugar da sugerida. */
+  nota?: Nota | null;
 };
 
 const { duracaoMaximaMinutos, questoesMaximas, anotacaoMaxima, conteudoLivreMaximo } = LIMITES_DO_REGISTRO;
@@ -99,8 +103,12 @@ export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: strin
       const [doTopico] = await tx.select({ id: topico.id }).from(topico).where(and(eq(topico.id, registro.topicoId), eq(topico.materiaId, materiaId)));
       if (!doTopico) throw new ValidacaoError("Escolha um tópico desta matéria.");
     }
-    const [linha] = await tx.insert(registroDeEstudo).values({ materiaId, ...registro, dataHora }).returning({ id: registroDeEstudo.id });
-    if (registro.topicoId) await tx.update(topico).set({ estudado: true }).where(eq(topico.id, registro.topicoId));
+    const nota = resolverNota(await faixasDoCiclo(tx, alvo.cicloId), { ...registro, nota: dados.nota });
+    const [linha] = await tx.insert(registroDeEstudo).values({ materiaId, ...registro, nota, dataHora }).returning({ id: registroDeEstudo.id });
+    if (registro.topicoId) {
+      await tx.update(topico).set({ estudado: true }).where(eq(topico.id, registro.topicoId));
+      await recalcularTopico(tx, registro.topicoId);
+    }
     if (opcoes.cronometro)
       await tx.delete(cronometro).where(and(eq(cronometro.usuarioId, usuario.id), eq(cronometro.materiaId, materiaId)));
     const voltaFechada = await avaliarFechamentoDaVolta(tx, alvo.cicloId);
