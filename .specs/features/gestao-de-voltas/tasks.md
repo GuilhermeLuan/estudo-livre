@@ -239,8 +239,8 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] O componente existe sob `src/components/base/tabs/` e compila
-- [ ] Gate passes: `npm run typecheck; npm run build; npx vitest run`
+- [x] O componente existe sob `src/components/base/tabs/` e compila
+- [x] Gate passes: `npm run typecheck; npm run build; npx vitest run`
 
 **Tests**: none
 **Gate**: build
