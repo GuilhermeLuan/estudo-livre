@@ -1,9 +1,9 @@
 # topicos proofs
 
-**HEAD**: f5acb2b
+**HEAD**: 3453f1f
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 38 pass, 1 fail
+**Result**: 39 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
@@ -28,7 +28,7 @@
 | C12 | `run unit / ✓ tests/topicos.test.ts > Tópicos > duas criações simultâneas do mesmo nome gravam um só` | pass |
 | C13 | `walk - abrir a página nos três tamanhos` | pass (Walked) |
 | C14 | `walk - abrir a página e ver o breadcrumb` | pass (Walked) |
-| C15 | `browser - abrir Registrar estudo numa Matéria com Tópicos a 1440px, salvar .specs/features/topicos/captures/re` | **diverges** (screens.md) |
+| C15 | `browser - abrir Registrar estudo numa Matéria com Tópicos a 1440px, salvar .specs/features/topicos/captures/re` | pass |
 | C16 | `walk - escolher um Tópico, trocar a Matéria e ver o Select limpo com a lista nova` | pass (Walked) |
 | C17 | `walk - abrir o modal numa Matéria sem Tópicos` | pass (Walked) |
 | C18 | `run unit / ✓ tests/topicos.test.ts > Tópicos > o Registro com Tópico grava o topicoId sem Conteúdo livre` | pass |
@@ -54,17 +54,17 @@
 ```
 
 stderr | tests/topicos.test.ts > Tópicos > registrarEstudo recusa Tópico de outra Matéria, de outro Usuário e Tópico com Conteúdo livre
-2026-11-18T00:19:30.654Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:20:45.178Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/topicos.test.ts > Tópicos > o Registro com Tópico marca o Tópico como estudado
-2026-11-18T00:19:30.731Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:20:45.249Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/topicos.test.ts > Tópicos > registrar com Tópico e excluir o Tópico ao mesmo tempo nunca dá erro de banco
-2026-11-18T00:19:30.804Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:20:45.323Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/topicos.test.ts > Tópicos > o Ciclo traz estudados e total de Tópicos por Matéria
-2026-11-18T00:19:30.885Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:20:45.405Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/topicos.test.ts > Tópicos > a Matéria com Tópicos não é descartada ao perder a última Etapa
-2026-11-18T00:19:30.945Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:20:45.466Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 ```
