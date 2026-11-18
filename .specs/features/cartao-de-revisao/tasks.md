@@ -370,8 +370,8 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] O cartão casa com o da `captures/ciclo.png`; o modal abre preenchido e mostra o erro sob o campo
-- [ ] Gate check passes: `npm run typecheck; npm run build`
+- [x] O cartão casa com o da `captures/ciclo.png`; o modal abre preenchido e mostra o erro sob o campo
+- [x] Gate check passes: `npm run typecheck; npm run build`
 
 **Tests**: none
 **Gate**: build
