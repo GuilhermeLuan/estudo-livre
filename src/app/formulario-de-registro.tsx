@@ -207,14 +207,16 @@ function Formulario({
           </p>
         )}
       </ModalBody>
-      <ModalFooter>
-        <Button type="button" variant="secondary" onClick={fechar}>
-          Cancelar
-        </Button>
-        <Button type="submit" leadingIcon={RiCheckLine} disabled={enviando}>
-          {edicao ? "Salvar" : "Salvar registro"}
-        </Button>
-      </ModalFooter>
+      <div className="border-t border-separator-border pt-4">
+        <ModalFooter>
+          <Button type="button" variant="secondary" onClick={fechar}>
+            Cancelar
+          </Button>
+          <Button type="submit" leadingIcon={RiCheckLine} disabled={enviando}>
+            {edicao ? "Salvar" : "Salvar registro"}
+          </Button>
+        </ModalFooter>
+      </div>
     </form>
   );
 }
