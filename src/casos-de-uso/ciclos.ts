@@ -62,7 +62,7 @@ async function exigirEtapa(db: Db, usuario: Usuario, etapaId: string) {
 }
 
 /** Trava o Ciclo para que alterações simultâneas nas Etapas não repitam posição nem dupliquem Matérias. */
-async function travarCiclo(tx: Tx, usuario: Usuario, cicloId: string) {
+export async function travarCiclo(tx: Tx, usuario: Usuario, cicloId: string) {
   const [linha] = await tx
     .select({ id: ciclo.id })
     .from(ciclo)
