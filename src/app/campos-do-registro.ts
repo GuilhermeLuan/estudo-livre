@@ -1,4 +1,5 @@
 import type { TipoDeEstudo } from "@/dominio";
+import type { Nota } from "@/revisao";
 
 /** Campo que liga o formulário de registro ao Cronômetro: presente, o registro consome o Cronômetro ao salvar. */
 export const CAMPO_CRONOMETRO = "cronometro";
@@ -34,6 +35,7 @@ export function lerFormularioDeRegistro(dados: FormData) {
       questoes: inteiroOpcional(dados, "questoes"),
       acertos: inteiroOpcional(dados, "acertos"),
       anotacao: texto(dados, "anotacao"),
+      nota: (texto(dados, "nota") || undefined) as Nota | undefined, // o caso de uso rejeita o que não for uma nota
       ...conteudo,
     },
   };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { avisoDaImportacao, avisoDaVoltaConcluida, dataDaVolta, descricaoDaVolta, duracaoDaVolta, rotuloDaDiferenca, rotuloDaVariacao, situacaoDaEtapa, textoDaProximaRevisao } from "@/app/formato";
-import { conteudoDoRegistro } from "@/app/campos-do-registro";
+import { conteudoDoRegistro, lerFormularioDeRegistro } from "@/app/campos-do-registro";
 import { percentualDeAcerto, variacaoPercentual } from "@/dominio";
 
 describe("variação e acerto", () => {
@@ -93,5 +93,19 @@ describe("Próxima revisão", () => {
 
   it("sem data", () => {
     expect(textoDaProximaRevisao(null)).toBe("Sem revisão agendada");
+  });
+});
+
+describe("Formulário de registro", () => {
+  const formulario = (nota?: string) => {
+    const dados = new FormData();
+    for (const [k, v] of Object.entries({ materiaId: "m1", conteudo: "topico", topicoId: "t1", tipo: "Exercícios", data: "2026-11-16", questoes: "20", acertos: "16", ...(nota === undefined ? {} : { nota }) })) dados.set(k, v);
+    return lerFormularioDeRegistro(dados);
+  };
+
+  it("nota preenchido chega ao caso de uso; vazio chega ausente", () => {
+    expect(formulario("Bom")).toMatchObject({ estudo: { nota: "Bom" } });
+    expect(formulario("")).toMatchObject({ estudo: { nota: undefined } });
+    expect(formulario()).toMatchObject({ estudo: { nota: undefined } });
   });
 });

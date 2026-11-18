@@ -293,8 +293,8 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] `nota` preenchido chega ao caso de uso; vazio chega ausente
-- [ ] Gate check passes: `npx vitest run tests/formato.test.ts`
+- [x] `nota` preenchido chega ao caso de uso; vazio chega ausente
+- [x] Gate check passes: `npx vitest run tests/formato.test.ts`
 
 **Tests**: unit
 **Gate**: quick
