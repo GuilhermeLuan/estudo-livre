@@ -18,7 +18,7 @@ export default async function Registros({ searchParams }: { searchParams: Promis
   const filtrado = !!(ciclo || materia);
 
   return (
-    <section aria-labelledby="h-registros" className="grid gap-5">
+    <section aria-labelledby="h-registros" className="grid grid-cols-[minmax(0,1fr)] gap-5">
       <h1 id="h-registros" className="text-title-1-medium text-text-primary">
         Registros
       </h1>

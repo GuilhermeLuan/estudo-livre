@@ -27,7 +27,7 @@ function questoesDe(r: RegistroDoHistorico) {
 
 const conteudoDe = (r: RegistroDoHistorico) => r.topico ?? r.conteudoLivre ?? "—";
 
-/** O histórico: tabela a partir de 768px, cartões abaixo; "Editar" abre o modal de registro, "Excluir" confirma. */
+/** O histórico: tabela a partir de 1280px, cartões abaixo; "Editar" abre o modal de registro, "Excluir" confirma. */
 export function ListaDeRegistros({ registros, total, temMais, limite, ciclo, materia }: { registros: RegistroDoHistorico[]; total: number; temMais: boolean; limite: number; ciclo?: string; materia?: string }) {
   const router = useRouter();
   const { materias } = useCronometro();
@@ -48,12 +48,12 @@ export function ListaDeRegistros({ registros, total, temMais, limite, ciclo, mat
   );
 
   return (
-    <div className="grid gap-4">
+    <div className="grid min-w-0 gap-4">
       <p className="text-body-regular text-text-secondary" aria-live="polite">
         {total} {total === 1 ? "registro" : "registros"}
       </p>
 
-      <div className="hidden rounded-3xl border border-border-table bg-background-primary-default md:block">
+      <div className="hidden min-w-0 rounded-3xl border border-border-table bg-background-primary-default xl:block">
         <Table aria-label="Registros de estudo">
           <TableHeader>
             <TableColumn isRowHeader>Data</TableColumn>
@@ -91,7 +91,7 @@ export function ListaDeRegistros({ registros, total, temMais, limite, ciclo, mat
         </Table>
       </div>
 
-      <ul className="grid gap-3 md:hidden" aria-label="Registros de estudo">
+      <ul className="grid gap-3 xl:hidden" aria-label="Registros de estudo">
         {registros.map((r) => (
           <li key={r.id} className="grid gap-2 rounded-3xl border border-border-button-default bg-background-primary-default p-4">
             <div className="flex items-start justify-between gap-2">
@@ -104,9 +104,9 @@ export function ListaDeRegistros({ registros, total, temMais, limite, ciclo, mat
               <Chip variant="caption">{r.tipo}</Chip>
             </div>
             <p className="text-body-regular text-text-secondary">
-              {dataBR(r.dia)} · {tempo(r.duracaoMinutos)} · {questoesDe(r)}
+              {[dataBR(r.dia), tempo(r.duracaoMinutos), r.questoes !== null && questoesDe(r)].filter(Boolean).join(" · ")}
             </p>
-            <p className="truncate text-body-regular text-text-secondary">{conteudoDe(r)}</p>
+            {conteudoDe(r) !== "—" && <p className="truncate text-body-regular text-text-secondary">{conteudoDe(r)}</p>}
             {acoes(r)}
           </li>
         ))}
