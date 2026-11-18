@@ -352,7 +352,7 @@ Proof: run unit | ✓ tests/voltas.test.ts > Voltas e carga horária > registro 
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** none
+**Dispatched:** Verifier e sub-agente de telas (rodada 1), em paralelo, sobre o `HEAD` do commit seguinte a 188e0e6 (proofs.md); ainda não retornaram.
 **Walked:** App em `http://localhost:3100` (`next dev`, banco dev `postgres://postgres:dev@localhost:54330/dev`), entrar com `voltas@exemplo.com` / `senha-de-teste-123`, Ciclo "TRT 2ª Região — Analista" em `/ciclos/d096c67a-327d-4e2d-965c-543706d42093`, janela de 1440x960.
 - Histórico de Voltas: aba "Voltas" mostra Volta, Início, Fim, Duração; a aberta primeiro com "Em andamento"; as fechadas com `dd/mm/aaaa` e "Mesmo dia".
 - Reiniciar volta: o botão abre "Reiniciar volta?" com o texto da spec e "Cancelar"/"Reiniciar volta"; cancelar mantém a tabela; confirmar abre a Volta seguinte e a tela fica na aba "Voltas".
