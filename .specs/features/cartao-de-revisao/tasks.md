@@ -408,8 +408,8 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Cada Tópico mostra a data ou "Sem revisão agendada"; a data nova aparece após registrar
-- [ ] Gate check passes: `npm run typecheck; npm run build; npx vitest run`
+- [x] Cada Tópico mostra a data ou "Sem revisão agendada"; a data nova aparece após registrar
+- [x] Gate check passes: `npm run typecheck; npm run build; npx vitest run`
 
 **Tests**: none
 **Gate**: build
@@ -543,7 +543,7 @@ Proof: run unit | ✓ tests/topicos.test.ts > próxima revisão > a Matéria tra
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started; returned; batch 2 (Phase 2, T5-T10) worker, sent at HEAD 3f04a7b; returned; batch 3 (Phase 3, T11-T18) worker, sent at HEAD a7cf6e1
+**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started; returned; batch 2 (Phase 2, T5-T10) worker, sent at HEAD 3f04a7b; returned; batch 3 (Phase 3, T11-T18) worker, sent at HEAD a7cf6e1; returned
 **Walked:** none
 
 ---

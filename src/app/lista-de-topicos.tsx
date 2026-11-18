@@ -9,8 +9,9 @@ import { AlertDialog, Modal, ModalBody, ModalFooter, ModalHeader, useModalClose 
 import { Textarea } from "@/components/base/textarea/textarea";
 import { excluirTopicoDaMateria, importarTopicosDaMateria, marcarTopicoEstudado, novoTopico, renomearTopicoDaMateria, type EstadoTopico } from "./acoes-topicos";
 import { FormularioNome } from "./formulario-ciclo";
+import { textoDaProximaRevisao } from "./formato";
 
-export type TopicoItem = { id: string; nome: string; estudado: boolean; registros: number };
+export type TopicoItem = { id: string; nome: string; estudado: boolean; registros: number; proximaRevisao: string | null };
 
 function FormularioImportacao({ materiaId, aoImportar }: { materiaId: string; aoImportar: (aviso: string) => void }) {
   const fechar = useModalClose();
@@ -90,7 +91,10 @@ export function ListaDeTopicos({ materiaId, topicos }: { materiaId: string; topi
           {topicos.map((t) => (
             <li key={t.id} className="flex items-center gap-3 px-4 py-3">
               <Checkbox isSelected={t.estudado} onChange={(marcado) => marcar(t, marcado)} aria-label={`Estudado: ${t.nome}`} className="shrink-0" />
-              <span className="min-w-0 flex-1 break-words text-body-medium text-text-primary">{t.nome}</span>
+              <div className="grid min-w-0 flex-1">
+                <span className="break-words text-body-medium text-text-primary">{t.nome}</span>
+                <span className="text-caption-1-regular text-text-secondary">{textoDaProximaRevisao(t.proximaRevisao)}</span>
+              </div>
               <LinkButton size="small" onClick={() => setEditando(t)} aria-label={`Renomear ${t.nome}`}>
                 Renomear
               </LinkButton>
