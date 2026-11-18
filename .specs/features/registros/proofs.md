@@ -1,9 +1,9 @@
 # registros proofs
 
-**HEAD**: a50200b
+**HEAD**: 8f6f0e0
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 48 pass, 1 fail
+**Result**: 51 pass, 1 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
@@ -13,6 +13,7 @@
 | C2 | `walk - ver a linha "70 min, 20 questões, 16 acertos, Tópico" como "1h10", "16/20 · 80%" e o nome do Tópico` | pass (Walked) |
 | C3 | `run unit / ✓ tests/registros.test.ts > histórico de registros > devolve 25 por vez e avisa quando há mais` | pass |
 | C3 | `run unit / ✓ tests/registros.test.ts > histórico de registros > com exatamente 25 registros não há mais` | pass |
+| C3 | `run unit / ✓ tests/registros.test.ts > histórico de registros > um limite absurdo, zero, negativo ou fracionár` | pass |
 | C3 | `walk - com mais de 25 Registros, usar "Carregar mais" até o botão sumir` | pass (Walked) |
 | C4 | `run unit / ✓ tests/registros.test.ts > histórico de registros > filtra por Ciclo e por Matéria, com o total do` | pass |
 | C4 | `walk - ver "N registros" mudar ao filtrar` | pass (Walked) |
@@ -24,7 +25,8 @@
 | C8 | `walk - abrir /registros?ciclo=inexistente` | pass (Walked) |
 | C9 | `walk - abrir /registros nos três tamanhos` | pass (Walked) |
 | C10 | `run unit / ✓ tests/registros.test.ts > histórico de registros > a Volta do Registro é a que contém a data dele` | pass |
-| C11 | `browser - reach the state, save captures/registrar-estudo.running.png` | **not judged** (screens.md) |
+| C10 | `run unit / ✓ tests/registros.test.ts > histórico de registros > um Registro exatamente no instante do fechamen` | pass |
+| C11 | `browser - reach the state, save captures/registrar-estudo.running.png` | **diverges** (screens.md) |
 | C12 | `walk - editar um Registro de cada tipo de conteúdo` | pass (Walked) |
 | C13 | `run unit / ✓ tests/registros.test.ts > editar registro > grava os valores novos e a lista mostra a linha atual` | pass |
 | C13 | `walk - editar a duração e ver "1h30" na linha` | pass (Walked) |
@@ -45,6 +47,7 @@
 | C27 | `run unit / ✓ tests/registros.test.ts > excluir registro > recusa Registro já excluído ou de outro Usuário e nã` | pass |
 | C28 | `run unit / ✓ tests/registros.test.ts > registro retroativo e Volta > um dia dentro de Volta fechada fica nela,` | pass |
 | C29 | `run unit / ✓ tests/registros.test.ts > registro retroativo e Volta > um dia passado dentro da Volta aberta som` | pass |
+| C29 | `run unit / ✓ tests/registros.test.ts > registro retroativo e Volta > um dia passado dentro da Volta aberta som` | pass |
 | C30 | `run unit / ✓ tests/registros.test.ts > registro retroativo e Volta > recusa data futura ao registrar e ao edit` | pass |
 | C31 | `run unit / ✓ tests/registros.test.ts > registro retroativo e Volta > recusa acertos acima das questões mesmo c` | pass |
 | C32 | `run unit / ✓ tests/registros.test.ts > progresso consistente > editar e excluir mudam a Hoje e o Ciclo na próx` | pass |
@@ -64,17 +67,17 @@
 ```
 
 stderr | tests/estudo.test.ts > validação do registro de estudo > um Usuário não registra estudo em Matéria de outro
-2026-11-18T00:48:52.819Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:53:23.756Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/estudo.test.ts > etapas: as horas de uma Matéria preenchem as Etapas dela em ordem > preenche a primeira Etapa da Matéria e transborda para a seguinte
-2026-11-18T00:48:52.944Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:53:23.870Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/estudo.test.ts > etapas: as horas de uma Matéria preenchem as Etapas dela em ordem > estudar fora da ordem do ciclo conta já, e a Próxima etapa é a primeira incompleta
-2026-11-18T00:48:53.023Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:53:23.944Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/estudo.test.ts > etapas: as horas de uma Matéria preenchem as Etapas dela em ordem > horas além da soma das Etapas viram horas extras, sem passar para a Volta seguinte
-2026-11-18T00:48:53.099Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:53:24.026Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/estudo.test.ts > etapas: as horas de uma Matéria preenchem as Etapas dela em ordem > mostra o extra enquanto a Volta ainda não fechou
-2026-11-18T00:48:53.175Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-18T00:53:24.130Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 ```
