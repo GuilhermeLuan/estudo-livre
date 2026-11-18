@@ -2,38 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { NaoEncontradoError, registrarEstudo, ValidacaoError } from "@/casos-de-uso";
-import type { TipoDeEstudo } from "@/dominio";
 import { obterDb } from "@/db";
-import { CAMPO_CRONOMETRO, conteudoDoRegistro } from "./campos-do-registro";
+import { CAMPO_CRONOMETRO, lerFormularioDeRegistro } from "./campos-do-registro";
 import { exigirUsuario } from "@/sessao";
 
 export type EstadoRegistro = { erro?: string; aviso?: string; enviado?: number };
 
-function texto(dados: FormData, campo: string) {
-  return String(dados.get(campo) ?? "").trim();
-}
-
-function inteiroOpcional(dados: FormData, campo: string) {
-  const bruto = texto(dados, campo);
-  return bruto === "" ? null : Number(bruto);
-}
-
 export async function registrar(estado: EstadoRegistro, dados: FormData): Promise<EstadoRegistro> {
   const usuario = await exigirUsuario();
-  const materiaId = texto(dados, "materiaId");
-  const conteudo = conteudoDoRegistro(texto(dados, "conteudo"), { topicoId: texto(dados, "topicoId"), conteudoLivre: texto(dados, "conteudoLivre") });
-  if ("erro" in conteudo) return { erro: conteudo.erro, enviado: estado.enviado };
-  const duracaoMinutos = Number(texto(dados, "horas") || 0) * 60 + Number(texto(dados, "minutos") || 0);
+  const lido = lerFormularioDeRegistro(dados);
+  if ("erro" in lido) return { erro: lido.erro, enviado: estado.enviado };
   try {
-    const { materia, ciclo, voltaFechada } = await registrarEstudo(obterDb(), usuario, materiaId, {
-      tipo: texto(dados, "tipo") as TipoDeEstudo, // o caso de uso rejeita o que não for um tipo válido
-      duracaoMinutos,
-      dia: texto(dados, "data"),
-      questoes: inteiroOpcional(dados, "questoes"),
-      acertos: inteiroOpcional(dados, "acertos"),
-      anotacao: texto(dados, "anotacao"),
-      ...conteudo,
-    }, { cronometro: dados.has(CAMPO_CRONOMETRO) });
+    const { materia, ciclo, voltaFechada } = await registrarEstudo(obterDb(), usuario, lido.materiaId, lido.estudo, { cronometro: dados.has(CAMPO_CRONOMETRO) });
     revalidatePath("/", "layout");
     return {
       aviso: voltaFechada
