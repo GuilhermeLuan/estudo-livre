@@ -85,7 +85,7 @@ O Usuário cria, renomeia, exclui, importa e marca Tópicos na página da Matér
 6. WHEN o Usuário usa "Renomear" num Tópico e confirma THEN o sistema SHALL trocar o nome mantendo posição, marca e Registros; IF o nome novo só muda maiúsculas do próprio Tópico ("ia" → "IA") THEN SHALL aceitar; IF colide com outro Tópico THEN SHALL recusar como no critério 5
 7. WHEN o Usuário usa "Excluir" num Tópico THEN o sistema SHALL pedir confirmação com "Excluir o tópico “<nome>”?" e, se ele tem N ≥ 1 Registros, acrescentar "Os N registros de estudo dele continuam, sem conteúdo." (com N = 1: "O registro de estudo dele continua, sem conteúdo."); ao confirmar, SHALL remover o Tópico e manter todos os seus Registros com `topicoId` nulo
    - tópico com 2 Registros de 60 min → exclui; as horas da Matéria continuam 120 min; os 2 Registros existem sem Tópico
-8. WHEN o Usuário cola texto em "Importar tópicos" e confirma THEN o sistema SHALL criar um Tópico por linha, na ordem das linhas, depois dos que já existem, ignorando linhas vazias (só espaços) e duplicadas (entre as linhas e contra os existentes, sem diferenciar maiúsculas) e SHALL mostrar "N importados, M ignorados."
+8. WHEN o Usuário cola texto em "Importar tópicos" e confirma THEN o sistema SHALL criar um Tópico por linha, na ordem das linhas, depois dos que já existem, ignorando linhas vazias (só espaços) e duplicadas (entre as linhas e contra os existentes, sem diferenciar maiúsculas) e SHALL mostrar "N importados, M ignorados." (singular com 1: "1 importado, 1 ignorado.")
    - "IA\n\n ia \nRedes\nredes\nSO" numa Matéria com "SO" → cria "IA" e "Redes"; "N importados, 3 ignorados."
 9. IF o texto importado tem alguma linha com mais de 120 caracteres THEN o sistema SHALL recusar tudo com "A linha <n> passa de 120 caracteres." e não gravar nenhum; IF tem mais de 200 linhas não vazias distintas THEN SHALL recusar com "Importe no máximo 200 tópicos por vez."; IF o texto não tem nenhuma linha com conteúdo THEN SHALL mostrar "Nada para importar."
 10. WHEN o Usuário marca ou desmarca o `Checkbox` de um Tópico THEN o sistema SHALL gravar a marca e atualizar o "X de Y" na mesma tela, valendo também com Registros existentes (AD-009)
@@ -107,7 +107,7 @@ O Usuário cria, renomeia, exclui, importa e marca Tópicos na página da Matér
 19. WHEN o Usuário escolhe "Conteúdo livre" e digita o texto THEN o sistema SHALL gravar o texto (até 200 caracteres, como hoje) sem Tópico; WHEN escolhe "Sem conteúdo" THEN SHALL gravar sem Tópico e sem texto; trocar de segmento descarta o que estava no outro
 20. IF o segmento é "Tópico" e nenhum Tópico foi escolhido THEN o sistema SHALL recusar com "Escolha um tópico." sob o campo e não gravar
 21. IF o pedido traz um Tópico de outra Matéria, de outro Usuário, ou traz Tópico e Conteúdo livre ao mesmo tempo THEN `registrarEstudo` SHALL recusar ("Escolha um tópico ou digite um conteúdo, não os dois." no caso dos dois; "Escolha um tópico desta matéria." nos outros) e não gravar
-22. WHEN um Registro com Tópico é gravado THEN o sistema SHALL marcar esse Tópico como estudado na mesma transação do Registro; IF o Tópico já está marcado THEN SHALL deixá-lo marcado
+22. WHEN um Registro com Tópico é gravado THEN o sistema SHALL marcar esse Tópico como estudado na mesma transação do Registro; IF o Tópico já está marcado THEN SHALL deixá-lo marcado; IF o Registro é recusado THEN SHALL NOT marcar; IF o Tópico é excluído ao mesmo tempo THEN o Registro SHALL ser recusado com "Escolha um tópico desta matéria." (nunca erro de banco)
     - 1º Registro do Tópico "IA" → estudado; Registro sem Tópico ou com Conteúdo livre → nenhum Tópico muda
     - registrar a partir do Cronômetro segue o mesmo caminho
 
@@ -155,6 +155,10 @@ O Usuário cria, renomeia, exclui, importa e marca Tópicos na página da Matér
 | Abas, "Reiniciar volta", "Arquivar", "Faixas de acerto" no frame do Ciclo | nada; só a coluna "Tópicos estudados" entra | y - AD-001 |
 | "Nota da revisão", "Próxima revisão estimada" e Revisões no modal | nada (issues #10 e #12) | y - AD-001 |
 | Data "dd/mm/aaaa · hh:mm" | só a data | y - AD-007 |
+| Duração em um campo ("1h 10min") | Horas e Minutos separados | y - AD-001 |
+| Sidebar com Revisões (8), Registros e Arquivados | só Hoje e Estatísticas e os Ciclos | y - AD-001 |
+| "Iniciada em 2 de novembro · há 14 dias" | "Primeira volta" na Volta 1 | y - AD-005 |
+| Nome do Ciclo sem "Renomear" | "Renomear" ao lado do nome | y - AD-001 |
 
 ## Sources
 

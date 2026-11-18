@@ -76,8 +76,10 @@ describe("Tópicos", () => {
     await expect(criarTopico(db, ana, materias.TI, { nome: "   " })).rejects.toThrow(mensagem);
     await expect(criarTopico(db, ana, materias.TI, { nome: "x".repeat(121) })).rejects.toThrow(mensagem);
     const { id } = await criarTopico(db, ana, materias.TI, { nome: "IA" });
-    await expect(renomearTopico(db, ana, id, { nome: "" })).rejects.toBeInstanceOf(ValidacaoError);
-    expect(await nomesDe(ana, cicloId, materias.TI)).toEqual(["IA"]);
+    await expect(renomearTopico(db, ana, id, { nome: "" })).rejects.toThrow(mensagem);
+    await criarTopico(db, ana, materias.TI, { nome: "😀".repeat(120) }); // 120 caracteres, 240 unidades UTF-16: cabe
+    await expect(importarTopicos(db, ana, materias.TI, { texto: "😀".repeat(121) })).rejects.toThrow("A linha 1 passa de 120 caracteres.");
+    expect(await nomesDe(ana, cicloId, materias.TI)).toEqual(["IA", "😀".repeat(120)]);
   });
 
   it("recusa nome repetido na Matéria e aceita em outra", async () => {
@@ -186,6 +188,8 @@ describe("Tópicos", () => {
       criarTopico(db, ana, materias.TI, { nome: "ia" }),
       importarTopicos(db, ana, materias.TI, { texto: "IA\nRedes" }),
     ]);
+    const importacao = resultados[2];
+    expect(importacao.status === "fulfilled" && importacao.value.importados + importacao.value.ignorados).toBe(2);
     expect(resultados.filter((r) => r.status === "rejected").every((r) => (r as PromiseRejectedResult).reason instanceof ValidacaoError)).toBe(true);
     const lista = await nomesDe(ana, cicloId, materias.TI);
     expect(lista.filter((n) => n.toLowerCase() === "ia")).toHaveLength(1);
@@ -207,9 +211,10 @@ describe("Tópicos", () => {
     const { materias } = await cicloCom(ana, ["TI"]);
     await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 30, conteudoLivre: "crase antes de horas" });
     await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 30 });
+    await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 30, conteudoLivre: "x".repeat(200) });
     await expect(registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 30, conteudoLivre: "x".repeat(201) })).rejects.toBeInstanceOf(ValidacaoError);
     const registros = await db.select().from(registroDeEstudo).orderBy(registroDeEstudo.criadoEm);
-    expect(registros.map((r) => [r.topicoId, r.conteudoLivre])).toEqual([[null, "crase antes de horas"], [null, null]]);
+    expect(registros.map((r) => [r.topicoId, r.conteudoLivre])).toEqual([[null, "crase antes de horas"], [null, null], [null, "x".repeat(200)]]);
   });
 
   it("registrarEstudo recusa Tópico de outra Matéria, de outro Usuário e Tópico com Conteúdo livre", async () => {
@@ -239,8 +244,21 @@ describe("Tópicos", () => {
     expect((await obterMateria(db, ana, cicloId, materias.TI)).topicos.map((t) => t.estudado)).toEqual([false, false]);
     await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 30, topicoId: ia.id });
     expect((await obterMateria(db, ana, cicloId, materias.TI)).topicos.map((t) => t.estudado)).toEqual([true, false]);
+    await expect(registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 0, topicoId: (await criarTopico(db, ana, materias.TI, { nome: "SO" })).id })).rejects.toBeInstanceOf(ValidacaoError);
+    expect((await obterMateria(db, ana, cicloId, materias.TI)).estudados).toBe(1); // o Registro recusado não marcou o "SO"
     await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 30, topicoId: ia.id }); // já marcado: continua
     expect((await obterMateria(db, ana, cicloId, materias.TI)).estudados).toBe(1);
+  });
+
+  it("registrar com Tópico e excluir o Tópico ao mesmo tempo nunca dá erro de banco", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { materias } = await cicloCom(ana, ["TI"]);
+    for (let i = 0; i < 10; i++) {
+      const { id } = await criarTopico(db, ana, materias.TI, { nome: `T${i}` });
+      const [registro, exclusao] = await Promise.allSettled([registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 10, topicoId: id }), excluirTopico(db, ana, id)]);
+      expect(exclusao.status).toBe("fulfilled");
+      if (registro.status === "rejected") expect(registro.reason).toBeInstanceOf(ValidacaoError); // perdeu a corrida: "Escolha um tópico desta matéria."
+    }
   });
 
   it("o Ciclo traz estudados e total de Tópicos por Matéria", async () => {

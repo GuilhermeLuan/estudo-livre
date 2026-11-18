@@ -1,7 +1,7 @@
 # Tópicos checks
 
 Build: `npm run typecheck`; `npm run build`
-Run unit: `npx vitest run tests/topicos.test.ts --reporter=verbose`
+Run unit: `npx vitest run tests/topicos.test.ts tests/formato.test.ts --reporter=verbose`
 Plan: `.specs/features/topicos/plan.md`
 
 25 checks in 3 slices · 2 one-way doors · 0 open
@@ -75,16 +75,19 @@ Proof: run unit | ✓ tests/topicos.test.ts > Tópicos > o Registro com Tópico 
 
 **C19** - "Conteúdo livre" grava o texto sem Tópico (até 200 caracteres); "Sem conteúdo" grava sem Tópico e sem texto (AC 19)
 Proof: run unit | ✓ tests/topicos.test.ts > Tópicos > Conteúdo livre e Sem conteúdo gravam sem Tópico
+Proof: run unit | ✓ tests/formato.test.ts > Tópicos na interface > o segmento do Conteúdo grava só o campo do segmento escolhido
 Proof: walk - alternar os segmentos e ver que o que estava no outro foi descartado
 
 **C20** - Segmento "Tópico" sem Tópico escolhido recusa com "Escolha um tópico." sob o campo e não grava (AC 20)
+Proof: run unit | ✓ tests/formato.test.ts > Tópicos na interface > o segmento do Conteúdo grava só o campo do segmento escolhido
 Proof: walk - salvar com "Tópico" e nada escolhido e ver a mensagem sob o campo
 
 **C21** - Tópico de outra Matéria ou de outro Usuário, ou Tópico e Conteúdo livre juntos, são recusados sem gravar (AC 21)
 Proof: run unit | ✓ tests/topicos.test.ts > Tópicos > registrarEstudo recusa Tópico de outra Matéria, de outro Usuário e Tópico com Conteúdo livre
 
-**C22** - Gravar um Registro com Tópico o marca como estudado na mesma transação; Registro sem Tópico não muda nenhum (AC 22)
+**C22** - Gravar um Registro com Tópico o marca como estudado; um Registro recusado não marca; Registro sem Tópico não muda nenhum; registrar e excluir o mesmo Tópico ao mesmo tempo nunca dá erro de banco (AC 22)
 Proof: run unit | ✓ tests/topicos.test.ts > Tópicos > o Registro com Tópico marca o Tópico como estudado
+Proof: run unit | ✓ tests/topicos.test.ts > Tópicos > registrar com Tópico e excluir o Tópico ao mesmo tempo nunca dá erro de banco
 
 ### S3 - "Tópicos estudados" no cartão do Ciclo
 
@@ -117,7 +120,7 @@ Proof: run unit | ✓ tests/topicos.test.ts > Tópicos > a Matéria com Tópicos
 - failure modes: C9 (recusa tudo, nada gravado pela metade)
 - idempotency: C8 (reimportar o mesmo texto ignora tudo), C12
 - authorization: C11, C21
-- concurrency: C12
+- concurrency: C12, C22
 - data lifecycle: C7, C25
 - dependency failure: n/a - nada externo é chamado
 - state transitions: C10, C22
@@ -126,7 +129,7 @@ Proof: run unit | ✓ tests/topicos.test.ts > Tópicos > a Matéria com Tópicos
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** Verifier e screens round 1 em `76888d3`, enviados juntos
+- **Dispatched:** Verifier e screens round 1 em `76888d3`, enviados juntos - returned
 - **Boundary:** C1-C25 closed at the commit of this handoff
 - **Abandoned:** nada; o Postgres de desenvolvimento (porta 54330) não foi usado, a senha dele não é conhecida: o app rodou contra um Postgres descartável próprio
 - **Walked:** app em `next dev` (porta 3100) contra Postgres 17 descartável, Chromium headless a 1440x960 (e 375/768 para C13). Cadastrei Marina Costa, criei o Ciclo "TRT 2ª Região — Analista" com Português, Direito Constitucional e TI, e: do cartão do Ciclo abri a página da Matéria TI pelo link (C1, C14); vi o estado vazio sem Progress (C2); criei "  Redes de computadores  " (C3), recusei "redes DE computadores" (C5), importei "IA / vazia / ia / Sistemas operacionais / redes de computadores" e li "2 importados, 2 ignorados." (C8), marquei e desmarquei o Checkbox e vi o X de Y mudar na tela (C10), renomeei IA (C6), abri nos três tamanhos sem rolagem horizontal e com Renomear/Excluir visíveis (C13) e abri o ciclo errado e li 404 (C11). No modal Registrar estudo: Matéria sem Tópicos abre em "Conteúdo livre", "Tópico" desabilitado e a dica (C17); a lista do Select na ordem (C15); trocar a Matéria limpou o Tópico (C16); salvar com "Tópico" vazio mostrou "Escolha um tópico." (C20); trocar de segmento descartou o texto (C19); salvar com Tópico gravou e o cartão do Ciclo passou a "1/3" em TI (C18, C22, C24). Excluir um Tópico com 1 Registro mostrou a confirmação e deixou o Registro sem vínculo (C7). `captures/registrar-estudo.running.png` e `captures/ciclo.running.png` salvos a 1440x960 (C15, C23). Fora do escopo e já existente: `lista-etapas.tsx` avisa no console de desenvolvimento sobre `aria-describedby` do dnd-kit (id de hidratação), sem relação com esta mudança.

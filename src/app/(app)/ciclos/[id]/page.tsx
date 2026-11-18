@@ -73,19 +73,19 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
             </div>
             <ul className="grid gap-3">
               {materias.map((m) => (
-                <li key={m.id} className="grid gap-1.5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="grid min-w-0">
-                      <Link href={`/ciclos/${id}/materias/${m.id}`} className="text-body-medium text-text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-border-focus-ring">
-                        {m.nome}
-                      </Link>
-                      <span className="text-caption-1-regular text-text-secondary">
-                        {quantidade(m.etapas, "etapa", "etapas")} · {tempoHM(m.cargaMinutos)}
-                      </span>
-                    </div>
-                    <span className="text-body-regular text-text-secondary">{m.topicos.total ? `${m.topicos.estudados}/${m.topicos.total}` : "—"}</span>
+                <li key={m.id} className="flex items-start justify-between gap-3">
+                  <div className="grid min-w-0">
+                    <Link href={`/ciclos/${id}/materias/${m.id}`} className="text-body-medium text-text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-border-focus-ring">
+                      {m.nome}
+                    </Link>
+                    <span className="text-caption-1-regular text-text-secondary">
+                      {quantidade(m.etapas, "etapa", "etapas")} · {tempoHM(m.cargaMinutos)}
+                    </span>
                   </div>
-                  {m.topicos.total > 0 && <ProgressTrack percentage={(m.topicos.estudados / m.topicos.total) * 100} size="sm" className={m.topicos.estudados === m.topicos.total ? "text-chart-2" : "text-accent-500"} />}
+                  <div className="grid w-16 shrink-0 justify-items-end gap-1.5 pt-3.5">
+                    <span className="text-body-regular text-text-secondary">{m.topicos.total ? `${m.topicos.estudados}/${m.topicos.total}` : "—"}</span>
+                    {m.topicos.total > 0 && <ProgressTrack percentage={(m.topicos.estudados / m.topicos.total) * 100} size="sm" className={m.topicos.estudados === m.topicos.total ? "text-chart-2" : "text-accent-500"} />}
+                  </div>
                 </li>
               ))}
             </ul>

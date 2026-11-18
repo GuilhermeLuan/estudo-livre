@@ -23,7 +23,8 @@ const NOME_REPETIDO = "Já existe um tópico com este nome nesta matéria.";
 
 function nomeValido(bruto: string) {
   const nome = bruto.trim();
-  if (nome.length < 1 || nome.length > nomeMaximo) throw new ValidacaoError(NOME_INVALIDO);
+  const tamanho = [...nome].length; // caracteres, não unidades UTF-16
+  if (tamanho < 1 || tamanho > nomeMaximo) throw new ValidacaoError(NOME_INVALIDO);
   return nome;
 }
 
@@ -137,7 +138,7 @@ export async function marcarTopico(db: Db, usuario: Usuario, topicoId: string, e
 export async function importarTopicos(db: Db, usuario: Usuario, materiaId: string, dados: { texto: string }): Promise<{ importados: number; ignorados: number }> {
   const linhas = dados.texto.split(/\r?\n/).map((linha, i) => ({ nome: linha.trim(), numero: i + 1 })).filter((l) => l.nome !== "");
   if (linhas.length === 0) throw new ValidacaoError("Nada para importar.");
-  const longa = linhas.find((l) => l.nome.length > nomeMaximo);
+  const longa = linhas.find((l) => [...l.nome].length > nomeMaximo);
   if (longa) throw new ValidacaoError(`A linha ${longa.numero} passa de ${nomeMaximo} caracteres.`);
   const vistos = new Set<string>();
   const distintas = linhas.filter((l) => {

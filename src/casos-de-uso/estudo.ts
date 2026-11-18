@@ -94,6 +94,8 @@ export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: strin
     // O instante de "hoje" vale só depois da trava: assim o registro nunca cai numa Volta que outro acabou de fechar.
     const dataHora = dados.dia === undefined ? new Date() : instanteDoDia(dados.dia);
     if (registro.topicoId) {
+      // A mesma trava de excluir o Tópico: o Tópico não some entre a checagem e a gravação do Registro.
+      await tx.select({ id: materia.id }).from(materia).where(eq(materia.id, materiaId)).for("update");
       const [doTopico] = await tx.select({ id: topico.id }).from(topico).where(and(eq(topico.id, registro.topicoId), eq(topico.materiaId, materiaId)));
       if (!doTopico) throw new ValidacaoError("Escolha um tópico desta matéria.");
     }

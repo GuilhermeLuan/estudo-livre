@@ -48,3 +48,8 @@ export function situacaoDaEtapa(etapa: { cargaMinutos: number; feitoMinutos: num
   if (proxima) return "Próxima etapa";
   return etapa.feitoMinutos > 0 ? "Em andamento" : "Não iniciada";
 }
+
+/** O aviso depois de importar Tópicos: "2 importados, 2 ignorados." */
+export function avisoDaImportacao(importados: number, ignorados: number) {
+  return `${importados} ${importados === 1 ? "importado" : "importados"}, ${ignorados} ${ignorados === 1 ? "ignorado" : "ignorados"}.`;
+}

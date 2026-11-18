@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { criarTopico, excluirTopico, importarTopicos, marcarTopico, NaoEncontradoError, renomearTopico, ValidacaoError } from "@/casos-de-uso";
 import { obterDb } from "@/db";
+import { avisoDaImportacao } from "./formato";
 import { exigirUsuario } from "@/sessao";
 
 export type EstadoTopico = { erro?: string; aviso?: string };
@@ -46,6 +47,6 @@ export async function importarTopicosDaMateria(materiaId: string, _: EstadoTopic
   const usuario = await exigirUsuario();
   return executar(async () => {
     const { importados, ignorados } = await importarTopicos(obterDb(), usuario, materiaId, { texto: texto(dados, "texto") });
-    return { aviso: `${importados} ${importados === 1 ? "importado" : "importados"}, ${ignorados} ${ignorados === 1 ? "ignorado" : "ignorados"}.` };
+    return { aviso: avisoDaImportacao(importados, ignorados) };
   });
 }

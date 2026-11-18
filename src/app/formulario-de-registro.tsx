@@ -11,15 +11,13 @@ import { SegmentedControl, SegmentedControlItem } from "@/components/base/segmen
 import { Textarea } from "@/components/base/textarea/textarea";
 import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_REGISTRO, percentualDeAcerto, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
-import { CAMPO_CRONOMETRO } from "./campos-do-registro";
+import { CAMPO_CRONOMETRO, type ModoDoConteudo } from "./campos-do-registro";
 import { registrar, type EstadoRegistro } from "./acoes-estudo";
 
 const { duracaoMaximaMinutos, questoesMaximas, anotacaoMaxima, conteudoLivreMaximo } = LIMITES_DO_REGISTRO;
 
 /** Uma Matéria que se pode escolher, com o Ciclo dela. */
 export type MateriaParaRegistro = { id: string; nome: string; ciclo: string; topicos: { id: string; nome: string }[] };
-
-type ModoDoConteudo = "topico" | "livre" | "nenhum";
 
 /** A mensagem do servidor fica sob o campo a que se refere; sem campo reconhecível, abaixo dos campos. */
 function campoDoErro(erro: string | undefined) {

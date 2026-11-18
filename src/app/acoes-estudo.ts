@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { NaoEncontradoError, registrarEstudo, ValidacaoError } from "@/casos-de-uso";
 import type { TipoDeEstudo } from "@/dominio";
 import { obterDb } from "@/db";
-import { CAMPO_CRONOMETRO } from "./campos-do-registro";
+import { CAMPO_CRONOMETRO, conteudoDoRegistro } from "./campos-do-registro";
 import { exigirUsuario } from "@/sessao";
 
 export type EstadoRegistro = { erro?: string; aviso?: string; enviado?: number };
@@ -21,9 +21,9 @@ function inteiroOpcional(dados: FormData, campo: string) {
 export async function registrar(estado: EstadoRegistro, dados: FormData): Promise<EstadoRegistro> {
   const usuario = await exigirUsuario();
   const materiaId = texto(dados, "materiaId");
-  const modo = texto(dados, "conteudo"); // "topico" | "livre" | "nenhum"
+  const conteudo = conteudoDoRegistro(texto(dados, "conteudo"), { topicoId: texto(dados, "topicoId"), conteudoLivre: texto(dados, "conteudoLivre") });
+  if ("erro" in conteudo) return { erro: conteudo.erro, enviado: estado.enviado };
   const duracaoMinutos = Number(texto(dados, "horas") || 0) * 60 + Number(texto(dados, "minutos") || 0);
-  if (modo === "topico" && !texto(dados, "topicoId")) return { erro: "Escolha um tópico.", enviado: estado.enviado };
   try {
     const { materia, ciclo, voltaFechada } = await registrarEstudo(obterDb(), usuario, materiaId, {
       tipo: texto(dados, "tipo") as TipoDeEstudo, // o caso de uso rejeita o que não for um tipo válido
@@ -32,8 +32,7 @@ export async function registrar(estado: EstadoRegistro, dados: FormData): Promis
       questoes: inteiroOpcional(dados, "questoes"),
       acertos: inteiroOpcional(dados, "acertos"),
       anotacao: texto(dados, "anotacao"),
-      conteudoLivre: modo === "livre" ? texto(dados, "conteudoLivre") : "",
-      topicoId: modo === "topico" ? texto(dados, "topicoId") : null,
+      ...conteudo,
     }, { cronometro: dados.has(CAMPO_CRONOMETRO) });
     revalidatePath("/", "layout");
     return {
