@@ -214,9 +214,9 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] Tópico com Cartão com data traz o dia; sem Cartão ou com Cartão vazio traz nulo
-- [ ] Excluir o Tópico remove Cartão e log e mantém os Registros
-- [ ] Gate check passes: `npx vitest run`
+- [x] Tópico com Cartão com data traz o dia; sem Cartão ou com Cartão vazio traz nulo
+- [x] Excluir o Tópico remove Cartão e log e mantém os Registros
+- [x] Gate check passes: `npx vitest run`
 
 **Tests**: integration
 **Gate**: full

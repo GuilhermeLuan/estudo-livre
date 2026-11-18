@@ -1,13 +1,17 @@
 import { and, asc, eq, max, ne, sql } from "drizzle-orm";
 import type { Db, Tx } from "@/db";
-import { ciclo, materia, registroDeEstudo, topico } from "@/db/schema";
+import { cartaoDeRevisao, ciclo, materia, registroDeEstudo, topico } from "@/db/schema";
+import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_TOPICO } from "@/dominio";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
 
 const { nomeMaximo, importacaoMaxima } = LIMITES_DO_TOPICO;
 
-export type TopicoDaMateria = { id: string; nome: string; estudado: boolean; registros: number };
+export type TopicoDaMateria = { id: string; nome: string; estudado: boolean; registros: number;
+  /** Dia (AAAA-MM-DD, Brasília) da próxima revisão do Cartão, ou nulo se não há Cartão ou ele não tem data. */
+  proximaRevisao: string | null;
+};
 
 export type MateriaComTopicos = {
   id: string;
@@ -73,17 +77,19 @@ export async function obterMateria(db: Db, usuario: Usuario, cicloId: string, ma
           nome: topico.nome,
           estudado: topico.estudado,
           registros: sql<number>`count(${registroDeEstudo.id})::int`,
+          proximaRevisao: cartaoDeRevisao.proximaRevisao,
         })
         .from(topico)
         .leftJoin(registroDeEstudo, eq(registroDeEstudo.topicoId, topico.id))
+        .leftJoin(cartaoDeRevisao, eq(cartaoDeRevisao.topicoId, topico.id))
         .where(eq(topico.materiaId, materiaId))
-        .groupBy(topico.id)
+        .groupBy(topico.id, cartaoDeRevisao.topicoId)
         .orderBy(asc(topico.posicao));
       return {
         id: alvo.id,
         nome: alvo.nome,
         ciclo: { id: alvo.cicloId, nome: alvo.cicloNome },
-        topicos,
+        topicos: topicos.map((t) => ({ ...t, proximaRevisao: t.proximaRevisao && hojeEmBrasilia(t.proximaRevisao) })),
         estudados: topicos.filter((t) => t.estudado).length,
         total: topicos.length,
       };

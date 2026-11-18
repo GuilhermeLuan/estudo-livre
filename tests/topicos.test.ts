@@ -10,6 +10,7 @@ import {
   marcarTopico,
   NaoEncontradoError,
   obterCiclo,
+  obterCartao,
   obterMateria,
   registrarEstudo,
   removerEtapa,
@@ -17,6 +18,7 @@ import {
   ValidacaoError,
 } from "@/casos-de-uso";
 import { materia, registroDeEstudo, topico } from "@/db/schema";
+import { hojeEmBrasilia } from "@/dia";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
 const db = bancoDeTeste();
@@ -289,5 +291,22 @@ describe("Tópicos", () => {
     const volta = await adicionarEtapa(db, ana, cicloId, { nome: "ti", cargaMinutos: 60 });
     expect(volta.materiaId).toBe(materias.TI);
     expect((await obterMateria(db, ana, cicloId, materias.TI)).topicos.map((t) => t.nome)).toEqual(["IA"]);
+  });
+});
+
+describe("próxima revisão", () => {
+  it("a Matéria traz a data de cada Tópico", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { cicloId, materias } = await cicloCom(ana, ["TI"]);
+    const comData = (await criarTopico(db, ana, materias.TI, { nome: "Redes" })).id;
+    const semQuestoes = (await criarTopico(db, ana, materias.TI, { nome: "IA" })).id;
+    await criarTopico(db, ana, materias.TI, { nome: "SO" });
+    await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 30, topicoId: comData, questoes: 20, acertos: 16 });
+    await registrarEstudo(db, ana, materias.TI, { ...estudo, duracaoMinutos: 30, topicoId: semQuestoes });
+
+    const { topicos } = await obterMateria(db, ana, cicloId, materias.TI);
+    const dia = hojeEmBrasilia((await obterCartao(db, ana, comData))!.proximaRevisao!);
+    expect(topicos.map((t) => [t.nome, t.proximaRevisao])).toEqual([["Redes", dia], ["IA", null], ["SO", null]]);
+    expect(dia).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
