@@ -72,10 +72,10 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] `ts-fsrs` em `package.json`; `src/revisao.ts` só importa `ts-fsrs`
-- [ ] Conversão: 59% Errei, 60% Difícil, 74% Difícil, 75% Bom, 89% Bom, 90% Fácil
-- [ ] `recalcularCartao` sem notas dá Cartão sem data; com notas devolve Cartão e log em ordem
-- [ ] Gate check passes: `npx vitest run tests/revisao.test.ts`
+- [x] `ts-fsrs` em `package.json`; `src/revisao.ts` só importa `ts-fsrs`
+- [x] Conversão: 59% Errei, 60% Difícil, 74% Difícil, 75% Bom, 89% Bom, 90% Fácil
+- [x] `recalcularCartao` sem notas dá Cartão sem data; com notas devolve Cartão e log em ordem
+- [x] Gate check passes: `npx vitest run tests/revisao.test.ts`
 
 **Tests**: unit
 **Gate**: quick
@@ -543,7 +543,7 @@ Proof: run unit | ✓ tests/topicos.test.ts > próxima revisão > a Matéria tra
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit
+**Dispatched:** batch 1 (Phase 1, T1-T4) worker, sent at spec commit; started
 **Walked:** none
 
 ---
