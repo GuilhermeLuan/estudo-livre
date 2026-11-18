@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db";
-import { ciclo, cronometro, materia, registroDeEstudo } from "@/db/schema";
+import { ciclo, cronometro, materia, registroDeEstudo, topico } from "@/db/schema";
 import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_REGISTRO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
@@ -16,6 +16,8 @@ export type DadosDoEstudo = {
   acertos?: number | null;
   anotacao?: string | null;
   conteudoLivre?: string | null;
+  /** Um Tópico da Matéria; exclui o Conteúdo livre. */
+  topicoId?: string | null;
 };
 
 const { duracaoMaximaMinutos, questoesMaximas, anotacaoMaxima, conteudoLivreMaximo } = LIMITES_DO_REGISTRO;
@@ -60,13 +62,16 @@ function validar(dados: DadosDoEstudo) {
     if (questoes === null) throw new ValidacaoError("Informe as questões para registrar os acertos.");
     if (!inteiroEntre(acertos, 0, questoes)) throw new ValidacaoError("Os acertos não podem passar do total de questões.");
   }
+  const conteudoLivre = textoOpcional(dados.conteudoLivre, conteudoLivreMaximo, "O conteúdo");
+  if (dados.topicoId && conteudoLivre) throw new ValidacaoError("Escolha um tópico ou digite um conteúdo, não os dois.");
   return {
     tipo: dados.tipo,
     duracaoMinutos: dados.duracaoMinutos,
     questoes,
     acertos,
     anotacao: textoOpcional(dados.anotacao, anotacaoMaxima, "A anotação"),
-    conteudoLivre: textoOpcional(dados.conteudoLivre, conteudoLivreMaximo, "O conteúdo"),
+    conteudoLivre,
+    topicoId: dados.topicoId || null,
   };
 }
 
@@ -88,7 +93,12 @@ export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: strin
     await tx.select({ id: ciclo.id }).from(ciclo).where(eq(ciclo.id, alvo.cicloId)).for("update");
     // O instante de "hoje" vale só depois da trava: assim o registro nunca cai numa Volta que outro acabou de fechar.
     const dataHora = dados.dia === undefined ? new Date() : instanteDoDia(dados.dia);
+    if (registro.topicoId) {
+      const [doTopico] = await tx.select({ id: topico.id }).from(topico).where(and(eq(topico.id, registro.topicoId), eq(topico.materiaId, materiaId)));
+      if (!doTopico) throw new ValidacaoError("Escolha um tópico desta matéria.");
+    }
     const [linha] = await tx.insert(registroDeEstudo).values({ materiaId, ...registro, dataHora }).returning({ id: registroDeEstudo.id });
+    if (registro.topicoId) await tx.update(topico).set({ estudado: true }).where(eq(topico.id, registro.topicoId));
     if (opcoes.cronometro)
       await tx.delete(cronometro).where(and(eq(cronometro.usuarioId, usuario.id), eq(cronometro.materiaId, materiaId)));
     const voltaFechada = await avaliarFechamentoDaVolta(tx, alvo.cicloId);

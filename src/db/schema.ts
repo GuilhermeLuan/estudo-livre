@@ -89,6 +89,18 @@ export const volta = pgTable("volta", {
   uniqueIndex("volta_unica_aberta").on(t.cicloId).where(sql`${t.fim} is null`),
 ]);
 
+// Item do conteúdo programático da Matéria, sem subtópicos. `posicao` é a ordem de criação/importação.
+export const topico = pgTable("topico", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  materiaId: text("materia_id").notNull().references(() => materia.id, { onDelete: "cascade" }),
+  nome: text("nome").notNull(),
+  estudado: boolean("estudado").notNull().default(false),
+  posicao: integer("posicao").notNull(),
+}, (t) => [
+  uniqueIndex("topico_materia_nome").on(t.materiaId, sql`lower(${t.nome})`),
+  index("topico_materia_posicao").on(t.materiaId, t.posicao),
+]);
+
 export const tipoDeEstudo = pgEnum("tipo_de_estudo", TIPOS_DE_ESTUDO);
 
 export const registroDeEstudo = pgTable("registro_de_estudo", {
@@ -101,6 +113,8 @@ export const registroDeEstudo = pgTable("registro_de_estudo", {
   acertos: integer("acertos"),
   anotacao: text("anotacao"),
   conteudoLivre: text("conteudo_livre"),
+  // Excluir o Tópico mantém o Registro, sem conteúdo (AD-009).
+  topicoId: text("topico_id").references(() => topico.id, { onDelete: "set null" }),
   criadoEm: timestamp("criado_em").notNull().defaultNow(),
 }, (t) => [index("registro_materia_data").on(t.materiaId, t.dataHora)]);
 

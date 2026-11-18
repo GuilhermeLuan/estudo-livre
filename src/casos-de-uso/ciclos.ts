@@ -1,6 +1,6 @@
 import { and, asc, eq, isNull, max, sql } from "drizzle-orm";
 import type { Db, Tx } from "@/db";
-import { ciclo, etapa, materia, registroDeEstudo, volta } from "@/db/schema";
+import { ciclo, etapa, materia, registroDeEstudo, topico, volta } from "@/db/schema";
 import { concluida } from "@/dominio";
 import { progressoDosCiclos, type Executor, type MateriaComProgresso } from "./progresso";
 import { NaoEncontradoError, ValidacaoError } from "./erros";
@@ -15,7 +15,7 @@ export type CicloDetalhe = {
   id: string;
   nome: string;
   etapas: EtapaDetalhada[];
-  materias: MateriaComProgresso[];
+  materias: (MateriaComProgresso & { topicos: { estudados: number; total: number } })[];
   /** A Volta aberta; `inicio` é nulo na Volta 1. */
   volta: { numero: number; inicio: Date | null };
   cargaMinutos: number;
@@ -82,12 +82,13 @@ async function materiaDoCiclo(tx: Tx, cicloId: string, nome: string): Promise<st
   return nova.id;
 }
 
-/** Uma Matéria sem Etapas e sem estudo não tem mais razão de existir; com estudo, fica para manter o histórico. */
+/** Uma Matéria sem Etapas, sem estudo e sem Tópicos não tem mais razão de existir; com estudo ou Tópicos, fica (AD-008). */
 async function descartarMateriaSemUso(tx: Tx, materiaId: string) {
   const [comEtapa] = await tx.select({ id: etapa.id }).from(etapa).where(eq(etapa.materiaId, materiaId)).limit(1);
   if (comEtapa) return;
   const [comEstudo] = await tx.select({ id: registroDeEstudo.id }).from(registroDeEstudo).where(eq(registroDeEstudo.materiaId, materiaId)).limit(1);
-  if (!comEstudo) await tx.delete(materia).where(eq(materia.id, materiaId));
+  const [comTopico] = await tx.select({ id: topico.id }).from(topico).where(eq(topico.materiaId, materiaId)).limit(1);
+  if (!comEstudo && !comTopico) await tx.delete(materia).where(eq(materia.id, materiaId));
 }
 
 export async function criarCiclo(db: Db, usuario: Usuario, dados: { nome: string }): Promise<{ id: string }> {
@@ -114,13 +115,20 @@ export async function obterCiclo(db: Db, usuario: Usuario, cicloId: string): Pro
       const posicaoDe = new Map(posicoes.map((e) => [e.id, e.posicao]));
       const progresso = (await progressoDosCiclos(tx, eq(ciclo.id, cicloId))).get(cicloId) ?? { etapas: [], materias: [] };
       const [aberta] = await tx.select({ numero: volta.numero, inicio: volta.inicio }).from(volta).where(and(eq(volta.cicloId, cicloId), isNull(volta.fim)));
+      const contagem = await tx
+        .select({ materiaId: topico.materiaId, estudados: sql<number>`count(*) filter (where ${topico.estudado})::int`, total: sql<number>`count(*)::int` })
+        .from(topico)
+        .innerJoin(materia, eq(materia.id, topico.materiaId))
+        .where(eq(materia.cicloId, cicloId))
+        .groupBy(topico.materiaId);
+      const topicosDe = new Map(contagem.map((c) => [c.materiaId, { estudados: c.estudados, total: c.total }]));
       const carga = progresso.etapas.reduce((soma, e) => soma + e.cargaMinutos, 0);
       const feito = progresso.etapas.reduce((soma, e) => soma + e.feitoMinutos, 0);
       return {
         id,
         nome,
         etapas: progresso.etapas.map((e) => ({ ...e, posicao: posicaoDe.get(e.id)! })),
-        materias: progresso.materias,
+        materias: progresso.materias.map((m) => ({ ...m, topicos: topicosDe.get(m.id) ?? { estudados: 0, total: 0 } })),
         volta: aberta,
         cargaMinutos: carga,
         feitoMinutos: feito,
