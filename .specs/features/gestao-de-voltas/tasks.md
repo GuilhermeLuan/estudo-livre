@@ -137,9 +137,9 @@ T6 → T7 → T8 → T9 → T10
 
 **Done when**:
 
-- [ ] `reiniciar` devolve `{ erro }` com a mensagem de `ValidacaoError` e "Não encontramos este item. Atualize a página." para `NaoEncontradoError`
-- [ ] `novaEtapa`, `salvarEtapa` e `excluirEtapa` devolvem `aviso` quando a Volta fechou
-- [ ] Gate passes: `npm run typecheck; npm run build; npx vitest run`
+- [x] `reiniciar` devolve `{ erro }` com a mensagem de `ValidacaoError` e "Não encontramos este item. Atualize a página." para `NaoEncontradoError`
+- [x] `novaEtapa`, `salvarEtapa` e `excluirEtapa` devolvem `aviso` quando a Volta fechou
+- [x] Gate passes: `npm run typecheck; npm run build; npx vitest run`
 
 **Tests**: none
 **Gate**: build
