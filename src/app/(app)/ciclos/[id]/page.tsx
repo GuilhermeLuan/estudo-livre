@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdicionarEtapa, RenomearCiclo } from "@/app/dialogos-do-ciclo";
 import { descricaoDaVolta, quantidade, tempoHM } from "@/app/formato";
+import { FaixasDeAcerto } from "@/app/faixas-de-acerto";
 import { ListaEtapas } from "@/app/lista-etapas";
-import { listarVoltas, NaoEncontradoError, obterCiclo } from "@/casos-de-uso";
+import { listarVoltas, NaoEncontradoError, obterCiclo, obterFaixas } from "@/casos-de-uso";
 import { concluida } from "@/dominio";
 import { ProgressTrack } from "@/components/base/progress/progress";
 import { Tab, TabList, TabPanel, Tabs } from "@/components/base/tabs/tabs";
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic";
 export default async function PaginaCiclo({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const usuario = await exigirUsuario();
-  const [ciclo, voltas] = await Promise.all([obterCiclo(obterDb(), usuario, id), listarVoltas(obterDb(), usuario, id)]).catch((erro) => {
+  const [ciclo, voltas, faixas] = await Promise.all([obterCiclo(obterDb(), usuario, id), listarVoltas(obterDb(), usuario, id), obterFaixas(obterDb(), usuario, id)]).catch((erro) => {
     if (erro instanceof NaoEncontradoError) notFound();
     throw erro;
   });
@@ -56,6 +57,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
         <TabList aria-label="Seções do ciclo">
           <Tab id="etapas">Etapas</Tab>
           <Tab id="voltas">Voltas</Tab>
+          <Tab id="faixas">Faixas de acerto</Tab>
         </TabList>
         <TabPanel id="etapas" className="grid gap-5 outline-none">
 
@@ -79,6 +81,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
 
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
             <ListaEtapas cicloId={id} etapas={itens} proximaId={ciclo.proximaEtapaId ?? undefined} />
+            <div className="grid gap-5">
             {materias.length > 0 && (
               <aside aria-label="Matérias" className="grid gap-3 rounded-3xl bg-background-secondary-default p-4">
                 <div className="flex items-baseline justify-between gap-3">
@@ -105,10 +108,15 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
                 </ul>
               </aside>
             )}
+            <FaixasDeAcerto cicloId={id} faixas={faixas} />
+            </div>
           </div>
         </TabPanel>
         <TabPanel id="voltas" className="outline-none">
           <TabelaDeVoltas voltas={voltas} />
+        </TabPanel>
+        <TabPanel id="faixas" className="max-w-[420px] outline-none">
+          <FaixasDeAcerto cicloId={id} faixas={faixas} />
         </TabPanel>
       </Tabs>
     </section>

@@ -389,8 +389,8 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] A tela em 1440x960 casa com `.specs/features/cartao-de-revisao/captures/ciclo.png` no que o cartão e a aba desenham, nos dois temas
-- [ ] Gate check passes: `npm run typecheck; npm run build`
+- [x] A tela em 1440x960 casa com `.specs/features/cartao-de-revisao/captures/ciclo.png` no que o cartão e a aba desenham, nos dois temas
+- [x] Gate check passes: `npm run typecheck; npm run build`
 
 **Tests**: none
 **Gate**: build
