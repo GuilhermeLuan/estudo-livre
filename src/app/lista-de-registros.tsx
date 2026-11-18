@@ -15,7 +15,7 @@ import { Aviso } from "./aviso";
 import { useCronometro } from "./cronometro";
 import { enderecoDosRegistros } from "./filtros-de-registros";
 import { RegistroDeEstudo } from "./formulario-de-registro";
-import { tempo } from "./formato";
+import { quantidade, tempo } from "./formato";
 
 const dataBR = (dia: string) => dia.split("-").reverse().join("/");
 
@@ -50,7 +50,7 @@ export function ListaDeRegistros({ registros, total, temMais, limite, ciclo, mat
   return (
     <div className="grid min-w-0 gap-4">
       <p className="text-body-regular text-text-secondary" aria-live="polite">
-        {total} {total === 1 ? "registro" : "registros"}
+        {quantidade(total, "registro", "registros")}
       </p>
 
       <div className="hidden min-w-0 rounded-3xl border border-border-table bg-background-primary-default xl:block">

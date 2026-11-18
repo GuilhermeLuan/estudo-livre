@@ -10,6 +10,7 @@ import type { Usuario } from "./usuario";
 
 /** Quantos Registros o histórico mostra por vez (AD-014). */
 export const LIMITE_DA_LISTA = 25;
+const LIMITE_MAXIMO = 100_000; // o endereço é do Usuário: um `limite` absurdo não pode estourar o banco
 
 export type FiltroDeRegistros = { cicloId?: string; materiaId?: string; limite?: number };
 
@@ -37,7 +38,7 @@ export type ListaDeRegistros = { registros: RegistroDoHistorico[]; total: number
 
 /** Histórico do Usuário, do mais recente ao mais antigo; ids de outros Usuários simplesmente não casam. */
 export async function listarRegistros(db: Db, usuario: Usuario, filtro: FiltroDeRegistros): Promise<ListaDeRegistros> {
-  const limite = Number.isInteger(filtro.limite) && filtro.limite! > 0 ? filtro.limite! : LIMITE_DA_LISTA;
+  const limite = Number.isInteger(filtro.limite) && filtro.limite! > 0 ? Math.min(filtro.limite!, LIMITE_MAXIMO) : LIMITE_DA_LISTA;
   const onde = and(
     eq(ciclo.usuarioId, usuario.id),
     filtro.cicloId ? eq(ciclo.id, filtro.cicloId) : undefined,

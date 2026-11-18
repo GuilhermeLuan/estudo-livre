@@ -93,6 +93,13 @@ describe("histórico de registros", () => {
     expect([terceira.registros.length, terceira.temMais]).toEqual([60, false]);
   });
 
+  it("um limite absurdo, zero, negativo ou fracionário não quebra a lista", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const c = await ciclo(ana, "TRF", { Português: 600 });
+    await registrarEstudo(db, ana, c.materias.Português, { ...estudo, duracaoMinutos: 1 });
+    for (const limite of [1e20, 0, -5, 1.5, Number.NaN]) expect((await listarRegistros(db, ana, { limite })).total).toBe(1);
+  });
+
   it("com exatamente 25 registros não há mais", async () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
     const c = await ciclo(ana, "TRF", { Português: 6000 });
@@ -138,6 +145,19 @@ describe("histórico de registros", () => {
       await registrarEstudo(db, ana, c.materias.Português, { ...estudo, duracaoMinutos: minutos, dia });
     const voltas = Object.fromEntries((await ids(ana)).filter((r) => r.duracaoMinutos < 10).map((r) => [r.dia, r.volta]));
     expect(voltas).toEqual({ "2026-09-05": 1, "2026-11-10": 1, "2026-11-11": 2 });
+  });
+
+  it("um Registro exatamente no instante do fechamento é da Volta que fecha; um milissegundo depois é da seguinte", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const c = await cicloComVolta1Fechada(ana);
+    const fim = new Date("2026-11-10T18:00:00.000Z");
+    await fecharVolta1Em(c.id, fim);
+    await db.delete(registroDeEstudo);
+    const { id: noFim } = await registrarEstudo(db, ana, c.materias.Português, { ...estudo, duracaoMinutos: 7 });
+    const { id: depois } = await registrarEstudo(db, ana, c.materias.Português, { ...estudo, duracaoMinutos: 9 });
+    await db.update(registroDeEstudo).set({ dataHora: fim }).where(eq(registroDeEstudo.id, noFim));
+    await db.update(registroDeEstudo).set({ dataHora: new Date(fim.getTime() + 1) }).where(eq(registroDeEstudo.id, depois));
+    expect(Object.fromEntries((await ids(ana)).map((r) => [r.duracaoMinutos, r.volta]))).toEqual({ 7: 1, 9: 2 });
   });
 });
 
@@ -193,6 +213,7 @@ describe("editar registro", () => {
 
     await expect(edit(20, 21)).rejects.toThrow("Os acertos não podem passar do total de questões.");
     await expect(edit(null, 3)).rejects.toThrow("Informe as questões para registrar os acertos.");
+    expect((await ids(ana))[0]).toMatchObject({ questoes: null, acertos: null });
     await edit(20, 20);
     await edit(0, 0);
     expect((await ids(ana))[0]).toMatchObject({ questoes: 0, acertos: 0 });
@@ -229,9 +250,16 @@ describe("editar registro", () => {
     await editarRegistro(db, ana, id, c.materias.Português, { ...estudo, duracaoMinutos: 45, dia: diaDaquiA(-5) });
     expect(await instante()).toBe(new Date(`${diaDaquiA(-5)}T12:00:00-03:00`).getTime());
 
+    await db.update(registroDeEstudo).set({ dataHora: new Date(`${diaDaquiA(-5)}T12:00:00-03:00`) }).where(eq(registroDeEstudo.id, id));
     const antes = Date.now();
     await editarRegistro(db, ana, id, c.materias.Português, { ...estudo, duracaoMinutos: 45, dia: hojeEmBrasilia() });
     expect(await instante()).toBeGreaterThanOrEqual(antes);
+    expect(await instante()).toBeLessThanOrEqual(Date.now());
+
+    // Sem `dia`, o instante fica como está.
+    const guardado = await instante();
+    await editarRegistro(db, ana, id, c.materias.Português, { ...estudo, duracaoMinutos: 46 });
+    expect(await instante()).toBe(guardado);
   });
 
   it("a edição que completa as Etapas da Volta aberta a fecha; a que reduz horas não reabre nada", async () => {
@@ -355,6 +383,13 @@ describe("registro retroativo e Volta", () => {
     expect((await obterCiclo(db, ana, c.id)).volta.numero).toBe(2);
   });
 
+  it("um dia passado dentro da Volta aberta soma exatamente as horas dele ao progresso", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const c = await ciclo(ana, "TRF", { Português: 600 });
+    await registrarEstudo(db, ana, c.materias.Português, { ...estudo, duracaoMinutos: 25, dia: diaDaquiA(-4) });
+    expect(await feito(ana, c.id, "Português")).toBe(25);
+  });
+
   it("recusa data futura ao registrar e ao editar", async () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
     const c = await ciclo(ana, "TRF", { Português: 600 });
@@ -406,6 +441,17 @@ describe("progresso consistente", () => {
     expect(cruzadas.map((d) => d.status)).toEqual(["fulfilled", "fulfilled"]);
     const abertas = await db.select().from(volta).where(isNull(volta.fim));
     expect(abertas).toHaveLength(2);
-    expect(await db.select().from(materia)).toHaveLength(2);
+
+    // Duas edições que completam a mesma Volta ao mesmo tempo: ela fecha uma só vez.
+    const c2 = await ciclo(ana, "C", { Redes: 60 });
+    const r1 = await registrarEstudo(db, ana, c2.materias.Redes, { ...estudo, duracaoMinutos: 10 });
+    const r2 = await registrarEstudo(db, ana, c2.materias.Redes, { ...estudo, duracaoMinutos: 10 });
+    const fechamentos = await Promise.all([
+      editarRegistro(db, ana, r1.id, c2.materias.Redes, { ...estudo, duracaoMinutos: 60 }),
+      editarRegistro(db, ana, r2.id, c2.materias.Redes, { ...estudo, duracaoMinutos: 60 }),
+    ]);
+    expect(fechamentos.filter((f) => f.voltaFechada === 1)).toHaveLength(1);
+    expect((await obterCiclo(db, ana, c2.id)).volta.numero).toBe(2);
+    expect(await db.select().from(materia)).toHaveLength(3);
   });
 });

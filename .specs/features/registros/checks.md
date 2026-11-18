@@ -21,6 +21,7 @@ Proof: walk - ver a linha "70 min, 20 questões, 16 acertos, Tópico" como "1h10
 **C3** - 25 por vez com "Carregar mais" (60 → 25, 50, 60 sem o botão; exatamente 25 sem o botão) (AC 3)
 Proof: run unit | ✓ tests/registros.test.ts > histórico de registros > devolve 25 por vez e avisa quando há mais
 Proof: run unit | ✓ tests/registros.test.ts > histórico de registros > com exatamente 25 registros não há mais
+Proof: run unit | ✓ tests/registros.test.ts > histórico de registros > um limite absurdo, zero, negativo ou fracionário não quebra a lista
 Proof: walk - com mais de 25 Registros, usar "Carregar mais" até o botão sumir
 
 **C4** - "N registros" mostra o total do filtro atual, "1 registro" no singular (AC 4)
@@ -46,6 +47,7 @@ Proof: walk - abrir `/registros` nos três tamanhos
 
 **C10** - A Volta de cada Registro é a que contém a data dele em (início, fim]: Volta 1 fechada em 10/11 às 15:00 → 10/11 é Volta 1, 11/11 Volta 2, 05/09 Volta 1 (AC 12)
 Proof: run unit | ✓ tests/registros.test.ts > histórico de registros > a Volta do Registro é a que contém a data dele em (início, fim]
+Proof: run unit | ✓ tests/registros.test.ts > histórico de registros > um Registro exatamente no instante do fechamento é da Volta que fecha; um milissegundo depois é da seguinte
 
 ### S2 - Editar um Registro
 
@@ -111,6 +113,7 @@ Proof: run unit | ✓ tests/registros.test.ts > registro retroativo e Volta > um
 
 **C29** - Dia passado dentro da Volta aberta soma ao progresso e, completando as Etapas, a fecha (AC 31)
 Proof: run unit | ✓ tests/registros.test.ts > registro retroativo e Volta > um dia passado dentro da Volta aberta soma ao progresso e, completando as Etapas, a fecha
+Proof: run unit | ✓ tests/registros.test.ts > registro retroativo e Volta > um dia passado dentro da Volta aberta soma exatamente as horas dele ao progresso
 
 **C30** - Data futura é recusada ao registrar e ao editar (AC 32)
 Proof: run unit | ✓ tests/registros.test.ts > registro retroativo e Volta > recusa data futura ao registrar e ao editar
