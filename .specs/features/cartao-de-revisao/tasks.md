@@ -331,8 +331,8 @@ T10 → T11 → T12 → T13 → T14 → T15 → T16 → T17 → T18
 
 **Done when**:
 
-- [ ] O modal tem, por Matéria, as Faixas e o Mínimo do Ciclo; o histórico passa a `nota` na edição
-- [ ] Gate check passes: `npm run typecheck`
+- [x] O modal tem, por Matéria, as Faixas e o Mínimo do Ciclo; o histórico passa a `nota` na edição
+- [x] Gate check passes: `npm run typecheck`
 
 **Tests**: none
 **Gate**: build

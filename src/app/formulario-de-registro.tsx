@@ -11,14 +11,15 @@ import { SegmentedControl, SegmentedControlItem } from "@/components/base/segmen
 import { Textarea } from "@/components/base/textarea/textarea";
 import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_REGISTRO, percentualDeAcerto, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
+import type { Faixas, Nota } from "@/revisao";
 import { CAMPO_CRONOMETRO, type ModoDoConteudo } from "./campos-do-registro";
 import { registrar, type EstadoRegistro } from "./acoes-estudo";
 import { editar } from "./acoes-registros";
 
 const { duracaoMaximaMinutos, questoesMaximas, anotacaoMaxima, conteudoLivreMaximo } = LIMITES_DO_REGISTRO;
 
-/** Uma Matéria que se pode escolher, com o Ciclo dela. */
-export type MateriaParaRegistro = { id: string; nome: string; ciclo: string; topicos: { id: string; nome: string }[] };
+/** Uma Matéria que se pode escolher, com o Ciclo dele e as Faixas de acerto e o Mínimo de questões dele. */
+export type MateriaParaRegistro = { id: string; nome: string; ciclo: string; faixas: Faixas; minimo: number; topicos: { id: string; nome: string }[] };
 
 /** Um Registro existente, como o modal de edição o recebe. */
 export type RegistroParaEdicao = {
@@ -29,6 +30,7 @@ export type RegistroParaEdicao = {
   dia: string;
   questoes: number | null;
   acertos: number | null;
+  nota: Nota | null;
   anotacao: string | null;
   conteudoLivre: string | null;
   topicoId: string | null;
