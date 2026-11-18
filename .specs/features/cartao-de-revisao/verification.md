@@ -47,13 +47,14 @@
 | C37 | formato.test.ts `sem data` | yes - idem |
 | C38 | n/a (walk) | n/a - walk/browser, julgado na visita/telas |
 | C39 | topicos.test.ts `a Matéria traz a data de cada Tópico` | yes |
+| C40 | n/a (walk) | n/a - walk/browser, julgado na visita/telas |
 
 ## Findings
 
 | Finding | Evidence | Fix | Closed |
 | --- | --- | --- | --- |
-| Migração: fronteira `questoes >= 5` e `coalesce(acertos,0)` sem teste | `tests/migracao-cartoes.test.ts` só tem 20, 3 e 10 questões, todas com acertos; `drizzle/0006_dashing_the_enforcers.sql` (C16) | incluir Registro com 5 questões, outro com 4 e outro com Acertos vazio e questões >= 5 709182b |
-| C1 e C5 só provam que a data é um `Date` | `tests/cartoes.test.ts:74` e `:117` - `toBeInstanceOf(Date)` | comparar com `recalcularCartao` da nota esperada (Bom e Difícil) 709182b |
-| C26 não cobre o que o AC pede no modal de edição | só `listarRegistros` devolve `nota`; `formulario-de-registro.tsx:81` guarda a nota gravada como escolhida, então editar acertos não refaz a sugestão e a "sugestão pelas Faixas atuais" do AC 9 não tem check nem teste | acrescentar check (walk) para a edição ou decidir na spec se a nota gravada conta como escolhida 09cff11 |
+| Migração: fronteira `questoes >= 5` e `coalesce(acertos,0)` sem teste | `tests/migracao-cartoes.test.ts` só tem 20, 3 e 10 questões, todas com acertos; `drizzle/0006_dashing_the_enforcers.sql` (C16) | incluir Registro com 5 questões, outro com 4 e outro com Acertos vazio e questões >= 5 | 709182b |
+| C1 e C5 só provam que a data é um `Date` | `tests/cartoes.test.ts:74` e `:117` - `toBeInstanceOf(Date)` | comparar com `recalcularCartao` da nota esperada (Bom e Difícil) | 709182b |
+| C26 não cobre o que o AC pede no modal de edição | só `listarRegistros` devolve `nota`; `formulario-de-registro.tsx:81` guarda a nota gravada como escolhida, então editar acertos não refaz a sugestão e a "sugestão pelas Faixas atuais" do AC 9 não tem check nem teste | acrescentar check (walk) para a edição ou decidir na spec se a nota gravada conta como escolhida | 09cff11 |
 
 Exemplos próprios rodados e verdes (descartados): 179/200 = 89,5% dá Fácil, 149/200 dá Bom, 119/200 dá Difícil; 4 registros simultâneos com a mesma data/hora no mesmo Tópico dão o Cartão da reaplicação; edição que move Registro para Matéria de Ciclo com outras Faixas: estimativa igual ao Cartão salvo, nota pelas Faixas do Ciclo de destino, Cartão de origem removido; retroativo com o mesmo dia de outro Registro: estimativa igual ao Cartão. Capturas binding: sem contradição com a spec (diferenças listadas em Differences from the source).
