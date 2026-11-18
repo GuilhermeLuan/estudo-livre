@@ -65,6 +65,8 @@ export const ciclo = pgTable("ciclo", {
   faixaDificilAte: integer("faixa_dificil_ate").notNull().default(75),
   faixaBomAte: integer("faixa_bom_ate").notNull().default(90),
   minimoDeQuestoes: integer("minimo_de_questoes").notNull().default(5),
+  // Arquivado = não nulo: sai da Hoje e das sugestões, e o histórico fica intacto.
+  arquivadoEm: timestamp("arquivado_em", { withTimezone: true }),
   criadoEm: timestamp("criado_em").notNull().defaultNow(),
 }, (t) => [index("ciclo_usuario").on(t.usuarioId)]);
 
