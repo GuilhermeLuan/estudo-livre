@@ -1,13 +1,13 @@
 # arquivar-ciclo proofs
 
-**HEAD**: aa10e0c
+**HEAD**: 15ad3fd
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 35 pass, 1 fail
+**Result**: 36 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
-| C1 | `browser captures/ciclo.running.png` | **diverges** (screens.md) |
+| C1 | `browser captures/ciclo.running.png` | pass |
 | C2 | `walk - na tela do Ciclo, "Arquivar" abre o diálogo com o título, o texto com o nome do Ciclo e os dois botões` | pass (Walked) |
 | C3 | `walk - "Cancelar" fecha o diálogo e o Ciclo continua na Sidebar` | pass (Walked) |
 | C4 | `run unit / ✓ tests/arquivados.test.ts > arquivar e reativar > arquivar marca o Ciclo como arquivado` | pass |
@@ -51,17 +51,17 @@
 ```
 
 stderr | tests/conta.test.ts > conta e instância > com o cadastro desligado, não é possível criar conta
-2026-11-19T01:09:04.416Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-19T01:13:10.197Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/conta.test.ts > conta e instância > com o cadastro desligado, não é possível criar conta
-2026-11-19T01:09:04.469Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-19T01:13:10.260Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/conta.test.ts > conta e instância > com o cadastro desligado, o primeiro Usuário ainda pode se cadastrar
-2026-11-19T01:09:04.528Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-19T01:13:10.327Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/volta-do-ciclo.test.ts > progresso na tela do Ciclo > cada Etapa traz o feito, e o Ciclo traz a Volta, os totais e as Matérias com progresso
-2026-11-19T01:09:04.920Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-19T01:13:17.326Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/volta-do-ciclo.test.ts > progresso na tela do Ciclo > depois de fechar a Volta, mostra a Volta 2 com o instante em que abriu e soma as horas extras
-2026-11-19T01:09:05.050Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-19T01:13:17.420Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 ```
