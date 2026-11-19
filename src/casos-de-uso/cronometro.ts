@@ -3,7 +3,7 @@ import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
 import type { Db } from "@/db";
 import { ciclo, cronometro, materia } from "@/db/schema";
 import { LIMITES_DO_REGISTRO } from "@/dominio";
-import { NaoEncontradoError, ValidacaoError } from "./erros";
+import { ESCRITA_EM_ARQUIVADO, NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
 
 export type CronometroAtivo = {
@@ -50,15 +50,20 @@ export async function obterCronometro(db: Db, usuario: Usuario, agora = new Date
 }
 
 export async function iniciarCronometro(db: Db, usuario: Usuario, materiaId: string, agora = new Date()): Promise<void> {
-  const [alvo] = await db
-    .select({ id: materia.id })
-    .from(materia)
-    .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
-    .where(and(eq(materia.id, materiaId), eq(ciclo.usuarioId, usuario.id)));
-  if (!alvo) throw new NaoEncontradoError("Matéria");
   try {
-    // A chave primária é o Usuário: o banco garante um único Cronômetro, mesmo com cliques simultâneos.
-    await db.insert(cronometro).values({ usuarioId: usuario.id, materiaId, rodandoDesde: agora });
+    // O Ciclo fica travado até o insert: arquivar (que trava o mesmo Ciclo) não deixa um Cronômetro passar a vez.
+    await db.transaction(async (tx) => {
+      const [alvo] = await tx
+        .select({ id: materia.id, arquivadoEm: ciclo.arquivadoEm })
+        .from(materia)
+        .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
+        .where(and(eq(materia.id, materiaId), eq(ciclo.usuarioId, usuario.id)))
+        .for("update", { of: ciclo });
+      if (!alvo) throw new NaoEncontradoError("Matéria");
+      if (alvo.arquivadoEm) throw new ValidacaoError(ESCRITA_EM_ARQUIVADO);
+      // A chave primária é o Usuário: o banco garante um único Cronômetro, mesmo com cliques simultâneos.
+      await tx.insert(cronometro).values({ usuarioId: usuario.id, materiaId, rodandoDesde: agora });
+    });
   } catch (erro) {
     if ((erro as { cause?: { code?: string } }).cause?.code === POSTGRES_VIOLACAO_DE_UNICIDADE)
       throw new ValidacaoError("Já existe um cronômetro rodando. Pare ou descarte antes de iniciar outro.");

@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { Db } from "@/db";
 import { ciclo } from "@/db/schema";
 import { validarFaixas, type Faixas } from "@/revisao";
-import { NaoEncontradoError, ValidacaoError } from "./erros";
+import { ESCRITA_EM_ARQUIVADO, NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
 
 export type FaixasDoCiclo = Faixas & { minimo: number };
@@ -19,6 +19,9 @@ export async function obterFaixas(db: Db, usuario: Usuario, cicloId: string): Pr
 export async function salvarFaixas(db: Db, usuario: Usuario, cicloId: string, dados: FaixasDoCiclo): Promise<void> {
   const erro = validarFaixas(dados);
   if (erro) throw new ValidacaoError(erro.mensagem);
+  const [atual] = await db.select({ arquivadoEm: ciclo.arquivadoEm }).from(ciclo).where(and(eq(ciclo.id, cicloId), eq(ciclo.usuarioId, usuario.id)));
+  if (!atual) throw new NaoEncontradoError("Ciclo");
+  if (atual.arquivadoEm) throw new ValidacaoError(ESCRITA_EM_ARQUIVADO);
   const salvos = await db
     .update(ciclo)
     .set({ faixaErreiAte: dados.erreiAte, faixaDificilAte: dados.dificilAte, faixaBomAte: dados.bomAte, minimoDeQuestoes: dados.minimo })

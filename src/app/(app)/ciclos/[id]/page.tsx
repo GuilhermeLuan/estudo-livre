@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArquivarCiclo, ReativarCiclo } from "@/app/arquivar-ciclo";
 import { AdicionarEtapa, RenomearCiclo } from "@/app/dialogos-do-ciclo";
 import { descricaoDaVolta, quantidade, tempoHM } from "@/app/formato";
 import { FaixasDeAcerto } from "@/app/faixas-de-acerto";
@@ -41,15 +42,22 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
             <h1 id="h-ciclo" className="text-title-1-medium text-text-primary">
               {ciclo.nome}
             </h1>
-            <RenomearCiclo cicloId={id} nome={ciclo.nome} />
+            {!ciclo.arquivado && <RenomearCiclo cicloId={id} nome={ciclo.nome} />}
           </div>
           <p className="text-body-regular text-text-secondary">
             {quantidade(etapas.length, "etapa", "etapas")} · {quantidade(materias.length, "matéria", "matérias")} · {tempoHM(ciclo.cargaMinutos)} por volta
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <ReiniciarVolta cicloId={id} numero={volta.numero} />
-          <AdicionarEtapa cicloId={id} />
+          {ciclo.arquivado ? (
+            <ReativarCiclo cicloId={id} />
+          ) : (
+            <>
+              <ReiniciarVolta cicloId={id} numero={volta.numero} />
+              <ArquivarCiclo cicloId={id} nome={ciclo.nome} />
+              <AdicionarEtapa cicloId={id} />
+            </>
+          )}
         </div>
       </div>
 
@@ -80,7 +88,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
           </div>
 
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <ListaEtapas cicloId={id} etapas={itens} proximaId={ciclo.proximaEtapaId ?? undefined} />
+            <ListaEtapas cicloId={id} etapas={itens} proximaId={ciclo.proximaEtapaId ?? undefined} somenteLeitura={ciclo.arquivado} />
             <div className="grid gap-5">
             {materias.length > 0 && (
               <aside aria-label="Matérias" className="grid gap-3 rounded-3xl bg-background-secondary-default p-4">
@@ -108,7 +116,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
                 </ul>
               </aside>
             )}
-            <FaixasDeAcerto cicloId={id} faixas={faixas} />
+            <FaixasDeAcerto cicloId={id} faixas={faixas} somenteLeitura={ciclo.arquivado} />
             </div>
           </div>
         </TabPanel>
@@ -116,7 +124,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
           <TabelaDeVoltas voltas={voltas} />
         </TabPanel>
         <TabPanel id="faixas" className="max-w-[420px] outline-none">
-          <FaixasDeAcerto cicloId={id} faixas={faixas} />
+          <FaixasDeAcerto cicloId={id} faixas={faixas} somenteLeitura={ciclo.arquivado} />
         </TabPanel>
       </Tabs>
     </section>

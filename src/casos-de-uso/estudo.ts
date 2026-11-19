@@ -4,7 +4,7 @@ import { ciclo, cronometro, materia, registroDeEstudo, topico } from "@/db/schem
 import { hojeEmBrasilia } from "@/dia";
 import { LIMITES_DO_REGISTRO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
 import type { Nota } from "@/revisao";
-import { NaoEncontradoError, ValidacaoError } from "./erros";
+import { ESCRITA_EM_ARQUIVADO, NaoEncontradoError, ValidacaoError } from "./erros";
 import { avaliarFechamentoDaVolta } from "./progresso";
 import { faixasDoCiclo, recalcularTopico, resolverNota } from "./revisao";
 import type { Usuario } from "./usuario";
@@ -94,7 +94,8 @@ export async function registrarEstudo(db: Db, usuario: Usuario, materiaId: strin
       .where(and(eq(materia.id, materiaId), eq(ciclo.usuarioId, usuario.id)));
     if (!alvo) throw new NaoEncontradoError("Matéria");
     // Trava o Ciclo para que registros simultâneos não fechem a mesma Volta duas vezes.
-    await tx.select({ id: ciclo.id }).from(ciclo).where(eq(ciclo.id, alvo.cicloId)).for("update");
+    const [travado] = await tx.select({ arquivadoEm: ciclo.arquivadoEm }).from(ciclo).where(eq(ciclo.id, alvo.cicloId)).for("update");
+    if (travado.arquivadoEm) throw new ValidacaoError(ESCRITA_EM_ARQUIVADO);
     // O instante de "hoje" vale só depois da trava: assim o registro nunca cai numa Volta que outro acabou de fechar.
     const dataHora = dados.dia === undefined ? new Date() : instanteDoDia(dados.dia);
     if (registro.topicoId) {

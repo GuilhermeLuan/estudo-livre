@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { quantidade } from "@/app/formato";
 import { ListaDeTopicos } from "@/app/lista-de-topicos";
-import { NaoEncontradoError, obterMateria } from "@/casos-de-uso";
+import { NaoEncontradoError, obterCiclo, obterMateria } from "@/casos-de-uso";
 import { ProgressTrack } from "@/components/base/progress/progress";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
 
 export default async function PaginaDaMateria({ params }: { params: Promise<{ id: string; materiaId: string }> }) {
   const { id, materiaId } = await params;
-  const materia = await obterMateria(obterDb(), await exigirUsuario(), id, materiaId).catch((erro) => {
+  const usuario = await exigirUsuario();
+  const [materia, { arquivado }] = await Promise.all([obterMateria(obterDb(), usuario, id, materiaId), obterCiclo(obterDb(), usuario, id)]).catch((erro) => {
     if (erro instanceof NaoEncontradoError) notFound();
     throw erro;
   });
@@ -42,7 +43,7 @@ export default async function PaginaDaMateria({ params }: { params: Promise<{ id
           </div>
         )}
       </div>
-      <ListaDeTopicos materiaId={materia.id} topicos={materia.topicos} />
+      <ListaDeTopicos materiaId={materia.id} topicos={materia.topicos} somenteLeitura={arquivado} />
     </section>
   );
 }

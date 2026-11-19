@@ -3,7 +3,7 @@ import type { Db, Tx } from "@/db";
 import { ciclo, etapa, materia, registroDeEstudo, topico, volta } from "@/db/schema";
 import { concluida } from "@/dominio";
 import { avaliarFechamentoDaVolta, progressoDosCiclos, type Executor, type MateriaComProgresso } from "./progresso";
-import { NaoEncontradoError, ValidacaoError } from "./erros";
+import { ESCRITA_EM_ARQUIVADO, NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
 
 export type EtapaDoCiclo = { id: string; materiaId: string; nome: string; cargaMinutos: number; posicao: number };
@@ -14,6 +14,7 @@ export type EtapaDetalhada = EtapaDoCiclo & { feitoMinutos: number };
 export type CicloDetalhe = {
   id: string;
   nome: string;
+  arquivado: boolean;
   etapas: EtapaDetalhada[];
   materias: (MateriaComProgresso & { topicos: { estudados: number; total: number } })[];
   /** A Volta aberta; `inicio` é nulo na Volta 1. */
@@ -64,11 +65,12 @@ async function exigirEtapa(db: Db, usuario: Usuario, etapaId: string) {
 /** Trava o Ciclo para que alterações simultâneas nas Etapas não repitam posição nem dupliquem Matérias. */
 export async function travarCiclo(tx: Tx, usuario: Usuario, cicloId: string) {
   const [linha] = await tx
-    .select({ id: ciclo.id })
+    .select({ id: ciclo.id, arquivadoEm: ciclo.arquivadoEm })
     .from(ciclo)
     .where(and(eq(ciclo.id, cicloId), eq(ciclo.usuarioId, usuario.id)))
     .for("update");
   if (!linha) throw new NaoEncontradoError("Ciclo");
+  if (linha.arquivadoEm) throw new ValidacaoError(ESCRITA_EM_ARQUIVADO);
 }
 
 /** A Matéria do Ciclo com este nome (sem diferenciar maiúsculas), criada se ainda não existir. */
@@ -102,7 +104,8 @@ export async function criarCiclo(db: Db, usuario: Usuario, dados: { nome: string
 
 export async function renomearCiclo(db: Db, usuario: Usuario, cicloId: string, dados: { nome: string }) {
   const nome = nomeValido(dados.nome, "do ciclo");
-  await exigirCiclo(db, usuario, cicloId);
+  const { arquivadoEm } = await exigirCiclo(db, usuario, cicloId);
+  if (arquivadoEm) throw new ValidacaoError(ESCRITA_EM_ARQUIVADO);
   await db.update(ciclo).set({ nome }).where(eq(ciclo.id, cicloId));
 }
 
@@ -110,7 +113,7 @@ export async function obterCiclo(db: Db, usuario: Usuario, cicloId: string): Pro
   // Uma leitura consistente: as Etapas, o progresso e a Volta vêm do mesmo instante.
   return db.transaction(
     async (tx) => {
-      const { id, nome } = await exigirCiclo(tx, usuario, cicloId);
+      const { id, nome, arquivadoEm } = await exigirCiclo(tx, usuario, cicloId);
       const posicoes = await tx.select({ id: etapa.id, posicao: etapa.posicao }).from(etapa).where(eq(etapa.cicloId, cicloId));
       const posicaoDe = new Map(posicoes.map((e) => [e.id, e.posicao]));
       const progresso = (await progressoDosCiclos(tx, eq(ciclo.id, cicloId))).get(cicloId) ?? { etapas: [], materias: [] };
@@ -127,6 +130,7 @@ export async function obterCiclo(db: Db, usuario: Usuario, cicloId: string): Pro
       return {
         id,
         nome,
+        arquivado: arquivadoEm !== null,
         etapas: progresso.etapas.map((e) => ({ ...e, posicao: posicaoDe.get(e.id)! })),
         materias: progresso.materias.map((m) => ({ ...m, topicos: topicosDe.get(m.id) ?? { estudados: 0, total: 0 } })),
         volta: aberta,

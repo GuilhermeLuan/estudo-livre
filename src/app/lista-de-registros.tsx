@@ -30,7 +30,7 @@ const conteudoDe = (r: RegistroDoHistorico) => r.topico ?? r.conteudoLivre ?? "�
 /** O histórico: tabela a partir de 1280px, cartões abaixo; "Editar" abre o modal de registro, "Excluir" confirma. */
 export function ListaDeRegistros({ registros, total, temMais, limite, ciclo, materia }: { registros: RegistroDoHistorico[]; total: number; temMais: boolean; limite: number; ciclo?: string; materia?: string }) {
   const router = useRouter();
-  const { materias } = useCronometro();
+  const { materias, materiasArquivadas } = useCronometro();
   const [editando, setEditando] = useState<{ registro: RegistroDoHistorico; abertura: number } | null>(null);
   const [aberto, setAberto] = useState(false);
   const [excluindo, setExcluindo] = useState<RegistroDoHistorico | null>(null);
@@ -125,7 +125,8 @@ export function ListaDeRegistros({ registros, total, temMais, limite, ciclo, mat
           aberto={aberto}
           aoMudar={setAberto}
           abertura={editando.abertura}
-          materias={materias}
+          // Só a Matéria do próprio Registro entra se o Ciclo dele está arquivado (AD-024).
+          materias={[...materias, ...materiasArquivadas.filter((m) => m.id === editando.registro.materiaId)]}
           materiaInicial={editando.registro.materiaId}
           edicao={editando.registro}
           aoSalvar={(texto) => {

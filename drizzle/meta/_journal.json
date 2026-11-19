@@ -50,6 +50,13 @@
       "when": 1795029780472,
       "tag": "0006_dashing_the_enforcers",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795035102913,
+      "tag": "0007_regular_wallflower",
+      "breakpoints": true
     }
   ]
 }

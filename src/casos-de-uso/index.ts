@@ -1,7 +1,7 @@
 // Módulo de casos de uso: única porta de entrada do domínio, chamada pelas
 // server actions e pelos testes. Toda operação recebe o Usuário.
 export { prepararCadastro, CadastroFechadoError } from "./conta";
-export { obterHome, type CicloDaHome, type Home, type Indicadores } from "./home";
+export { obterHome, type CicloArquivado, type CicloDaHome, type Home, type Indicadores } from "./home";
 export type { EtapaComProgresso, MateriaComProgresso } from "./progresso";
 export type { Usuario } from "./usuario";
 export { listarUsuarios, redefinirSenha, NaoAutorizadoError, SenhaInvalidaError, UsuarioNaoEncontradoError, type UsuarioListado } from "./admin";
@@ -33,6 +33,7 @@ export { editarRegistro, excluirRegistro, listarRegistros, LIMITE_DA_LISTA, type
 export { listarFaixasDosCiclos, obterFaixas, salvarFaixas, type FaixasDoCiclo } from "./faixas";
 export { estimarProximaRevisao, obterCartao, recalcularTopico, type RascunhoDeRegistro } from "./revisao";
 export { listarVoltas, reiniciarVolta, type VoltaDoHistorico } from "./voltas";
+export { arquivarCiclo, reativarCiclo } from "./arquivados";
 export { NaoEncontradoError, ValidacaoError } from "./erros";
 export {
   criarTopico,

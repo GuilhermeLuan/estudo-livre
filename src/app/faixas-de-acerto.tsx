@@ -64,14 +64,14 @@ function FormularioDeFaixas({ cicloId, faixas, aoSalvar }: { cicloId: string; fa
 }
 
 /** O cartão "Faixas de acerto" do Ciclo, com o modal para editar. */
-export function FaixasDeAcerto({ cicloId, faixas }: { cicloId: string; faixas: FaixasDoCiclo }) {
+export function FaixasDeAcerto({ cicloId, faixas, somenteLeitura = false }: { cicloId: string; faixas: FaixasDoCiclo; somenteLeitura?: boolean }) {
   const [aberto, setAberto] = useState(false);
   const [abertura, setAbertura] = useState(0);
   return (
     <aside aria-label="Faixas de acerto" className="grid gap-4 rounded-3xl bg-background-secondary-default p-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-title-3-medium text-text-primary">Faixas de acerto</h2>
-        <Button
+        {!somenteLeitura && <Button
           variant="secondary"
           size="small"
           leadingIcon={RiPencilLine}
@@ -81,7 +81,7 @@ export function FaixasDeAcerto({ cicloId, faixas }: { cicloId: string; faixas: F
           }}
         >
           Editar
-        </Button>
+        </Button>}
       </div>
       <ul className="grid grid-cols-4 gap-2">
         {NOTAS.map((nota) => (

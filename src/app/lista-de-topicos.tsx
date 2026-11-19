@@ -53,7 +53,7 @@ function FormularioImportacao({ materiaId, aoImportar }: { materiaId: string; ao
 }
 
 /** A lista de Tópicos da Matéria: marcar, renomear, excluir, criar e importar. */
-export function ListaDeTopicos({ materiaId, topicos }: { materiaId: string; topicos: TopicoItem[] }) {
+export function ListaDeTopicos({ materiaId, topicos, somenteLeitura = false }: { materiaId: string; topicos: TopicoItem[]; somenteLeitura?: boolean }) {
   const [novo, setNovo] = useState(false);
   const [importando, setImportando] = useState(false);
   const [editando, setEditando] = useState<TopicoItem | null>(null);
@@ -72,7 +72,7 @@ export function ListaDeTopicos({ materiaId, topicos }: { materiaId: string; topi
 
   return (
     <div className="grid gap-4">
-      <div className="flex flex-wrap items-center gap-2">
+      {!somenteLeitura && <div className="flex flex-wrap items-center gap-2">
         <Button leadingIcon={RiAddLine} onClick={() => setNovo(true)}>
           Novo tópico
         </Button>
@@ -82,7 +82,7 @@ export function ListaDeTopicos({ materiaId, topicos }: { materiaId: string; topi
         <p role="status" className="text-body-regular text-text-secondary">
           {aviso}
         </p>
-      </div>
+      </div>}
 
       {topicos.length === 0 ? (
         <p className="rounded-3xl border border-border-button-default px-4 py-8 text-center text-body-regular text-text-secondary">Nenhum tópico ainda</p>
@@ -90,17 +90,21 @@ export function ListaDeTopicos({ materiaId, topicos }: { materiaId: string; topi
         <ul className="divide-y divide-separator-border rounded-3xl border border-border-button-default">
           {topicos.map((t) => (
             <li key={t.id} className="flex items-center gap-3 px-4 py-3">
-              <Checkbox isSelected={t.estudado} onChange={(marcado) => marcar(t, marcado)} aria-label={`Estudado: ${t.nome}`} className="shrink-0" />
+              <Checkbox isDisabled={somenteLeitura} isSelected={t.estudado} onChange={(marcado) => marcar(t, marcado)} aria-label={`Estudado: ${t.nome}`} className="shrink-0" />
               <div className="grid min-w-0 flex-1">
                 <span className="break-words text-body-medium text-text-primary">{t.nome}</span>
                 <span className="text-caption-1-regular text-text-secondary">{textoDaProximaRevisao(t.proximaRevisao)}</span>
               </div>
-              <LinkButton size="small" onClick={() => setEditando(t)} aria-label={`Renomear ${t.nome}`}>
-                Renomear
-              </LinkButton>
-              <LinkButton size="small" onClick={() => setExcluindo(t)} aria-label={`Excluir ${t.nome}`}>
-                Excluir
-              </LinkButton>
+              {!somenteLeitura && (
+                <>
+                  <LinkButton size="small" onClick={() => setEditando(t)} aria-label={`Renomear ${t.nome}`}>
+                    Renomear
+                  </LinkButton>
+                  <LinkButton size="small" onClick={() => setExcluindo(t)} aria-label={`Excluir ${t.nome}`}>
+                    Excluir
+                  </LinkButton>
+                </>
+              )}
             </li>
           ))}
         </ul>
