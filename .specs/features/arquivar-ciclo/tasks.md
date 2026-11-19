@@ -321,12 +321,15 @@ Proof: walk - com um só Ciclo, arquivá-lo deixa a Hoje com "Nenhum ciclo ainda
 **C33** - Com o Cronômetro numa Matéria de outro Ciclo, arquivar funciona (Edge)
 Proof: run unit | ✓ tests/arquivados.test.ts > arquivar e reativar > arquiva com o Cronômetro de outro Ciclo
 
+**C34** - Iniciar o Cronômetro junto com arquivar o Ciclo nunca deixa um Cronômetro rodando numa Matéria de Ciclo arquivado (ARQ-02, AC 4; ARQ-10, AC 3)
+Proof: run unit | ✓ tests/arquivados.test.ts > arquivar e reativar > arquivar junto com iniciar o Cronômetro nunca deixa Cronômetro em Ciclo arquivado
+
 ---
 
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** Verifier e screens sub-agent (round 1) em `HEAD` do commit `docs(arquivados): proofs.md e despacho`, enviados em paralelo
+**Dispatched:** Verifier e screens sub-agent (round 1) em `64f4a20`, enviados em paralelo - ambos `returned`
 **Walked:** App em `http://localhost:3100` (`next dev`, banco dev `postgres://postgres:dev@localhost:54330/dev`, migrações aplicadas), janela de 1440x960 (celular: 390x844), tema Claro suave, cliques reais num Chromium sem cabeça (Playwright). O login pela tela leva minutos nesta máquina; a sessão foi criada direto na tabela `session` com o cookie assinado. Usuária `marina@exemplo.com` (Ciclos "TRT 2ª Região — Analista" `/ciclos/87d44d3b-208b-4b15-9a96-5153f5c49af5` e "INSS — Técnico" `/ciclos/aabd88aa-c195-4c46-a296-4c1cd2716e20`, este com o Tópico "Seguridade social" e um Registro de 40min) e `voltas@exemplo.com` (um só Ciclo, `/ciclos/d096c67a-327d-4e2d-965c-543706d42093`).
 - Arquivar (ARQ-01): em "INSS — Técnico", "Arquivar" abre "Arquivar ciclo?" com "O histórico de “INSS — Técnico” continua guardado e você pode reativar o ciclo quando quiser.", "Cancelar" e "Arquivar". Cancelar fecha e o Ciclo segue na Sidebar. Confirmar leva a `/`, a Sidebar perde o Ciclo e mostra "Arquivados" com o Counter "1", e a Hoje mostra só o TRT. Com o Cronômetro rodando no Ciclo (usuário `voltas`), confirmar mantém o diálogo aberto com "Pare ou descarte o cronômetro antes de arquivar." sob o texto.
 - Sidebar e celular (ARQ-06): "Arquivados" fica abaixo da lista de Ciclos, leva a `/ciclos/arquivados` e fica selecionado; sem arquivados aparece sem Counter. A 390px o menu do avatar traz "Arquivados (1)" e leva à lista.

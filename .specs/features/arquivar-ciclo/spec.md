@@ -149,6 +149,7 @@ Um concurso termina ou pausa, mas o Ciclo dele continua ocupando a Hoje, a Sideb
 | Aba "Matérias" na tela do Ciclo | Não aparece até a issue dela | y - AD-001 |
 | Cartão do Cronômetro na Sidebar sem lixeira | O cartão mantém o botão "Descartar cronômetro" | y - AD-006 |
 | Título do Ciclo sem controle ao lado | Link "Renomear" ao lado do título | y - AD-001 |
+| Chip da Matéria (ex.: "TI") ao lado do valor de "Horas extras" no cartão da Volta | Só o valor, sem chip | y - AD-027 |
 
 ## Sources
 
