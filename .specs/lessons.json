@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 3,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "ac_gap::a guard that reads state outside the lock of the write it protects can be raced lock the row then check and write in the same transaction and test the two operations in parallel",
+      "text": "A guard that reads state outside the lock of the write it protects can be raced: lock the row, then check and write in the same transaction, and test the two operations in parallel",
+      "signal": "ac_gap",
+      "scope": "use-cases",
+      "status": "candidate",
+      "features": [
+        "arquivar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 1, C34 (use-cases)"
+      ],
+      "created": "2026-11-19T01:14:29Z",
+      "last_seen": "2026-11-19T01:14:29Z"
+    },
+    {
+      "id": "L-002",
+      "key": "weak_test::when a criterion says a derived value is recalculated assert the derived value after the change not only the rows that remain",
+      "text": "When a criterion says a derived value is recalculated, assert the derived value after the change, not only the rows that remain",
+      "signal": "weak_test",
+      "scope": "use-cases",
+      "status": "candidate",
+      "features": [
+        "arquivar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 2, C27 (use-cases)"
+      ],
+      "created": "2026-11-19T01:14:29Z",
+      "last_seen": "2026-11-19T01:14:29Z"
+    }
+  ]
+}
