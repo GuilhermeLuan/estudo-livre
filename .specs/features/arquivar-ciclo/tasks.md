@@ -327,7 +327,14 @@ Proof: run unit | ✓ tests/arquivados.test.ts > arquivar e reativar > arquiva c
 
 **Settled mid-build:** none
 **Dispatched:** none
-**Walked:** not yet
+**Walked:** App em `http://localhost:3100` (`next dev`, banco dev `postgres://postgres:dev@localhost:54330/dev`, migrações aplicadas), janela de 1440x960 (celular: 390x844), tema Claro suave, cliques reais num Chromium sem cabeça (Playwright). O login pela tela leva minutos nesta máquina; a sessão foi criada direto na tabela `session` com o cookie assinado. Usuária `marina@exemplo.com` (Ciclos "TRT 2ª Região — Analista" `/ciclos/87d44d3b-208b-4b15-9a96-5153f5c49af5` e "INSS — Técnico" `/ciclos/aabd88aa-c195-4c46-a296-4c1cd2716e20`, este com o Tópico "Seguridade social" e um Registro de 40min) e `voltas@exemplo.com` (um só Ciclo, `/ciclos/d096c67a-327d-4e2d-965c-543706d42093`).
+- Arquivar (ARQ-01): em "INSS — Técnico", "Arquivar" abre "Arquivar ciclo?" com "O histórico de “INSS — Técnico” continua guardado e você pode reativar o ciclo quando quiser.", "Cancelar" e "Arquivar". Cancelar fecha e o Ciclo segue na Sidebar. Confirmar leva a `/`, a Sidebar perde o Ciclo e mostra "Arquivados" com o Counter "1", e a Hoje mostra só o TRT. Com o Cronômetro rodando no Ciclo (usuário `voltas`), confirmar mantém o diálogo aberto com "Pare ou descarte o cronômetro antes de arquivar." sob o texto.
+- Sidebar e celular (ARQ-06): "Arquivados" fica abaixo da lista de Ciclos, leva a `/ciclos/arquivados` e fica selecionado; sem arquivados aparece sem Counter. A 390px o menu do avatar traz "Arquivados (1)" e leva à lista.
+- Lista (ARQ-07/08): `/ciclos/arquivados` mostra "Arquivados", "Ciclos fora de uso. O histórico fica guardado até você reativar." e um cartão com "INSS — Técnico", "1 etapa", "Volta 1" e "Reativar"; o nome abre a tela do Ciclo. "Reativar" faz o cartão sumir e mostra "Nenhum ciclo arquivado."; o Ciclo volta à Sidebar, à Hoje e ao seletor de Matéria do modal "Registrar estudo".
+- Leitura (ARQ-09): a tela do Ciclo arquivado tem as mesmas abas e dados, "Reativar" no cabeçalho e nenhum "Adicionar etapa", "Reiniciar volta", "Renomear", "Arquivar", "Editar" das Faixas nem menu ou ordenação das Etapas. Na Matéria dele, sem "Novo tópico", "Importar tópicos", "Renomear" e "Excluir", e o checkbox do Tópico fica desabilitado.
+- Histórico (ARQ-11/12): com o INSS arquivado, o filtro de Ciclo de Registros e o de Estatísticas o listam e filtram por ele; "Editar" no Registro do INSS abre o modal com "Direito Previdenciário · INSS — Técnico" e "Salvar" funciona. O seletor de Matéria do modal "Registrar estudo" não lista as Matérias dele enquanto arquivado.
+- Borda: o usuário `voltas`, com um só Ciclo, arquiva e vê na Hoje "Nenhum ciclo ainda" e, na Sidebar, "Arquivados" com Counter "1"; reativou pela lista.
+- Estado desenhado: `captures/ciclo.running.png` (tela do Ciclo TRT com "Arquivar" e o item "Arquivados" com Counter 1), 1440x960, Claro suave. O selo "1 Issue" do `next dev` foi escondido: vem de um aviso de hidratação que já existia na lista de Etapas (`aria-describedby` do dnd-kit, `DndDescribedBy-N`), fora desta feature.
 
 ---
 
