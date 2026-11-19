@@ -1,15 +1,15 @@
 # Arquivar e reativar ciclo screens
 
 **Verifier**: independent sub-agent (author != verifier)
-**Round**: 1
+**Round**: 2
 
 | Screen | Compared with | Verdict | Finding |
 | --- | --- | --- | --- |
-| `captures/ciclo.running.png` | `captures/ciclo.png` | diverges | 1 row differs |
+| `captures/ciclo.running.png` | `captures/ciclo.png` | matches | no row differs |
 
 ### `captures/ciclo.running.png`
 
-Picture taken by the verifier: 1440x960, Claro suave, INSS archived through the screen first, then the TRT Ciclo opened.
+Picture retaken in round 2 by a fresh screens sub-agent: 1440x960, Claro suave, INSS archived through the screen first, then the TRT Ciclo opened.
 
 | Element | Result | Picture draws |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Picture taken by the verifier: 1440x960, Claro suave, INSS archived through the 
 | Cabeçalho à direita: "Reiniciar volta", "Arquivar" (ícone de caixa), "Adicionar etapa" (azul) na mesma linha, nessa ordem | same | |
 | Abas Etapas (ativa, sublinhada), Matérias, Voltas, Faixas de acerto | same | "Matérias" absent (approved: AD-001) |
 | Cartão da Volta: "Volta N", legenda, % e horas, barra azul, "Faltam", "Horas extras" com valor | same | legenda "Primeira volta" (sample data) |
-| Cartão da Volta: chip da Matéria (TI) ao lado do valor de Horas extras | differs | valor "5h45" sem chip ao lado |
+| Cartão da Volta: chip da Matéria (TI) ao lado do valor de Horas extras | same | valor "5h45" sem chip ao lado (approved: AD-027) |
 | Tabela de Etapas: cabeçalho #, Matéria, Carga, Progresso na volta, Situação | same | |
 | Tabela: alça de arrastar, número, nome, carga, barra com %, chip de situação, menu "⋮" por linha | same | chips Concluída, Próxima etapa (linha realçada), Em andamento, Não iniciada, "+ extra"; 8 linhas em vez de 9 (sample data) |
 | Painel "Matérias" com "Tópicos estudados", nome + "N etapas · carga" por Matéria | same | contagem de tópicos e barra aparecem como "—" (Matérias sem Tópicos nos dados de exemplo) |
