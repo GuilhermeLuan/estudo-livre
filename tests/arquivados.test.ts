@@ -11,6 +11,7 @@ import {
   importarTopicos,
   marcarTopico,
   obterCartao,
+  recalcularTopico,
   renomearTopico,
   editarEtapa,
   obterFaixas,
@@ -29,7 +30,7 @@ import {
   registrarEstudo,
   ValidacaoError,
 } from "@/casos-de-uso";
-import { ciclo, registroDeEstudo } from "@/db/schema";
+import { ciclo, cronometro, registroDeEstudo } from "@/db/schema";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
 const db = bancoDeTeste();
@@ -81,6 +82,18 @@ describe("arquivar e reativar", () => {
     await iniciarCronometro(db, usuario, outraMateriaId);
     await arquivarCiclo(db, usuario, cicloId);
     expect(await arquivadoEm(cicloId)).toBeInstanceOf(Date);
+  });
+
+  it("arquivar junto com iniciar o Cronômetro nunca deixa Cronômetro em Ciclo arquivado", async () => {
+    const { usuario, cicloId, materiaId } = await cenario();
+    for (let rodada = 0; rodada < 15; rodada++) {
+      await Promise.allSettled([iniciarCronometro(db, usuario, materiaId), arquivarCiclo(db, usuario, cicloId)]);
+      const rodando = (await db.select().from(cronometro)).length > 0;
+      const arquivado = (await arquivadoEm(cicloId)) !== null;
+      expect(rodando && arquivado).toBe(false);
+      await db.delete(cronometro);
+      await reativarCiclo(db, usuario, cicloId);
+    }
   });
 
   it("arquivar e reativar não alteram o histórico", async () => {
@@ -245,6 +258,7 @@ describe("escritas no Ciclo arquivado", () => {
     const antes = await historico();
     await recusa(() => registrarEstudo(db, usuario, materiaId, { duracaoMinutos: 30, tipo: "Teoria" }));
     await recusa(() => iniciarCronometro(db, usuario, materiaId));
+    expect(await db.select().from(cronometro)).toEqual([]);
     // Mover o Registro do Ciclo ativo (outroId) para a Matéria do arquivado.
     const [{ id: novo }] = await db
       .insert(registroDeEstudo)
@@ -274,9 +288,12 @@ describe("escritas no Ciclo arquivado", () => {
     expect((await db.select().from(registroDeEstudo))[0].materiaId).toBe(outraMateriaId);
     expect(await obterCartao(db, usuario, topicoId)).toBeNull();
 
-    // Excluir um Registro do arquivado.
+    // Excluir o Registro que sustenta o Cartão o remove (ARQ-11: o Cartão é recalculado do zero).
     const { id: outroRegistro } = (await db.insert(registroDeEstudo).values({ materiaId, topicoId, dataHora: new Date(), duracaoMinutos: 20, tipo: "Teoria", questoes: 10, nota: "Bom" }).returning({ id: registroDeEstudo.id }))[0];
+    await db.transaction((tx) => recalcularTopico(tx, topicoId));
+    expect(await obterCartao(db, usuario, topicoId)).not.toBeNull();
     await excluirRegistro(db, usuario, outroRegistro);
     expect((await db.select().from(registroDeEstudo)).map((r) => r.id)).toEqual([registroId]);
+    expect(await obterCartao(db, usuario, topicoId)).toBeNull();
   });
 });
