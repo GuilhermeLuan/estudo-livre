@@ -31,13 +31,13 @@ export type CicloDetalhe = {
 
 const CARGA_MAXIMA_MINUTOS = 10_000 * 60;
 
-function nomeValido(nome: string, rotulo: string) {
+export function nomeValido(nome: string, rotulo: string) {
   const limpo = nome.trim();
   if (!limpo) throw new ValidacaoError(`Informe o nome ${rotulo}.`);
   return limpo;
 }
 
-function cargaValida(minutos: number) {
+export function cargaValida(minutos: number) {
   if (!Number.isInteger(minutos) || minutos <= 0 || minutos > CARGA_MAXIMA_MINUTOS)
     throw new ValidacaoError("A carga horária precisa ser maior que zero e no máximo 10.000 horas.");
   return minutos;
