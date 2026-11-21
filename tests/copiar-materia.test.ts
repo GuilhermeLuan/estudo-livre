@@ -145,6 +145,9 @@ describe("recusas", () => {
     for (const cargaMinutos of [0, -5, 1.5, NaN, 10_000 * 60 + 1])
       await expect(copiarMateria(db, ana, d, { origemId: o.materiaId, nome: "X", cargaMinutos })).rejects.toThrow("A carga horária precisa ser maior que zero e no máximo 10.000 horas.");
     expect(await contagens()).toEqual(antes);
+    // o limite de 10.000 horas, ele mesmo, é aceito
+    await copiarMateria(db, ana, d, { origemId: o.materiaId, nome: "X", cargaMinutos: 10_000 * 60 });
+    expect((await obterCiclo(db, ana, d)).etapas.map((e) => e.cargaMinutos)).toEqual([600_000]);
   });
 
   it("recusa nome vazio", async () => {
