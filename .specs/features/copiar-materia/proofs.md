@@ -1,6 +1,6 @@
 # copiar-materia proofs
 
-**HEAD**: f6df710
+**HEAD**: 2bace8a
 **Tree**: clean
 **Shell**: /bin/sh
 **Result**: 22 pass, 0 fail
@@ -37,17 +37,17 @@
 ```
 
 stderr | tests/copiar-materia.test.ts > bordas > a mesma cópia duas vezes recusa a segunda
-2026-11-21T12:42:11.685Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-21T12:42:22.927Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/copiar-materia.test.ts > listarMateriasCopiaveis > lista as Matérias de outros Ciclos, ativos e arquivados
-2026-11-21T12:42:11.764Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-21T12:42:23.021Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/copiar-materia.test.ts > listarMateriasCopiaveis > lista as Matérias de outros Ciclos, ativos e arquivados
-2026-11-21T12:42:11.806Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-21T12:42:23.066Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/copiar-materia.test.ts > listarMateriasCopiaveis > a carga é a soma das Etapas e 0 sem Etapas
-2026-11-21T12:42:11.908Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-21T12:42:23.187Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/copiar-materia.test.ts > listarMateriasCopiaveis > não lista nada quando não há outros Ciclos com Matérias
-2026-11-21T12:42:11.986Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-21T12:42:23.270Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 ```

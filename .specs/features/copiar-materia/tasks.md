@@ -186,7 +186,7 @@ Proof: run unit | ✓ tests/copiar-materia.test.ts > bordas > a mesma cópia dua
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** none
+**Dispatched:** Verifier (round 1) sobre o diff `8029107..HEAD` (HEAD do commit "docs(copiar-materia): proofs.md da execução") - sent; sem captura citada, sem screens sub-agent
 **Walked:** App em `http://localhost:3100` (`next dev`, banco dev `postgres://postgres:dev@localhost:54330/dev`, migrações aplicadas), janela de 1440x960, tema Claro suave, cliques reais num Chromium sem cabeça (Playwright). Sessão criada por `POST /api/auth/sign-up/email` (usuários `copia@exemplo.com` e `solo@exemplo.com`, senha `senha-de-teste-123`); dados semeados por SQL: Ciclos "Concurso A" (`/ciclos/cic-a`, Português com 2 Etapas de 1h e 2h e 4 Tópicos, "Crase" estudado), "Concurso C" arquivado (Direito com 1 Etapa; Raciocínio sem Etapas) e "Concurso B" (`/ciclos/cic-b`, destino, com a Etapa Informática de 1h); `solo` tem o Ciclo único `/ciclos/cic-solo`.
 - Copiar (COPIA-01/02): em "Concurso B", "Adicionar etapa" mostra "Copiar de outro ciclo" com "Nova matéria", "Português · Concurso A", "Direito · Concurso C (arquivado)" e "Raciocínio · Concurso C (arquivado)". Escolher "Português · Concurso A" preenche Nome "Português" e Carga "3". Editar para "Língua Portuguesa" e "2,5" e escolher "Nova matéria" mantém os dois valores. Escolher "Raciocínio" (sem Etapas) deixa a carga vazia. Escolher de novo "Português" e enviar fecha o modal e a tela mostra a Etapa 2 "Português" (3h, 0/4 Tópicos); no banco: Etapa na posição 1 com 180 min e 4 Tópicos não estudados.
 - Recusa (COPIA-04): copiar "Português" de novo mostra sob os campos "Este ciclo já tem a matéria “Português”." e o modal segue aberto; "Cancelar" fecha.
