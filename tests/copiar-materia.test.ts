@@ -8,6 +8,7 @@ import {
   criarTopico,
   editarEtapa,
   excluirTopico,
+  listarMateriasCopiaveis,
   marcarTopico,
   NaoEncontradoError,
   obterCiclo,
@@ -222,5 +223,47 @@ describe("bordas", () => {
     await expect(copiarMateria(db, ana, d, { origemId: o.materiaId, nome: "Português", cargaMinutos: 180 })).rejects.toThrow("Este ciclo já tem a matéria “Português”.");
 
     expect((await obterCiclo(db, ana, d)).etapas).toHaveLength(1);
+  });
+});
+
+describe("listarMateriasCopiaveis", () => {
+  it("lista as Matérias de outros Ciclos, ativos e arquivados", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    const antigo = await criarCiclo(db, ana, { nome: "Antigo" });
+    await adicionarEtapa(db, ana, antigo.id, { nome: "Direito", cargaMinutos: 60 });
+    await arquivarCiclo(db, ana, antigo.id);
+    const o = await origem(ana);
+    const d = await destino(ana);
+    await adicionarEtapa(db, ana, d, { nome: "Do destino", cargaMinutos: 30 });
+    await origem(bia);
+
+    const lista = await listarMateriasCopiaveis(db, ana, d);
+
+    // Ciclo mais recente primeiro; Matérias em ordem alfabética
+    expect(lista.map((m) => [m.nome, m.cicloNome, m.arquivado])).toEqual([["Português", "Origem", false], ["Direito", "Antigo", true]]);
+    expect(lista[0].id).toBe(o.materiaId);
+  });
+
+  it("a carga é a soma das Etapas e 0 sem Etapas", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const o = await origem(ana);
+    const sem = await adicionarEtapa(db, ana, o.cicloId, { nome: "Sem etapa", cargaMinutos: 60 });
+    await db.delete(etapa).where(eq(etapa.id, sem.id));
+    await registrarEstudo(db, ana, sem.materiaId, { tipo: "Teoria", duracaoMinutos: 10 });
+    const d = await destino(ana);
+
+    const lista = await listarMateriasCopiaveis(db, ana, d);
+
+    expect(lista.map((m) => [m.nome, m.cargaMinutos])).toEqual([["Português", 180], ["Sem etapa", 0]]);
+  });
+
+  it("não lista nada quando não há outros Ciclos com Matérias", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const d = await destino(ana);
+    await adicionarEtapa(db, ana, d, { nome: "Só esta", cargaMinutos: 30 });
+    await destino(ana, "Vazio");
+
+    expect(await listarMateriasCopiaveis(db, ana, d)).toEqual([]);
   });
 });

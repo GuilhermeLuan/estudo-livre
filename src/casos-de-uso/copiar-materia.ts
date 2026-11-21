@@ -1,4 +1,4 @@
-import { and, asc, eq, max, sql } from "drizzle-orm";
+import { and, asc, desc, eq, max, ne, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import { ciclo, etapa, materia, topico } from "@/db/schema";
 import { cargaValida, nomeValido, travarCiclo } from "./ciclos";
@@ -43,4 +43,25 @@ export async function copiarMateria(
     if (topicos.length) await tx.insert(topico).values(topicos.map((t, i) => ({ materiaId: nova.id, nome: t.nome, posicao: i })));
     return { id: linha.id, materiaId: nova.id, voltaFechada: await avaliarFechamentoDaVolta(tx, cicloId) };
   });
+}
+
+export type MateriaCopiavel = { id: string; nome: string; cicloNome: string; arquivado: boolean; cargaMinutos: number };
+
+/** As Matérias dos outros Ciclos do Usuário, ativos e arquivados, com a carga somada das Etapas (0 sem Etapas). */
+export async function listarMateriasCopiaveis(db: Db, usuario: Usuario, cicloId: string): Promise<MateriaCopiavel[]> {
+  const linhas = await db
+    .select({
+      id: materia.id,
+      nome: materia.nome,
+      cicloNome: ciclo.nome,
+      arquivadoEm: ciclo.arquivadoEm,
+      cargaMinutos: sql<number>`coalesce(sum(${etapa.cargaMinutos}), 0)::int`,
+    })
+    .from(materia)
+    .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
+    .leftJoin(etapa, eq(etapa.materiaId, materia.id))
+    .where(and(eq(ciclo.usuarioId, usuario.id), ne(ciclo.id, cicloId)))
+    .groupBy(materia.id, ciclo.id)
+    .orderBy(desc(ciclo.criadoEm), asc(materia.nome));
+  return linhas.map(({ arquivadoEm, ...m }) => ({ ...m, arquivado: arquivadoEm !== null }));
 }

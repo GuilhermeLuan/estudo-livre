@@ -91,8 +91,8 @@ T2 → T3
 
 **Done when**:
 
-- [ ] Testes cobrem outros Ciclos ativos e arquivados, exclusão do próprio Ciclo e de outro Usuário, carga somada e 0 sem Etapas, e a ordem
-- [ ] Gate check passes: `npx vitest run tests/copiar-materia.test.ts`
+- [x] Testes cobrem outros Ciclos ativos e arquivados, exclusão do próprio Ciclo e de outro Usuário, carga somada e 0 sem Etapas, e a ordem
+- [x] Gate check passes: `npx vitest run tests/copiar-materia.test.ts`
 
 **Tests**: integration
 **Gate**: quick
