@@ -122,13 +122,13 @@ T2 → T3
 ## Checks
 
 **C1** - Com outro Ciclo com Matérias, o modal "Adicionar etapa" mostra o seletor "Copiar de outro ciclo" com cada Matéria rotulada "<Matéria> · <Ciclo>", e "(arquivado)" nos arquivados (COPIA-01, AC 1)
-Proof: walk - no Ciclo B, o modal lista "Português · A" e "Direito · C (arquivado)"
+Proof: walk - no Concurso B, o modal lista "Português · Concurso A" e "Direito · Concurso C (arquivado)"
 
 **C2** - `listarMateriasCopiaveis` devolve as Matérias de outros Ciclos ativos e arquivados, e nenhuma do próprio Ciclo nem de outro Usuário (COPIA-01, AC 1)
 Proof: run unit | ✓ tests/copiar-materia.test.ts > listarMateriasCopiaveis > lista as Matérias de outros Ciclos, ativos e arquivados
 
 **C3** - Escolher a origem preenche "Nome da matéria" e "Carga horária (h)" com a soma das Etapas dela, editáveis (COPIA-01, AC 2)
-Proof: walk - escolher "Português · A" (2 Etapas, 3 h) preenche "Português" e "3", e os campos aceitam edição
+Proof: walk - escolher "Português · Concurso A" (2 Etapas, 3 h) preenche "Português" e "3", e os campos aceitam edição
 
 **C4** - A carga da origem é a soma das Etapas dela, e 0 sem Etapas, que deixa o campo vazio (COPIA-01, AC 2, 3)
 Proof: run unit | ✓ tests/copiar-materia.test.ts > listarMateriasCopiaveis > a carga é a soma das Etapas e 0 sem Etapas
@@ -187,7 +187,11 @@ Proof: run unit | ✓ tests/copiar-materia.test.ts > bordas > a mesma cópia dua
 
 **Settled mid-build:** none
 **Dispatched:** none
-**Walked:** none
+**Walked:** App em `http://localhost:3100` (`next dev`, banco dev `postgres://postgres:dev@localhost:54330/dev`, migrações aplicadas), janela de 1440x960, tema Claro suave, cliques reais num Chromium sem cabeça (Playwright). Sessão criada por `POST /api/auth/sign-up/email` (usuários `copia@exemplo.com` e `solo@exemplo.com`, senha `senha-de-teste-123`); dados semeados por SQL: Ciclos "Concurso A" (`/ciclos/cic-a`, Português com 2 Etapas de 1h e 2h e 4 Tópicos, "Crase" estudado), "Concurso C" arquivado (Direito com 1 Etapa; Raciocínio sem Etapas) e "Concurso B" (`/ciclos/cic-b`, destino, com a Etapa Informática de 1h); `solo` tem o Ciclo único `/ciclos/cic-solo`.
+- Copiar (COPIA-01/02): em "Concurso B", "Adicionar etapa" mostra "Copiar de outro ciclo" com "Nova matéria", "Português · Concurso A", "Direito · Concurso C (arquivado)" e "Raciocínio · Concurso C (arquivado)". Escolher "Português · Concurso A" preenche Nome "Português" e Carga "3". Editar para "Língua Portuguesa" e "2,5" e escolher "Nova matéria" mantém os dois valores. Escolher "Raciocínio" (sem Etapas) deixa a carga vazia. Escolher de novo "Português" e enviar fecha o modal e a tela mostra a Etapa 2 "Português" (3h, 0/4 Tópicos); no banco: Etapa na posição 1 com 180 min e 4 Tópicos não estudados.
+- Recusa (COPIA-04): copiar "Português" de novo mostra sob os campos "Este ciclo já tem a matéria “Português”." e o modal segue aberto; "Cancelar" fecha.
+- Sem origem: enviar "informática" com 2 h cria a 2ª Etapa da Matéria Informática (1 Matéria, 2 Etapas).
+- `solo` (um só Ciclo): "Adicionar etapa" abre sem o seletor.
 
 ---
 
