@@ -5,12 +5,13 @@ import { useState } from "react";
 import { Button } from "@/components/base/buttons/button";
 import { LinkButton } from "@/components/base/buttons/link-button";
 import { Modal, ModalHeader } from "@/components/base/modal/modal";
+import type { MateriaCopiavel } from "@/casos-de-uso";
 import { novaEtapa, renomear } from "./acoes-ciclos";
 import { Aviso } from "./aviso";
 import { FormularioNome } from "./formulario-ciclo";
 
 /** "Adicionar etapa": abre o modal com Matéria e carga horária; a nova Etapa entra no fim da lista. */
-export function AdicionarEtapa({ cicloId }: { cicloId: string }) {
+export function AdicionarEtapa({ cicloId, copiaveis = [] }: { cicloId: string; copiaveis?: MateriaCopiavel[] }) {
   const [aberto, setAberto] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   return (
@@ -24,7 +25,7 @@ export function AdicionarEtapa({ cicloId }: { cicloId: string }) {
             const estado = await novaEtapa(cicloId, anterior, dados);
             if (estado.aviso) setAviso(estado.aviso);
             return estado;
-          }} botao="Adicionar etapa" comCarga rotuloNome="Nome da matéria" />
+          }} botao="Adicionar etapa" comCarga copiaveis={copiaveis} rotuloNome="Nome da matéria" />
       </Modal>
       <Aviso texto={aviso} aoSumir={() => setAviso(null)} />
     </>

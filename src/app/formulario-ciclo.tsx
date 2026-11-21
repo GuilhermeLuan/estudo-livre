@@ -4,7 +4,12 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { ModalBody, ModalFooter, useModalClose } from "@/components/base/modal/modal";
+import { Select, SelectItem } from "@/components/base/select/select";
+import type { MateriaCopiavel } from "@/casos-de-uso";
 import type { EstadoCiclo } from "./acoes-ciclos";
+
+const NOVA = "nova";
+const rotuloDaCopia = (m: MateriaCopiavel) => `${m.nome} · ${m.cicloNome}${m.arquivado ? " (arquivado)" : ""}`;
 
 type Props = {
   acao: (estado: EstadoCiclo, dados: FormData) => Promise<EstadoCiclo>;
@@ -15,13 +20,25 @@ type Props = {
   rotuloNome: string;
   /** Dentro de um modal: os botões ficam no rodapé e o modal fecha ao salvar. */
   emModal?: boolean;
+  /** Matérias de outros Ciclos: com elas, o formulário oferece "Copiar de outro ciclo". */
+  copiaveis?: MateriaCopiavel[];
 };
 
 /** Nome (e carga horária) de um Ciclo ou de uma Etapa. A server action responde `{}` quando salva. */
-export function FormularioNome({ acao, botao, nome, horas, comCarga, rotuloNome, emModal }: Props) {
+export function FormularioNome({ acao, botao, nome, horas, comCarga, rotuloNome, emModal, copiaveis = [] }: Props) {
   const [erro, setErro] = useState<string>();
   const [enviando, iniciar] = useTransition();
   const fechar = useModalClose();
+  // Escolher uma origem preenche Nome e Carga; `chave` refaz os campos com os novos valores iniciais.
+  const [origemId, setOrigemId] = useState(NOVA);
+  const [inicial, setInicial] = useState({ nome, horas, chave: 0 });
+  const copia = copiaveis.find((m) => m.id === origemId);
+
+  function escolher(chave: string) {
+    setOrigemId(chave);
+    const m = copiaveis.find((c) => c.id === chave);
+    if (m) setInicial((i) => ({ nome: m.nome, horas: m.cargaMinutos ? m.cargaMinutos / 60 : undefined, chave: i.chave + 1 }));
+  }
 
   function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,9 +53,21 @@ export function FormularioNome({ acao, botao, nome, horas, comCarga, rotuloNome,
 
   const campos = (
     <>
-      <Input label={rotuloNome} name="nome" defaultValue={nome} isRequired maxLength={120} />
+      {copiaveis.length > 0 && (
+        <Select label="Copiar de outro ciclo" name={copia ? "origemId" : undefined} selectedKey={origemId} onSelectionChange={(k) => escolher(String(k))} className="w-full" triggerClassName="w-full">
+          <SelectItem id={NOVA} textValue="Nova matéria">
+            Nova matéria
+          </SelectItem>
+          {copiaveis.map((m) => (
+            <SelectItem key={m.id} id={m.id} textValue={rotuloDaCopia(m)}>
+              {rotuloDaCopia(m)}
+            </SelectItem>
+          ))}
+        </Select>
+      )}
+      <Input key={`n${inicial.chave}`} label={rotuloNome} name="nome" defaultValue={inicial.nome} isRequired maxLength={120} />
       {comCarga && (
-        <Input label="Carga horária (h)" name="horas" inputMode="decimal" defaultValue={horas === undefined ? undefined : String(horas)} isRequired />
+        <Input key={`h${inicial.chave}`} label="Carga horária (h)" name="horas" inputMode="decimal" defaultValue={inicial.horas === undefined ? undefined : String(inicial.horas).replace(".", ",")} isRequired />
       )}
       {erro && (
         <p role="alert" className="text-body-regular text-text-error-primary">

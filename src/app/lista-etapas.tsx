@@ -17,6 +17,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Chip, type ChipColor } from "@/components/base/badges/chip";
 import { Dropdown, DropdownItem, DropdownPopover, DropdownTrigger } from "@/components/base/dropdown/dropdown";
 import { AlertDialog, Modal, ModalHeader } from "@/components/base/modal/modal";
+import type { MateriaCopiavel } from "@/casos-de-uso";
 import { ProgressTrack } from "@/components/base/progress/progress";
 import { cx } from "@/utils/cx";
 import { excluirEtapa, moverEtapa, salvarEtapa } from "./acoes-ciclos";
@@ -81,7 +82,7 @@ function Linha({ etapa, posicao, proxima, somenteLeitura, aoEditar, aoRemover }:
 }
 
 /** `somenteLeitura` (Ciclo arquivado) tira a ordenação e o menu de cada Etapa. */
-export function ListaEtapas({ cicloId, etapas, proximaId, somenteLeitura = false }: { cicloId: string; etapas: EtapaItem[]; proximaId?: string; somenteLeitura?: boolean }) {
+export function ListaEtapas({ cicloId, etapas, proximaId, somenteLeitura = false, copiaveis = [] }: { cicloId: string; etapas: EtapaItem[]; proximaId?: string; somenteLeitura?: boolean; copiaveis?: MateriaCopiavel[] }) {
   const [itens, setItens] = useState(etapas);
   const [erro, setErro] = useState<string>();
   const [aviso, setAviso] = useState<string | null>(null);
@@ -114,7 +115,7 @@ export function ListaEtapas({ cicloId, etapas, proximaId, somenteLeitura = false
     return (
       <div className="grid justify-items-start gap-3 rounded-3xl bg-background-secondary-default p-6">
         <p className="text-body-regular text-text-secondary">Nenhuma etapa ainda. Adicione a primeira, com a matéria e as horas dela nesta etapa.</p>
-        {!somenteLeitura && <AdicionarEtapa cicloId={cicloId} />}
+        {!somenteLeitura && <AdicionarEtapa cicloId={cicloId} copiaveis={copiaveis} />}
       </div>
     );
 

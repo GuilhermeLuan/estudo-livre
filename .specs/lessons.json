@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 3,
+  "next_id": 4,
   "lessons": [
     {
       "id": "L-001",
@@ -40,6 +40,24 @@
       ],
       "created": "2026-11-19T01:14:29Z",
       "last_seen": "2026-11-19T01:14:29Z"
+    },
+    {
+      "id": "L-003",
+      "key": "weak_test::when a criterion fixes a numeric bound test the bound value itself as accepted and the next value as refused",
+      "text": "When a criterion fixes a numeric bound, test the bound value itself as accepted and the next value as refused",
+      "signal": "weak_test",
+      "scope": "use-cases",
+      "status": "candidate",
+      "features": [
+        "copiar-materia"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 1, C14 (use-cases) (use-cases)"
+      ],
+      "created": "2026-11-21T12:44:21Z",
+      "last_seen": "2026-11-21T12:44:21Z"
     }
   ]
 }

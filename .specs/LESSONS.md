@@ -26,6 +26,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification.md finding 2, C27 (use-cases)
 - last seen: 2026-11-19T01:14:29Z
 
+### L-003 - When a criterion fixes a numeric bound, test the bound value itself as accepted and the next value as refused
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `use-cases` · harmful: 0
+- features: copiar-materia
+- evidence: verification.md finding 1, C14 (use-cases) (use-cases)
+- last seen: 2026-11-21T12:44:21Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

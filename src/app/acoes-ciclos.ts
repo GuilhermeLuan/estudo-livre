@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import {
   adicionarEtapa,
   arquivarCiclo,
+  copiarMateria,
   criarCiclo,
   editarEtapa,
   NaoEncontradoError,
@@ -65,7 +66,9 @@ export async function renomear(cicloId: string, _: EstadoCiclo, dados: FormData)
 export async function novaEtapa(cicloId: string, _: EstadoCiclo, dados: FormData): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
   const estado = await executar(async () => {
-    return adicionarEtapa(obterDb(), usuario, cicloId, { nome: texto(dados, "nome"), cargaMinutos: minutos(dados) });
+    const etapa = { nome: texto(dados, "nome"), cargaMinutos: minutos(dados) };
+    const origemId = texto(dados, "origemId");
+    return origemId ? copiarMateria(obterDb(), usuario, cicloId, { origemId, ...etapa }) : adicionarEtapa(obterDb(), usuario, cicloId, etapa);
   });
   revalidatePath("/", "layout");
   return estado;
