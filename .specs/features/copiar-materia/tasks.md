@@ -110,8 +110,8 @@ T2 → T3
 
 **Done when**:
 
-- [ ] `src/app/acoes-ciclos.ts`, `src/app/formulario-ciclo.tsx`, `src/app/lista-etapas.tsx` e `src/app/(app)/ciclos/[id]/page.tsx` ajustados; textos em pt-BR, tokens BoardUI, `/frontend-design` aplicada
-- [ ] Gate check passes: `npm run typecheck; npm run build; npx vitest run`
+- [x] `src/app/acoes-ciclos.ts`, `src/app/formulario-ciclo.tsx`, `src/app/lista-etapas.tsx` e `src/app/(app)/ciclos/[id]/page.tsx` ajustados; textos em pt-BR, tokens BoardUI, `/frontend-design` aplicada
+- [x] Gate check passes: `npm run typecheck; npm run build; npx vitest run`
 
 **Tests**: none
 **Gate**: build

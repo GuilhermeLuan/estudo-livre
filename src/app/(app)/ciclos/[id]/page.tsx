@@ -5,7 +5,7 @@ import { AdicionarEtapa, RenomearCiclo } from "@/app/dialogos-do-ciclo";
 import { descricaoDaVolta, quantidade, tempoHM } from "@/app/formato";
 import { FaixasDeAcerto } from "@/app/faixas-de-acerto";
 import { ListaEtapas } from "@/app/lista-etapas";
-import { listarVoltas, NaoEncontradoError, obterCiclo, obterFaixas } from "@/casos-de-uso";
+import { listarMateriasCopiaveis, listarVoltas, NaoEncontradoError, obterCiclo, obterFaixas } from "@/casos-de-uso";
 import { concluida } from "@/dominio";
 import { ProgressTrack } from "@/components/base/progress/progress";
 import { Tab, TabList, TabPanel, Tabs } from "@/components/base/tabs/tabs";
@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 export default async function PaginaCiclo({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const usuario = await exigirUsuario();
-  const [ciclo, voltas, faixas] = await Promise.all([obterCiclo(obterDb(), usuario, id), listarVoltas(obterDb(), usuario, id), obterFaixas(obterDb(), usuario, id)]).catch((erro) => {
+  const [ciclo, voltas, faixas, copiaveis] = await Promise.all([obterCiclo(obterDb(), usuario, id), listarVoltas(obterDb(), usuario, id), obterFaixas(obterDb(), usuario, id), listarMateriasCopiaveis(obterDb(), usuario, id)]).catch((erro) => {
     if (erro instanceof NaoEncontradoError) notFound();
     throw erro;
   });
@@ -55,7 +55,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
             <>
               <ReiniciarVolta cicloId={id} numero={volta.numero} />
               <ArquivarCiclo cicloId={id} nome={ciclo.nome} />
-              <AdicionarEtapa cicloId={id} />
+              <AdicionarEtapa cicloId={id} copiaveis={copiaveis} />
             </>
           )}
         </div>
@@ -88,7 +88,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
           </div>
 
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <ListaEtapas cicloId={id} etapas={itens} proximaId={ciclo.proximaEtapaId ?? undefined} somenteLeitura={ciclo.arquivado} />
+            <ListaEtapas cicloId={id} etapas={itens} proximaId={ciclo.proximaEtapaId ?? undefined} somenteLeitura={ciclo.arquivado} copiaveis={copiaveis} />
             <div className="grid gap-5">
             {materias.length > 0 && (
               <aside aria-label="Matérias" className="grid gap-3 rounded-3xl bg-background-secondary-default p-4">
