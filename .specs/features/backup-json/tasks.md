@@ -143,7 +143,7 @@ T2 → T3 → T4 → T5 → T6
 **Done when**:
 
 - [x] Build gate passes
-- [ ] Na visita, com sessão, a rota baixa `estudo-livre-backup-<dia>.json`; sem sessão, leva a `/entrar`
+- [x] Na visita, com sessão, a rota baixa `estudo-livre-backup-<dia>.json`; sem sessão, leva a `/entrar`
 
 **Tests**: none
 **Gate**: build
@@ -182,8 +182,8 @@ T2 → T3 → T4 → T5 → T6
 
 **Done when**:
 
-- [ ] `src/app/(app)/backup/page.tsx` e `src/app/backup-importar.tsx` mostram os textos da spec, nos temas Claro suave e Escuro, a 390px e a 1440px
-- [ ] Na visita: sem arquivo aparece "Escolha um arquivo."; a conta com Ciclos abre "Substituir seus dados?" e "Cancelar" não muda nada; a conta vazia importa direto; o aviso diz "Backup importado: N ciclos."
+- [x] `src/app/(app)/backup/page.tsx` e `src/app/backup-importar.tsx` mostram os textos da spec, nos temas Claro suave e Escuro, a 390px e a 1440px
+- [x] Na visita: sem arquivo aparece "Escolha um arquivo."; a conta com Ciclos abre "Substituir seus dados?" e "Cancelar" não muda nada; a conta vazia importa direto; o aviso diz "Backup importado: N ciclos."
 - [x] Build gate passes
 
 **Tests**: none
@@ -203,7 +203,7 @@ T2 → T3 → T4 → T5 → T6
 
 **Done when**:
 
-- [ ] Sidebar (≥ 1024px) e menu do celular (< 1024px) levam a `/backup`; o topo do celular diz "Backup"
+- [x] Sidebar (≥ 1024px) e menu do celular (< 1024px) levam a `/backup`; o topo do celular diz "Backup"
 - [x] `docs/design-system.md` descreve a página Backup
 - [x] Build gate passes
 
@@ -303,4 +303,13 @@ Proof: run unit | ✓ tests/backup.test.ts > importar > aceita registro sem tóp
 
 **Settled mid-build:** none. Textos de N = 1 no aviso ("Backup importado: 1 ciclo.") e no diálogo ("O ciclo desta conta... será apagado") ajustados na spec por concordância. O `file-upload` do BoardUI simula o envio com progresso falso e textos em inglês; o campo usa `<input type="file">` oculto e o `Button` "Escolher arquivo". Os limites de 50 MB foram para `src/dominio.ts`, para o cliente usar sem puxar o banco.
 **Dispatched:** none
-**Walked:** none
+**Walked:** O app rodou em `http://localhost:3110` (`next dev`, banco dev `postgres://postgres:dev@localhost:54330/dev`, migrações aplicadas). A 3100 estava ocupada por outro processo. Cliques reais num Chromium headless (Playwright 1.49.1, instalado no scratchpad), janela de 1440x960 e de 390x844, tema Claro suave e depois a classe `dark`. A sessão foi criada por `POST /api/auth/sign-up/email` (`walk-<timestamp>@exemplo.com`, senha `senha-de-teste-123`). O arquivo de exemplo tem 2 Ciclos: "TRF 4ª Região — Analista" (Português com Crase e Vírgula, Informática, 2 Registros) e "INSS — Técnico", arquivado.
+- Sem sessão (C6, C22): `GET /api/backup` e o `POST` da action em `/backup` respondem 307 para `/entrar`.
+- Navegação (C7): o item "Backup" do bloco Conta da Sidebar leva a `/backup` com `aria-current="page"`. A 390px, o menu "Menu da conta" traz "Backup", que leva a `/backup`, e o topo diz "Backup".
+- Página (C8): "Backup"; o cartão "Exportar" tem "Baixe um arquivo JSON com seus ciclos, registros e revisões." e "Exportar backup"; o cartão "Importar" tem "Os ciclos do arquivo substituem todos os ciclos desta conta.", "Arquivo de backup", "Escolher arquivo", "Nenhum arquivo escolhido" e "Importar backup". A 390px os cartões empilham; no escuro os tokens trocam.
+- Sem arquivo (C9): "Importar backup" mostra "Escolha um arquivo." sob o campo.
+- Conta vazia (C10, C13): o arquivo de exemplo importa sem diálogo. O Aviso diz "Backup importado: 2 ciclos.". A Sidebar mostra "TRF 4ª Região — Analista" e "Arquivados" com o Counter 1.
+- Exportar: "Exportar backup" baixa `estudo-livre-backup-2026-11-22.json` com `versao` 1, os 2 Ciclos (INSS arquivado) e 1 Cartão recalculado no TRF.
+- Conta com Ciclos (C10, C11): reimportar o arquivo baixado abre "Substituir seus dados?" com "Os 2 ciclos desta conta, com registros e revisões, serão apagados e trocados pelos do arquivo. Isso não pode ser desfeito.", "Cancelar" e "Substituir". "Cancelar" fecha o diálogo e a Sidebar fica igual. "Substituir" mostra "Backup importado: 2 ciclos.".
+- Inválido: `{"formato":"outro"}`, depois de "Substituir", mostra "O arquivo não é um backup válido do Estudo Livre." sob o campo.
+- O banco dev ficou com o Usuário da visita e os 2 Ciclos importados.
