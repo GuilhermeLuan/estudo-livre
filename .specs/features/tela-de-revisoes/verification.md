@@ -1,6 +1,6 @@
 # Tela de revisões verification
 
-**Verdict**: PASS (achados fechados em 99f53e2; a divergência de tela, em ce1e286)
+**Verdict**: PASS (achados fechados em 99f53e2; a divergência de tela, em ce1e286; delta REV-06, C50 a C53, sem achados em 73ce660)
 **Proofs**: `proofs.md` at 4d6aa7e
 **Verifier**: independent sub-agent (author != verifier)
 
@@ -57,6 +57,10 @@
 | C47 | `lista-de-revisoes.test.ts` `classifica pelo dia de Brasília, não pelo de UTC` | yes - 23:00 e 00:30 de Brasília em lados opostos, dia e atraso exatos, e a contagem |
 | C48 | `lista-de-revisoes.test.ts` `Revisões de outro Usuário não aparecem` | yes - lista da Ana e contagem da Bia (a lista da Bia não é afirmada) |
 | C49 | `lista-de-revisoes.test.ts` `os próximos 7 dias vão de amanhã a hoje mais 7, inclusive` | yes - hoje, +1, +7 e +8 com `diasDeAtraso` exatos |
+| C50 | walk - "Registrar" numa Revisão do cartão da Hoje e da página Revisões abre o modal com "Revisão" marcado | yes - revisei no app (Marina): "Registrar <Tópico>" do cartão da Hoje e da página `/revisoes` abrem com `input[name=tipo]` = "Revisão" e o SegmentedControl em "Revisão"; o código (`tipoInicial` em `useState`, `tipoInicial={registro.topicoId ? "Revisão" : undefined}`) sustenta |
+| C51 | walk - o ▶ de uma Revisão inicia o Cronômetro e "Parar" abre o modal com "Revisão" marcado | yes - não refiz a visita (já havia um Cronômetro rodando na conta e não era meu para parar); o código sustenta: `pararERegistrar` chama `abrir(..., resultado.parado.topicoId)` e o `topicoId` do ▶ de uma Revisão vai ao servidor (`tabela-de-revisoes.tsx`); o Tópico volta de `parar` (provado em C16) |
+| C52 | walk - "Registrar estudo" no cabeçalho da Hoje e o "Registrar" do cartão do Ciclo abrem o modal com "Teoria" marcado | yes - revisei no app: "Registrar estudo" (inclusive logo depois de abrir e fechar uma Revisão) e o "Registrar" do cartão do Ciclo abrem com "Teoria"; `abrir` regrava `topicoId` a cada abertura, então o estado do provedor não vaza; o "+" da barra de abas usa o mesmo `abrirRegistro()` sem Tópico |
+| C53 | walk - no modal aberto por uma Revisão, escolher "Exercícios" e salvar cria o Registro com tipo "Exercícios" no histórico | yes - não salvei (não altero dados); o valor gravado vem do `<input type="hidden" name="tipo" value={tipo}>`, ligado ao estado que `onSelectionChange` troca, e `tipoInicial` só define o valor inicial do `useState`, sem travar a troca |
 
 ## Findings
 
@@ -67,3 +71,5 @@
 | Subtítulo no singular fora do spec | `src/app/(app)/revisoes/page.tsx` `vencidas(n)` devolve "1 vencida"; o AC 2 e a captura fixam "N vencidas" e a seção `Differences from the source` não lista o singular | ou registrar a diferença em `Differences from the source` com Confirmed, ou usar sempre "vencidas" | 99f53e2 - o subtítulo mostra sempre "N vencidas" (C24) |
 
 Sondas descartáveis no HEAD (rodaram verdes, arquivo removido): janela de 7 dias com dia 7 às 23:30 e 00:00 de Brasília e dia 8 às 00:30 cruzando o ano; atraso cruzando o mês; 60 Revisões em dois Ciclos com limite 6 e desempate (Tópicos inseridos em ordem inversa); filtro por Ciclo ativo sem Cartões; filtro por Ciclo de outro Usuário com os totais do Usuário. Nenhuma regra quebrou. Contra as capturas: sem contradição de rótulo nem controle sem critério (as cores das notas e os cabeçalhos da tabela não têm critério, mas não contradizem nada).
+
+Delta REV-06 (C50 a C53) em `HEAD` 73ce660: nenhum achado. Caminhos sondados no app (Marina, descartável, sem gravar nada): o modal de EDIÇÃO de um Registro existente (de tipo "Exercícios") abre no tipo do Registro, pois `edicao?.tipo` vem antes de `tipoInicial`; "Registrar estudo" depois de uma Revisão aberta e fechada reabre em "Teoria"; o "Registrar" do cartão do Ciclo abre em "Teoria". Um Cronômetro iniciado sem Tópico (pela Hoje) e parado não foi percorrido no app (já havia um Cronômetro na conta), mas o código o cobre: `iniciar(proxima)` não leva Tópico, logo `registro.topicoId` é nulo e o modal abre em "Teoria". Ressalva sem critério: um Cronômetro de uma Revisão cujo Tópico foi excluído antes de parar perde o `topicoId` (C20) e abre em "Teoria"; coerente com o AC 2, que parte de uma Revisão com Tópico, e não é achado.
