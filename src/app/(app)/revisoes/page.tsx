@@ -8,8 +8,6 @@ export const dynamic = "force-dynamic";
 
 const um = (v: string | string[] | undefined) => (typeof v === "string" && v ? v : undefined);
 
-const vencidas = (n: number) => (n === 1 ? "1 vencida" : `${n} vencidas`);
-
 export default async function Revisoes({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const q = await searchParams;
   const lista = await listarRevisoes(obterDb(), await exigirUsuario(), { cicloId: um(q.ciclo) });
@@ -21,7 +19,7 @@ export default async function Revisoes({ searchParams }: { searchParams: Promise
             Revisões
           </h1>
           <p className="text-body-regular text-text-secondary">
-            {vencidas(lista.totalVencidas)} · {lista.totalProximas} nos próximos 7 dias
+            {lista.totalVencidas} vencidas · {lista.totalProximas} nos próximos 7 dias
           </p>
         </div>
         {lista.ciclos.length > 0 && <FiltroDeRevisoes base="/revisoes" ciclos={lista.ciclos} escolhido={lista.filtro} rotuloTodos="Todos os ciclos" />}

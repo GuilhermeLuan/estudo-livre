@@ -37,6 +37,9 @@ export type ListaDeRevisoes = {
   totalVencidasGeral: number;
 };
 
+/** Quantas Revisões vencidas o cartão da Hoje mostra: as 6 mais atrasadas (a página Revisões lista todas). */
+export const LIMITE_DO_CARTAO_DE_REVISOES = 6;
+
 /** Dias entre dois dias AAAA-MM-DD. */
 const diasEntre = (de: string, ate: string) => Math.round((Date.parse(`${ate}T00:00:00Z`) - Date.parse(`${de}T00:00:00Z`)) / 86_400_000);
 

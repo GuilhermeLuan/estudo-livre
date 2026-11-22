@@ -13,15 +13,17 @@ export function CartaoDeRevisoes({ lista }: { lista: ListaDeRevisoes }) {
   const { abrirRegistro } = useCronometro();
   const { vencidas, totalVencidas, filtro, ciclos } = lista;
   return (
-    <section aria-labelledby="h-revisoes-de-hoje" className="grid content-start gap-3 rounded-3xl bg-background-secondary-default p-4 lg:p-5">
-      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        <div className="flex items-center gap-2">
+    <section aria-labelledby="h-revisoes-de-hoje" className="grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-3 rounded-3xl bg-background-secondary-default p-4 lg:p-5">
+      <header className="flex items-center justify-between gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           <h2 id="h-revisoes-de-hoje" className="text-title-3-medium text-text-primary">
             Revisões de hoje
           </h2>
           <Counter aria-label={`${totalVencidas} vencidas`}>{totalVencidas}</Counter>
         </div>
-        <FiltroDeRevisoes base="/" ciclos={ciclos} escolhido={filtro} />
+        <div className="min-w-0 overflow-x-auto">
+          <FiltroDeRevisoes base="/" ciclos={ciclos} escolhido={filtro} />
+        </div>
       </header>
 
       {vencidas.length === 0 ? (

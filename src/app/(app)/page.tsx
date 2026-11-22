@@ -5,7 +5,7 @@ import { CartaoDeRevisoes } from "@/app/cartao-de-revisoes";
 import { CartaoDoCiclo } from "@/app/cartao-do-ciclo";
 import { CartaoDoCronometro } from "@/app/cronometro";
 import { rotuloDaDiferenca, rotuloDaVariacao, tempo } from "@/app/formato";
-import { listarRevisoes, obterHome } from "@/casos-de-uso";
+import { LIMITE_DO_CARTAO_DE_REVISOES, listarRevisoes, obterHome } from "@/casos-de-uso";
 import { ButtonLink } from "@/components/base/buttons/button";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
@@ -17,15 +17,12 @@ function hojePorExtenso() {
   return data.charAt(0).toUpperCase() + data.slice(1);
 }
 
-/** As Revisões que o cartão mostra: as 6 mais atrasadas (a página Revisões lista todas). */
-const LIMITE_DO_CARTAO = 6;
-
 export default async function Hoje({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { ciclo } = await searchParams;
   const usuario = await exigirUsuario();
   const [home, revisoes] = await Promise.all([
     obterHome(obterDb(), usuario),
-    listarRevisoes(obterDb(), usuario, { cicloId: typeof ciclo === "string" ? ciclo : null, limiteVencidas: LIMITE_DO_CARTAO }),
+    listarRevisoes(obterDb(), usuario, { cicloId: typeof ciclo === "string" ? ciclo : null, limiteVencidas: LIMITE_DO_CARTAO_DE_REVISOES }),
   ]);
   const { indicadores: i, ciclos } = home;
   return (
@@ -98,7 +95,7 @@ export default async function Hoje({ searchParams }: { searchParams: Promise<Rec
                 <CartaoDoCiclo key={c.id} ciclo={c} />
               ))}
             </div>
-            <div className="max-lg:hidden">
+            <div className="min-w-0 max-lg:hidden">
               <CartaoDeRevisoes lista={revisoes} />
             </div>
           </div>

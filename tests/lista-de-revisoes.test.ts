@@ -7,6 +7,7 @@ import {
   criarCiclo,
   criarTopico,
   excluirTopico,
+  LIMITE_DO_CARTAO_DE_REVISOES,
   listarRevisoes,
   reativarCiclo,
   registrarEstudo,
@@ -94,16 +95,23 @@ describe("revisões vencidas", () => {
 
   it("ordena do vencimento mais antigo ao mais novo, com desempate pelo nome do Tópico", async () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
-    const { topicos } = await ciclo(ana, "TRT", ["Zebra", "Alfa", "Beta", "Gama", "Delta"]);
+    const { topicos, materiaId } = await ciclo(ana, "TRT", ["Zebra", "Alfa", "Beta", "Gama", "Delta"]);
     await cartao(topicos[0], meioDia(-1)); // Zebra
     await cartao(topicos[1], meioDia(0)); // Alfa
     await cartao(topicos[2], meioDia(-3)); // Beta
     await cartao(topicos[3], meioDia(2)); // Gama
     await cartao(topicos[4], meioDia(-1)); // Delta, empata com Zebra
+    const proximos = await criarTopico(db, ana, materiaId, { nome: "Sétimo" });
+    const outro = await criarTopico(db, ana, materiaId, { nome: "Quarto" });
+    const maisUm = await criarTopico(db, ana, materiaId, { nome: "Terceiro" });
+    await cartao(proximos.id, meioDia(4)); // inseridos fora de ordem
+    await cartao(outro.id, meioDia(2));
+    await cartao(maisUm.id, meioDia(2)); // empata com Quarto
 
     const lista = await listarRevisoes(db, ana);
 
     expect(lista.vencidas.map((r) => r.topico)).toEqual(["Beta", "Delta", "Zebra", "Alfa"]);
+    expect(lista.proximas.map((r) => r.topico)).toEqual(["Gama", "Quarto", "Terceiro", "Sétimo"]);
   });
 
   it("o limite devolve só as mais atrasadas e mantém o total completo", async () => {
@@ -117,6 +125,19 @@ describe("revisões vencidas", () => {
 
     expect(lista.vencidas.map((r) => r.topico)).toEqual(["B", "C"]);
     expect(lista.totalVencidas).toBe(3);
+  });
+
+  it("o limite devolve só as mais atrasadas e mantém o total completo, no limite do cartão", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const nomes = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8"];
+    const { topicos } = await ciclo(ana, "TRT", nomes);
+    for (const [i, id] of topicos.entries()) await cartao(id, meioDia(-(i + 1)));
+
+    const lista = await listarRevisoes(db, ana, { limiteVencidas: LIMITE_DO_CARTAO_DE_REVISOES });
+
+    expect(LIMITE_DO_CARTAO_DE_REVISOES).toBe(6);
+    expect(lista.vencidas.map((r) => r.topico)).toEqual(["T8", "T7", "T6", "T5", "T4", "T3"]);
+    expect(lista.totalVencidas).toBe(8);
   });
 
   it("o filtro por Ciclo lista e conta só as Revisões do Ciclo", async () => {
