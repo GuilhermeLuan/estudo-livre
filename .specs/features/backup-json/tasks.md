@@ -302,7 +302,7 @@ Proof: run unit | ✓ tests/backup.test.ts > importar > aceita registro sem tóp
 ## Handoff
 
 **Settled mid-build:** none. Textos de N = 1 no aviso ("Backup importado: 1 ciclo.") e no diálogo ("O ciclo desta conta... será apagado") ajustados na spec por concordância. O `file-upload` do BoardUI simula o envio com progresso falso e textos em inglês; o campo usa `<input type="file">` oculto e o `Button` "Escolher arquivo". Os limites de 50 MB foram para `src/dominio.ts`, para o cliente usar sem puxar o banco.
-**Dispatched:** none
+**Dispatched:** Verifier (round 1) at `2520177`. Não há screens sub-agent porque nenhum critério cita captura.
 **Walked:** O app rodou em `http://localhost:3110` (`next dev`, banco dev `postgres://postgres:dev@localhost:54330/dev`, migrações aplicadas). A 3100 estava ocupada por outro processo. Cliques reais num Chromium headless (Playwright 1.49.1, instalado no scratchpad), janela de 1440x960 e de 390x844, tema Claro suave e depois a classe `dark`. A sessão foi criada por `POST /api/auth/sign-up/email` (`walk-<timestamp>@exemplo.com`, senha `senha-de-teste-123`). O arquivo de exemplo tem 2 Ciclos: "TRF 4ª Região — Analista" (Português com Crase e Vírgula, Informática, 2 Registros) e "INSS — Técnico", arquivado.
 - Sem sessão (C6, C22): `GET /api/backup` e o `POST` da action em `/backup` respondem 307 para `/entrar`.
 - Navegação (C7): o item "Backup" do bloco Conta da Sidebar leva a `/backup` com `aria-current="page"`. A 390px, o menu "Menu da conta" traz "Backup", que leva a `/backup`, e o topo diz "Backup".
