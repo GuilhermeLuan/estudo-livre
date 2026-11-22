@@ -273,6 +273,12 @@ describe("recusar", () => {
       variante((a) => (a.ciclos[0].logDeRevisao[0].registroId = "nao-existe")),
       variante((a) => (a.ciclos[0].faixas.bomAte = 10)),
       variante((a) => (a.ciclos[0].voltas[1].fim = a.ciclos[0].voltas[1].inicio)),
+      "",
+      variante((a) => (a.ciclos[0].etapas[0].posicao = 3_000_000_000)),
+      variante((a) => (a.ciclos[0].etapas[0].cargaMinutos = 600_001)),
+      variante((a) => Object.assign(a.ciclos[0].registros[2], { questoes: null, acertos: 0 })),
+      variante((a) => (a.ciclos[0].registros[0].conteudoLivre = "Crase e regência")),
+      variante((a) => (a.ciclos[0].registros[0].dataHora = "2026-11-10T15:00:00")),
     ];
     for (const conteudo of invalidos) await recusa(usuario, conteudo, INVALIDO);
     expect(await nomesDosCiclos(usuario)).toEqual(["TRF", "INSS"]);
@@ -325,6 +331,17 @@ async function estadoVisivel(usuario: Usuario) {
 }
 
 describe("ida e volta", () => {
+  it("aceita nomes no limite de caracteres do app", async () => {
+    const { usuario: ana, portugues } = await cenario("ana@exemplo.com");
+    // 120 emojis: 120 caracteres para o app, 240 unidades UTF-16.
+    await criarTopico(db, ana, portugues, { nome: "📚".repeat(120) });
+    await criarCiclo(db, ana, { nome: "C".repeat(500) });
+    const deA = JSON.parse(await exportar(ana));
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    await importarBackup(db, bia, JSON.stringify(deA));
+    expect(semIds(JSON.parse(await exportar(bia)))).toEqual(semIds(deA));
+  });
+
   it("reexportar dá o mesmo arquivo", async () => {
     const { usuario: ana } = await cenario("ana@exemplo.com");
     const deA = JSON.parse(await exportar(ana));

@@ -4,6 +4,7 @@ import type { Db } from "@/db";
 import { cartaoDeRevisao, ciclo, cronometro, etapa, logDeRevisao, materia, registroDeEstudo, topico, volta } from "@/db/schema";
 import { BACKUP_GRANDE, LIMITE_DO_BACKUP_BYTES, LIMITES_DO_REGISTRO, LIMITES_DO_TOPICO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
 import { NOTAS, validarFaixas, type Nota } from "@/revisao";
+import { CARGA_MAXIMA_MINUTOS } from "./ciclos";
 import { ValidacaoError } from "./erros";
 import { recalcularTopico } from "./revisao";
 import type { Usuario } from "./usuario";
@@ -92,7 +93,9 @@ export async function exportarBackup(db: Db, usuario: Usuario, agora = new Date(
 }
 
 const INVALIDO = "O arquivo não é um backup válido do Estudo Livre.";
-const POSTGRES_VIOLACAO_DE_UNICIDADE = "23505";
+// Classes 22 (dado fora do tipo) e 23 (integridade) do Postgres: o arquivo pediu algo que o banco não guarda.
+const ERRO_DE_DADO_DO_POSTGRES = /^2[23]/;
+const INTEIRO_MAXIMO = 2_147_483_647;
 
 class Invalido extends Error {}
 
@@ -101,13 +104,14 @@ function exigir(condicao: unknown): asserts condicao {
 }
 const objeto = (x: unknown): Record<string, unknown> => (exigir(typeof x === "object" && x !== null && !Array.isArray(x)), x as Record<string, unknown>);
 const lista = (x: unknown): unknown[] => (exigir(Array.isArray(x)), x);
-const texto = (x: unknown, max: number) => (exigir(typeof x === "string" && x.trim() !== "" && x.length <= max), x as string);
+// Caracteres, não unidades UTF-16, como o app conta o nome do Tópico.
+const texto = (x: unknown, max = Infinity) => (exigir(typeof x === "string" && x.trim() !== "" && [...x].length <= max), x as string);
 const textoOuNulo = (x: unknown, max: number) => (x === null ? null : (exigir(typeof x === "string" && x.length <= max), x as string));
-const inteiro = (x: unknown, min: number, max = Number.MAX_SAFE_INTEGER) => (exigir(Number.isInteger(x) && (x as number) >= min && (x as number) <= max), x as number);
+const inteiro = (x: unknown, min: number, max = INTEIRO_MAXIMO) => (exigir(Number.isInteger(x) && (x as number) >= min && (x as number) <= max), x as number);
 const inteiroOuNulo = (x: unknown, min: number, max: number) => (x === null ? null : inteiro(x, min, max));
 const booleano = (x: unknown) => (exigir(typeof x === "boolean"), x as boolean);
 const instante = (x: unknown) => {
-  exigir(typeof x === "string" && /^\d{4}-\d{2}-\d{2}T/.test(x));
+  exigir(typeof x === "string" && /^\d{4}-\d{2}-\d{2}T.*(Z|[+-]\d{2}:\d{2})$/.test(x));
   const d = new Date(x as string);
   exigir(!Number.isNaN(d.getTime()));
   return d;
@@ -139,7 +143,7 @@ function lerBackup(conteudo: string) {
         const id = texto(m.id, 200);
         return {
           id,
-          nome: texto(m.nome, 200),
+          nome: texto(m.nome),
           topicos: lista(m.topicos).map((z) => {
             const t = objeto(z);
             const topicoId = texto(t.id, 200);
@@ -160,6 +164,7 @@ function lerBackup(conteudo: string) {
         const topicoId = r.topicoId === null ? null : topicoDe(r.topicoId);
         exigir(topicoId === null || topicoDaMateria.get(topicoId) === materiaId);
         const questoes = inteiroOuNulo(r.questoes, 0, questoesMaximas);
+        exigir(r.acertos === null || questoes !== null);
         const acertos = inteiroOuNulo(r.acertos, 0, questoes ?? 0);
         exigir(TIPOS_DE_ESTUDO.includes(r.tipo as TipoDeEstudo));
         return {
@@ -173,7 +178,7 @@ function lerBackup(conteudo: string) {
           acertos,
           anotacao: textoOuNulo(r.anotacao, anotacaoMaxima),
           nota: nota(r.nota),
-          conteudoLivre: textoOuNulo(r.conteudoLivre, conteudoLivreMaximo),
+          conteudoLivre: (exigir(topicoId === null || r.conteudoLivre === null), textoOuNulo(r.conteudoLivre, conteudoLivreMaximo)),
           criadoEm: instante(r.criadoEm),
         };
       });
@@ -193,14 +198,14 @@ function lerBackup(conteudo: string) {
       // Todo Ciclo tem exatamente uma Volta aberta; o índice do banco só barra duas.
       exigir(voltas.filter((v) => v.fim === null).length === 1);
       return {
-        nome: texto(c.nome, 200),
+        nome: texto(c.nome),
         criadoEm: instante(c.criadoEm),
         arquivadoEm: instanteOuNulo(c.arquivadoEm),
         faixas,
         materias,
         etapas: lista(c.etapas).map((y) => {
           const e = objeto(y);
-          return { materiaId: materiaDe(e.materiaId), cargaMinutos: inteiro(e.cargaMinutos, 1), posicao: inteiro(e.posicao, 0) };
+          return { materiaId: materiaDe(e.materiaId), cargaMinutos: inteiro(e.cargaMinutos, 1, CARGA_MAXIMA_MINUTOS), posicao: inteiro(e.posicao, 0) };
         }),
         voltas,
         registros,
@@ -245,7 +250,7 @@ export async function importarBackup(db: Db, usuario: Usuario, conteudo: string)
       }
     });
   } catch (erro) {
-    if ((erro as { cause?: { code?: string } }).cause?.code === POSTGRES_VIOLACAO_DE_UNICIDADE) throw new ValidacaoError(INVALIDO);
+    if (ERRO_DE_DADO_DO_POSTGRES.test((erro as { cause?: { code?: string } }).cause?.code ?? "")) throw new ValidacaoError(INVALIDO);
     throw erro;
   }
   return { ciclos: ciclos.length };

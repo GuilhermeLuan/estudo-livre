@@ -11,7 +11,8 @@ export type EstadoBackup = { erro?: string; aviso?: string };
 export async function importar(dados: FormData): Promise<EstadoBackup> {
   const usuario = await exigirUsuario();
   const arquivo = dados.get("arquivo");
-  if (!(arquivo instanceof File) || arquivo.size === 0) return { erro: "Escolha um arquivo." };
+  // Um arquivo escolhido e vazio segue para o caso de uso, que o recusa como inválido.
+  if (!(arquivo instanceof File) || arquivo.name === "") return { erro: "Escolha um arquivo." };
   try {
     const { ciclos } = await importarBackup(obterDb(), usuario, await arquivo.text());
     revalidatePath("/", "layout");

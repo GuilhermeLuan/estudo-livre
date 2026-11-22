@@ -29,7 +29,7 @@ export type CicloDetalhe = {
   proximaEtapaId: string | null;
 };
 
-const CARGA_MAXIMA_MINUTOS = 10_000 * 60;
+export const CARGA_MAXIMA_MINUTOS = 10_000 * 60;
 
 export function nomeValido(nome: string, rotulo: string) {
   const limpo = nome.trim();
