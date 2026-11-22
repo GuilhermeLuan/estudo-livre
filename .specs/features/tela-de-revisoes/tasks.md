@@ -219,9 +219,9 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] A tabela segue `captures/revisoes.png` em 1440px; abaixo de 1024px cada Revisão vira uma linha sem rolagem horizontal da página
-- [ ] O ▶ chama o início do Cronômetro com Tópico e mostra o aviso devolvido; "Registrar" abre o modal
-- [ ] Gate check passes: `npm run typecheck`
+- [x] A tabela segue `captures/revisoes.png` em 1440px; abaixo de 1024px cada Revisão vira uma linha sem rolagem horizontal da página
+- [x] O ▶ chama o início do Cronômetro com Tópico e mostra o aviso devolvido; "Registrar" abre o modal
+- [x] Gate check passes: `npm run typecheck`
 
 **Tests**: none
 **Gate**: build
