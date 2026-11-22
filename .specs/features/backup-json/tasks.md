@@ -142,7 +142,7 @@ T2 → T3 → T4 → T5 → T6
 
 **Done when**:
 
-- [ ] Build gate passes
+- [x] Build gate passes
 - [ ] Na visita, com sessão, a rota baixa `estudo-livre-backup-<dia>.json`; sem sessão, leva a `/entrar`
 
 **Tests**: none
