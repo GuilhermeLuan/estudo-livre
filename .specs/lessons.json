@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 9,
+  "next_id": 15,
   "lessons": [
     {
       "id": "L-001",
@@ -148,6 +148,114 @@
       ],
       "created": "2026-11-22T16:05:53Z",
       "last_seen": "2026-11-22T16:05:53Z"
+    },
+    {
+      "id": "L-009",
+      "key": "weak_test::prove a regra de validacao sobre o texto digitado nao so sobre o numero ja convertido ponha a conversao no dominio e teste virgula ponto de milhar e vazio",
+      "text": "Prove a regra de validação sobre o texto digitado, não só sobre o número já convertido: ponha a conversão no domínio e teste vírgula, ponto de milhar e vazio.",
+      "signal": "weak_test",
+      "scope": "validation",
+      "status": "candidate",
+      "features": [
+        "sugestao-de-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C7 verification finding 1 (validation)"
+      ],
+      "created": "2026-11-22T22:01:56Z",
+      "last_seen": "2026-11-22T22:01:56Z"
+    },
+    {
+      "id": "L-010",
+      "key": "weak_test::teste a conversao de unidade horas digitadas para minutos na funcao que a tela e a action usam com virgula ponto e texto invalido",
+      "text": "Teste a conversão de unidade (horas digitadas para minutos) na função que a tela e a action usam, com vírgula, ponto e texto inválido.",
+      "signal": "weak_test",
+      "scope": "validation",
+      "status": "candidate",
+      "features": [
+        "sugestao-de-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C8 verification finding 2 (validation)"
+      ],
+      "created": "2026-11-22T22:01:56Z",
+      "last_seen": "2026-11-22T22:01:56Z"
+    },
+    {
+      "id": "L-011",
+      "key": "ac_gap::uma regra de validacao vale tambem quando a lista que a motiva esta vazia a menos que o plano diga o contrario teste o campo sozinho",
+      "text": "Uma regra de validação vale também quando a lista que a motiva está vazia, a menos que o plano diga o contrário; teste o campo sozinho.",
+      "signal": "ac_gap",
+      "scope": "validation",
+      "status": "candidate",
+      "features": [
+        "sugestao-de-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 8 verification finding 3 (validation)"
+      ],
+      "created": "2026-11-22T22:01:56Z",
+      "last_seen": "2026-11-22T22:01:56Z"
+    },
+    {
+      "id": "L-012",
+      "key": "ac_gap::mantenha o limite de um campo igual na tela no caso de uso e na importacao de backup e escreva o mesmo limite no criterio",
+      "text": "Mantenha o limite de um campo igual na tela, no caso de uso e na importação de backup, e escreva o mesmo limite no critério.",
+      "signal": "ac_gap",
+      "scope": "backup",
+      "status": "candidate",
+      "features": [
+        "sugestao-de-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC S2.4 verification finding 4 (backup)"
+      ],
+      "created": "2026-11-22T22:01:56Z",
+      "last_seen": "2026-11-22T22:01:56Z"
+    },
+    {
+      "id": "L-013",
+      "key": "weak_test::teste o limite de tamanho de uma lista em cada camada que o aplica dominio e caso de uso com n e n 1 itens",
+      "text": "Teste o limite de tamanho de uma lista em cada camada que o aplica (domínio e caso de uso), com N e N+1 itens.",
+      "signal": "weak_test",
+      "scope": "validation",
+      "status": "candidate",
+      "features": [
+        "sugestao-de-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C5 verification finding 5 (validation)"
+      ],
+      "created": "2026-11-22T22:01:56Z",
+      "last_seen": "2026-11-22T22:01:56Z"
+    },
+    {
+      "id": "L-014",
+      "key": "weak_test::em regra de arredondamento com teto afirme as bordas exatas meio acima meio abaixo o teto e nao so um valor longe delas",
+      "text": "Em regra de arredondamento com teto, afirme as bordas exatas (meio acima, meio abaixo, o teto) e não só um valor longe delas.",
+      "signal": "weak_test",
+      "scope": "domain",
+      "status": "candidate",
+      "features": [
+        "sugestao-de-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C10 verification finding 6 (domain)"
+      ],
+      "created": "2026-11-22T22:01:56Z",
+      "last_seen": "2026-11-22T22:01:56Z"
     }
   ]
 }

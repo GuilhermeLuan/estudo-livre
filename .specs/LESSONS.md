@@ -62,6 +62,42 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: BKP-09 AC 1 / C17 (importacao)
 - last seen: 2026-11-22T16:05:53Z
 
+### L-009 - Prove a regra de validação sobre o texto digitado, não só sobre o número já convertido: ponha a conversão no domínio e teste vírgula, ponto de milhar e vazio.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `validation` · harmful: 0
+- features: sugestao-de-ciclo
+- evidence: C7 verification finding 1 (validation)
+- last seen: 2026-11-22T22:01:56Z
+
+### L-010 - Teste a conversão de unidade (horas digitadas para minutos) na função que a tela e a action usam, com vírgula, ponto e texto inválido.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `validation` · harmful: 0
+- features: sugestao-de-ciclo
+- evidence: C8 verification finding 2 (validation)
+- last seen: 2026-11-22T22:01:56Z
+
+### L-011 - Uma regra de validação vale também quando a lista que a motiva está vazia, a menos que o plano diga o contrário; teste o campo sozinho.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `validation` · harmful: 0
+- features: sugestao-de-ciclo
+- evidence: AC 8 verification finding 3 (validation)
+- last seen: 2026-11-22T22:01:56Z
+
+### L-012 - Mantenha o limite de um campo igual na tela, no caso de uso e na importação de backup, e escreva o mesmo limite no critério.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `backup` · harmful: 0
+- features: sugestao-de-ciclo
+- evidence: AC S2.4 verification finding 4 (backup)
+- last seen: 2026-11-22T22:01:56Z
+
+### L-013 - Teste o limite de tamanho de uma lista em cada camada que o aplica (domínio e caso de uso), com N e N+1 itens.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `validation` · harmful: 0
+- features: sugestao-de-ciclo
+- evidence: C5 verification finding 5 (validation)
+- last seen: 2026-11-22T22:01:56Z
+
+### L-014 - Em regra de arredondamento com teto, afirme as bordas exatas (meio acima, meio abaixo, o teto) e não só um valor longe delas.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `domain` · harmful: 0
+- features: sugestao-de-ciclo
+- evidence: C10 verification finding 6 (domain)
+- last seen: 2026-11-22T22:01:56Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
