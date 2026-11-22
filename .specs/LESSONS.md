@@ -32,6 +32,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification.md finding 1, C14 (use-cases) (use-cases)
 - last seen: 2026-11-21T12:44:21Z
 
+### L-004 - Um importador valida cada campo com a mesma função e a mesma unidade de medida que o caso de uso de criação usa (caracteres, não UTF-16), e testa a ida e volta com valores no limite do app.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `importacao` · harmful: 0
+- features: backup-json
+- evidence: BKP-11 / C23 (importacao)
+- last seen: 2026-11-22T16:03:44Z
+
+### L-005 - Validar arquivo externo inclui os limites do tipo da coluna e as regras cruzadas do caso de uso (acertos sem questões, tópico e conteúdo juntos); erros de dado do Postgres (classes 22/23) viram a mensagem de inválido.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `importacao` · harmful: 0
+- features: backup-json
+- evidence: BKP-09 AC 1 / C17 (importacao)
+- last seen: 2026-11-22T16:03:44Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
