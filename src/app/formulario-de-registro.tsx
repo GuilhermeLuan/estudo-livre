@@ -57,12 +57,15 @@ function campoDoErro(erro: string | undefined) {
 function Formulario({
   materias,
   materiaInicial,
+  topicoInicial,
   sessaoCronometrada,
   edicao,
   aoSalvar,
 }: {
   materias: MateriaParaRegistro[];
   materiaInicial: string;
+  /** Um Tópico da Matéria inicial (o de uma Revisão): o modal abre no modo "Tópico" com ele escolhido. */
+  topicoInicial?: string | null;
   sessaoCronometrada?: SugestaoDeRegistro;
   edicao?: RegistroParaEdicao;
   aoSalvar: (aviso: string) => void;
@@ -74,7 +77,7 @@ function Formulario({
   const [modo, setModo] = useState<ModoDoConteudo>(
     edicao ? (edicao.topicoId && topicos.some((t) => t.id === edicao.topicoId) ? "topico" : edicao.conteudoLivre ? "livre" : "nenhum") : topicos.length ? "topico" : "livre",
   );
-  const [topicoId, setTopicoId] = useState(edicao?.topicoId ?? "");
+  const [topicoId, setTopicoId] = useState(edicao?.topicoId ?? (topicos.some((t) => t.id === topicoInicial) ? topicoInicial! : ""));
   const [questoes, setQuestoes] = useState(edicao?.questoes?.toString() ?? "");
   const [acertos, setAcertos] = useState(edicao?.acertos?.toString() ?? "");
   // A nota escolhida à mão vale no lugar da sugerida; sem escolha, vale a sugestão das Faixas.
@@ -294,6 +297,7 @@ type Props = {
   aoMudar: (aberto: boolean) => void;
   materias: MateriaParaRegistro[];
   materiaInicial: string;
+  topicoInicial?: string | null;
   sessaoCronometrada?: SugestaoDeRegistro;
   edicao?: RegistroParaEdicao;
   /** Muda a cada abertura: o formulário é remontado e começa limpo. */

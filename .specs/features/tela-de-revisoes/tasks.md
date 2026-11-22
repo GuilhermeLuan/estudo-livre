@@ -135,9 +135,9 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Com Matéria e Tópico iniciais, o modal mostra os dois selecionados e a data de hoje
-- [ ] Sem Tópico inicial, o modal abre como hoje
-- [ ] Gate check passes: `npm run typecheck`
+- [x] Com Matéria e Tópico iniciais, o modal mostra os dois selecionados e a data de hoje
+- [x] Sem Tópico inicial, o modal abre como hoje
+- [x] Gate check passes: `npm run typecheck`
 
 **Tests**: none
 **Gate**: build
