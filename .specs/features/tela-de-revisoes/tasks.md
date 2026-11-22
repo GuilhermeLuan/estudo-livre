@@ -198,9 +198,9 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] O cartão segue o que `captures/hoje.png` desenha na coluna direita
-- [ ] "Registrar" chama `abrirRegistro(materiaId, topicoId)`
-- [ ] Gate check passes: `npm run typecheck`
+- [x] O cartão segue o que `captures/hoje.png` desenha na coluna direita
+- [x] "Registrar" chama `abrirRegistro(materiaId, topicoId)`
+- [x] Gate check passes: `npm run typecheck`
 
 **Tests**: none
 **Gate**: build
