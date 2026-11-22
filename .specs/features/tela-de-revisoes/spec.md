@@ -153,6 +153,25 @@ Os Cartões de revisão já agendam cada Tópico (issue #10) e os Ciclos já pod
 
 ---
 
+### P1: Registro de uma Revisão com o tipo "Revisão" ⭐ MVP
+
+**Added**: 2026-11-22 - user: "toda vez que eu começar uma revisão pela tela de revisões, seja pelo registar ou pelo cronometro, quero que nesse modal de registar estudo, o tipo de estudo venha preenchido como \"Revisão\""
+
+**User Story**: Como Usuário, quero que o registro aberto a partir de uma Revisão já venha com o Tipo de estudo "Revisão", para não escolher o tipo toda vez.
+
+**Why P1**: Pedido do Usuário depois da entrega; toda Revisão registrada é um estudo do tipo Revisão.
+
+**Acceptance Criteria**:
+
+1. WHEN o Usuário usa "Registrar" numa Revisão, na Hoje ou na página Revisões, THEN the system SHALL abrir o modal "Registrar estudo" com o Tipo de estudo "Revisão" selecionado
+2. WHEN o Usuário para o Cronômetro iniciado pelo ▶ de uma Revisão THEN the system SHALL abrir o modal "Registrar estudo" com o Tipo de estudo "Revisão" selecionado
+3. WHEN o Usuário abre o modal "Registrar estudo" por outro caminho que não uma Revisão THEN the system SHALL manter o Tipo de estudo "Teoria" selecionado
+4. WHEN o Usuário escolhe outro Tipo de estudo no modal aberto por uma Revisão e salva THEN the system SHALL gravar o Registro com o tipo escolhido
+
+**Independent Test**: Usar "Registrar" numa Revisão e ver "Revisão" marcado; iniciar o Cronômetro pelo ▶, parar e ver "Revisão" marcado.
+
+---
+
 ## Edge Cases
 
 - IF um Cartão não tem data de próxima revisão (AD-019) THEN the system SHALL omiti-lo de todas as listas e contagens
@@ -171,8 +190,9 @@ Os Cartões de revisão já agendam cada Tópico (issue #10) e os Ciclos já pod
 | REV-03 | P1: Página Revisões | Tasks | Pending |
 | REV-04 | P1: Navegar até as Revisões | Tasks | Pending |
 | REV-05 | P1: Ciclo arquivado suspende as Revisões | Tasks | Pending |
+| REV-06 | P1: Registro de uma Revisão com o tipo "Revisão" | Tasks | Pending |
 
-**Coverage:** 5 total, 0 mapped to tasks, 5 unmapped ⚠️
+**Coverage:** 6 total, 0 mapped to tasks, 6 unmapped ⚠️
 
 ---
 

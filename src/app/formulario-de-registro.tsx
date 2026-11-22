@@ -58,6 +58,7 @@ function Formulario({
   materias,
   materiaInicial,
   topicoInicial,
+  tipoInicial,
   sessaoCronometrada,
   edicao,
   aoSalvar,
@@ -66,13 +67,15 @@ function Formulario({
   materiaInicial: string;
   /** Um Tópico da Matéria inicial (o de uma Revisão): o modal abre no modo "Tópico" com ele escolhido. */
   topicoInicial?: string | null;
+  /** O Tipo de estudo que o modal abre escolhido; sem ele, "Teoria" (na edição, o do Registro). */
+  tipoInicial?: TipoDeEstudo;
   sessaoCronometrada?: SugestaoDeRegistro;
   edicao?: RegistroParaEdicao;
   aoSalvar: (aviso: string) => void;
 }) {
   const fechar = useModalClose();
   const [materiaId, setMateriaId] = useState(materiaInicial);
-  const [tipo, setTipo] = useState<TipoDeEstudo>(edicao?.tipo ?? "Teoria");
+  const [tipo, setTipo] = useState<TipoDeEstudo>(edicao?.tipo ?? tipoInicial ?? "Teoria");
   const topicos = materias.find((m) => m.id === materiaId)?.topicos ?? [];
   const [modo, setModo] = useState<ModoDoConteudo>(
     edicao ? (edicao.topicoId && topicos.some((t) => t.id === edicao.topicoId) ? "topico" : edicao.conteudoLivre ? "livre" : "nenhum") : topicos.length ? "topico" : "livre",
@@ -298,6 +301,7 @@ type Props = {
   materias: MateriaParaRegistro[];
   materiaInicial: string;
   topicoInicial?: string | null;
+  tipoInicial?: TipoDeEstudo;
   sessaoCronometrada?: SugestaoDeRegistro;
   edicao?: RegistroParaEdicao;
   /** Muda a cada abertura: o formulário é remontado e começa limpo. */

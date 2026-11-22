@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: inline (below, "Design inline"); sem `design.md`: nenhuma decisão de arquitetura nova, só uma coluna no Cronômetro
-**Status**: Done
+**Status**: In Progress
 **Approved**: 2026-11-22 - user: "Aprovado, implemente"
 **Build**: `npm run typecheck; npm run build`
 **Run unit**: `npx vitest run --reporter=verbose`
@@ -54,7 +54,7 @@ T1 → T2 → T3
 ### Phase 2: Interface
 
 ```
-T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
+T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12 → T13 → T14
 ```
 
 ---
@@ -308,6 +308,46 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Commit**: `feat(navegacao): Counter de Revisões vencidas`
 
+### T13: Tipo de estudo inicial no modal de registro
+
+**What**: O formulário aceita um Tipo de estudo inicial; sem ele, abre em "Teoria" como hoje.
+**Where**: `src/app/formulario-de-registro.tsx`
+**Depends on**: T12
+**Reuses**: o estado `tipo` do próprio formulário
+**Requirement**: REV-06
+
+**Done when**:
+
+- [x] Com `tipoInicial="Revisão"` o modal abre com "Revisão" selecionado e o campo `tipo` envia "Revisão"
+- [x] Sem `tipoInicial`, e na edição de um Registro, o tipo é o de hoje
+- [x] Gate check passes: `npm run typecheck`
+
+**Tests**: none
+**Gate**: build
+
+**Commit**: `feat(registro): abrir o modal com o tipo de estudo inicial`
+
+---
+
+### T14: Registros de Revisão abrem com o tipo "Revisão"
+
+**What**: O provedor do Cronômetro passa `tipoInicial="Revisão"` ao modal quando o registro vem de uma Revisão (Tópico inicial), por "Registrar" ou ao parar o Cronômetro de uma Revisão.
+**Where**: `src/app/cronometro.tsx`
+**Depends on**: T13
+**Reuses**: `registro.topicoId` do provedor
+**Requirement**: REV-06
+
+**Done when**:
+
+- [ ] "Registrar" de uma Revisão (Hoje e página) e "Parar" do Cronômetro com Tópico abrem o modal com "Revisão"
+- [ ] O modal aberto por "Registrar estudo", pelo "+" e pelo Cronômetro sem Tópico abre com "Teoria"
+- [ ] Gate check passes: `npm run typecheck; npm run build`
+
+**Tests**: none
+**Gate**: build
+
+**Commit**: `feat(registro): registrar revisão com o tipo Revisão`
+
 ---
 
 ## Checks
@@ -459,6 +499,18 @@ Proof: run unit | ✓ tests/lista-de-revisoes.test.ts > revisões vencidas > Rev
 **C49** - Os próximos 7 dias vão de amanhã a hoje mais 7, inclusive (REV-03, AC 4)
 Proof: run unit | ✓ tests/lista-de-revisoes.test.ts > revisões vencidas > os próximos 7 dias vão de amanhã a hoje mais 7, inclusive
 
+**C50** - "Registrar" numa Revisão, na Hoje ou na página, abre o modal com o Tipo de estudo "Revisão" (REV-06, AC 1)
+Proof: walk - "Registrar" numa Revisão do cartão da Hoje e da página Revisões abre o modal com "Revisão" marcado em "Tipo de estudo"
+
+**C51** - Parar o Cronômetro iniciado pelo ▶ de uma Revisão abre o modal com "Revisão" (REV-06, AC 2)
+Proof: walk - o ▶ de uma Revisão inicia o Cronômetro e "Parar" abre o modal com "Revisão" marcado
+
+**C52** - O modal aberto fora de uma Revisão mantém "Teoria" (REV-06, AC 3)
+Proof: walk - "Registrar estudo" no cabeçalho da Hoje e o "Registrar" do cartão do Ciclo abrem o modal com "Teoria" marcado
+
+**C53** - Trocar o tipo no modal de uma Revisão grava o Registro com o tipo escolhido (REV-06, AC 4)
+Proof: walk - no modal aberto por uma Revisão, escolher "Exercícios" e salvar cria o Registro com tipo "Exercícios" no histórico
+
 ---
 
 ## Handoff
@@ -482,5 +534,5 @@ The feature's live state, written as it happens - a compaction gives no warning.
 Phase 1 → Phase 2
 
 Phase 1:  T1 → T2 → T3
-Phase 2:  T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
+Phase 2:  T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12 → T13 → T14
 ```
