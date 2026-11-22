@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: inline (below, "Design inline"); sem `design.md`: nenhuma decisão de arquitetura nova, só uma coluna no Cronômetro
-**Status**: In Progress
+**Status**: Done
 **Approved**: 2026-11-22 - user: "Aprovado, implemente"
 **Build**: `npm run typecheck; npm run build`
 **Run unit**: `npx vitest run --reporter=verbose`
@@ -300,8 +300,8 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] O Counter da Sidebar mostra o total de todos os Ciclos ativos
-- [ ] Gate check passes: `npm run typecheck; npm run build; npx vitest run`
+- [x] O Counter da Sidebar mostra o total de todos os Ciclos ativos
+- [x] Gate check passes: `npm run typecheck; npm run build; npx vitest run`
 
 **Tests**: none
 **Gate**: build
