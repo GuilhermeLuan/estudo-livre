@@ -47,3 +47,4 @@ export {
   type MateriaComTopicos,
   type TopicoDaMateria,
 } from "./topicos";
+export { exportarBackup, nomeDoArquivoDeBackup, type Backup } from "./backup";
