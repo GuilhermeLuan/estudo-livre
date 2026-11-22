@@ -1,0 +1,2 @@
+ALTER TABLE "cronometro" ADD COLUMN "topico_id" text;--> statement-breakpoint
+ALTER TABLE "cronometro" ADD CONSTRAINT "cronometro_topico_id_topico_id_fk" FOREIGN KEY ("topico_id") REFERENCES "public"."topico"("id") ON DELETE set null ON UPDATE no action;

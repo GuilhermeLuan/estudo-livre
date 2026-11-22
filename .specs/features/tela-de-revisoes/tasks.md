@@ -93,8 +93,8 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] A migração gerada por `npm run db:generate` cria `topico_id` nulo com `ON DELETE SET NULL`
-- [ ] Gate check passes: `npm run typecheck; npx vitest run`
+- [x] A migração gerada por `npm run db:generate` cria `topico_id` nulo com `ON DELETE SET NULL`
+- [x] Gate check passes: `npm run typecheck; npx vitest run`
 
 **Tests**: none
 **Gate**: build

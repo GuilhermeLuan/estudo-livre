@@ -151,6 +151,8 @@ export const logDeRevisao = pgTable("log_de_revisao", {
 export const cronometro = pgTable("cronometro", {
   usuarioId: text("usuario_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
   materiaId: text("materia_id").notNull().references(() => materia.id, { onDelete: "cascade" }),
+  // O Tópico da Revisão que o Cronômetro estuda; excluir o Tópico mantém o Cronômetro, sem Tópico.
+  topicoId: text("topico_id").references(() => topico.id, { onDelete: "set null" }),
   acumuladoSegundos: integer("acumulado_segundos").notNull().default(0),
   rodandoDesde: timestamp("rodando_desde", { withTimezone: true }),
 });
