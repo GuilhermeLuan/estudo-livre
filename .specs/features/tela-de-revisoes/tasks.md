@@ -331,7 +331,7 @@ Proof: walk - no cartão, uma Revisão atrasada mostra o chip rosa "Atrasada 2d"
 Proof: run unit | ✓ tests/lista-de-revisoes.test.ts > revisões vencidas > ordena do vencimento mais antigo ao mais novo, com desempate pelo nome do Tópico
 
 **C7** - O cartão pede no máximo as 6 Revisões mais atrasadas e o total segue completo (REV-01, AC 6)
-Proof: run unit | ✓ tests/lista-de-revisoes.test.ts > revisões vencidas > o limite devolve só as mais atrasadas e mantém o total completo
+Proof: run unit | ✓ tests/lista-de-revisoes.test.ts > revisões vencidas > o limite devolve só as mais atrasadas e mantém o total completo, no limite do cartão
 
 **C8** - Escolher um Ciclo lista e conta só as vencidas dele (REV-01, AC 7)
 Proof: run unit | ✓ tests/lista-de-revisoes.test.ts > revisões vencidas > o filtro por Ciclo lista e conta só as Revisões do Ciclo
@@ -466,7 +466,7 @@ Proof: run unit | ✓ tests/lista-de-revisoes.test.ts > revisões vencidas > os 
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** none
+**Dispatched:** Verifier e screens sub-agent (round 1) em `HEAD` 4d6aa7e, ambos `returned`; achados fechados em 99f53e2. Screens sub-agent (round 2, só a linha de `hoje.running.png` que diferia) em `HEAD` 99f53e2, `returned`: `hoje.running.png` ainda diverge em 1 linha (o filtro do cartão fica cortado à direita com os nomes longos dos Ciclos); sem terceira rodada, foi ao Usuário, que escolheu abreviar os segmentos do filtro (user: "Abreviar os segmentos (Recommended)", com uma rodada extra de telas). Correção em ce1e286; screens sub-agent (rodada extra, só `hoje.running.png`) em `HEAD` ce1e286; `returned`: `hoje.running.png` passou a `matches`.
 **Walked:** Acesso: `http://localhost:3100` (`next start`) com o Postgres de desenvolvimento `estudo-livre-dev-pg` (porta 5432, banco `estudo`, migrado); entrar com `marina@exemplo.com` / `senha-de-teste-123` (dados do Figma: Ciclos "TRT 2ª Região" e "INSS Técnico" com 8 vencidas e 4 próximas, e o "Concurso antigo" arquivado) e `vazia@exemplo.com` / `senha-de-teste-123` (um Ciclo sem Revisões). Os estados das capturas: Hoje 1440px em `/` (`hoje.running.png`), página em `/revisoes` 1440px (`revisoes.running.png`), Hoje 390px em `/` (`pwa-hoje.running.png`), todas com a Marina.
 - Hoje, Revisões vencidas: o indicador mostrou "Revisões de hoje 8" sem chip; o cartão mostrou o Counter 8, o filtro Todos / TRT 2ª Região / INSS Técnico, 6 linhas (as mais atrasadas, com "Atrasada 2d", "Atrasada 1d" e "Hoje"), "Ver todas as revisões" e o aviso azul. Ao escolher "TRT 2ª Região" o endereço passou a `/?ciclo=<id>` e o Counter e as linhas passaram a 6; "Ver todas as revisões" abriu `/revisoes?ciclo=<id>` com o mesmo Ciclo marcado e o subtítulo "6 vencidas · 4 nos próximos 7 dias". Com a Vera (sem Revisões) o cartão mostrou "Nenhuma revisão vencida." sem o link e com o aviso.
 - Registrar a partir de uma Revisão: "Registrar Crase" no cartão abriu o modal "Registrar estudo" com a Matéria de Português, o conteúdo em modo Tópico com o Tópico "Crase" escolhido e a data de hoje.

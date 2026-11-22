@@ -1,13 +1,13 @@
 # tela-de-revisoes proofs
 
-**HEAD**: f9eb84d
+**HEAD**: ce1e286
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 46 pass, 5 fail
+**Result**: 50 pass, 1 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
-| C1 | `browser captures/hoje.running.png` | **not judged** (screens.md) |
+| C1 | `browser captures/hoje.running.png` | **diverges** (screens.md) |
 | C2 | `run unit / ✓ tests/lista-de-revisoes.test.ts > revisões vencidas > conta como vencida a Revisão com próxima da` | pass |
 | C3 | `walk - na Hoje, o indicador "Revisões de hoje" mostra o total de vencidas dos dois Ciclos e nenhum chip` | pass (Walked) |
 | C4 | `walk - ao escolher um Ciclo no cartão, o Counter passa ao número de vencidas dele` | pass (Walked) |
@@ -19,7 +19,7 @@
 | C10 | `walk - com um Ciclo escolhido no cartão, "Ver todas as revisões" abre /revisoes?ciclo=<id> com o mesmo Ciclo m` | pass (Walked) |
 | C11 | `walk - o cartão da Hoje mostra o aviso com esse texto` | pass (Walked) |
 | C12 | `walk - com um Ciclo sem vencidas escolhido, o cartão mostra "Nenhuma revisão vencida." e não mostra o link` | pass (Walked) |
-| C13 | `browser captures/pwa-hoje.running.png` | **not judged** (screens.md) |
+| C13 | `browser captures/pwa-hoje.running.png` | pass |
 | C14 | `walk - "Registrar" numa Revisão abre o modal "Registrar estudo" com a Matéria, o Tópico e a data de hoje` | pass (Walked) |
 | C15 | `run unit / ✓ tests/cronometro.test.ts > Tópico do Cronômetro > inicia guardando o Tópico` | pass |
 | C16 | `run unit / ✓ tests/cronometro.test.ts > Tópico do Cronômetro > parar devolve o Tópico para o registro` | pass |
@@ -29,7 +29,7 @@
 | C20 | `run unit / ✓ tests/cronometro.test.ts > Tópico do Cronômetro > excluir o Tópico mantém o Cronômetro sem Tópico` | pass |
 | C21 | `run unit / ✓ tests/lista-de-revisoes.test.ts > cumprir a Revisão > um Registro com questões tira a Revisão de ` | pass |
 | C22 | `run unit / ✓ tests/lista-de-revisoes.test.ts > cumprir a Revisão > um Registro sem questões mantém a Revisão e` | pass |
-| C23 | `browser captures/revisoes.running.png` | **not judged** (screens.md) |
+| C23 | `browser captures/revisoes.running.png` | pass |
 | C24 | `walk - em /revisoes o subtítulo mostra os totais e muda ao escolher um Ciclo` | pass (Walked) |
 | C25 | `walk - uma linha de Vencidas mostra as oito informações` | pass (Walked) |
 | C26 | `walk - uma linha de Próximos 7 dias tem o chip cinza e nenhum ▶` | pass (Walked) |
@@ -42,10 +42,10 @@
 | C33 | `walk - com um Ciclo sem Revisões escolhido, a página mostra "Nenhuma revisão vencida." e não mostra "Próximos ` | pass (Walked) |
 | C34 | `run unit / ✓ tests/lista-de-revisoes.test.ts > revisões vencidas > sem Ciclo ativo não há Revisão` | pass |
 | C35 | `walk - em 390px /revisoes mostra cada Revisão em linha, sem rolagem horizontal` | pass (Walked) |
-| C36 | `browser captures/revisoes.running.png` | **not judged** (screens.md) |
+| C36 | `browser captures/revisoes.running.png` | pass |
 | C37 | `walk - com Revisões vencidas, o item "Revisões" da Sidebar mostra o Counter com o total` | pass (Walked) |
 | C38 | `walk - sem Revisões vencidas, o item "Revisões" da Sidebar não mostra Counter` | pass (Walked) |
-| C39 | `browser captures/pwa-hoje.running.png` | **not judged** (screens.md) |
+| C39 | `browser captures/pwa-hoje.running.png` | pass |
 | C40 | `walk - em /revisoes o item da Sidebar e a aba têm aria-current="page"` | pass (Walked) |
 | C41 | `run unit / ✓ tests/lista-de-revisoes.test.ts > Ciclo arquivado > as Revisões do Ciclo arquivado somem da lista` | pass |
 | C42 | `run unit / ✓ tests/lista-de-revisoes.test.ts > Ciclo arquivado > reativar devolve as Revisões com as mesmas da` | pass |
@@ -66,17 +66,17 @@
 ```
 
 stderr | tests/conta.test.ts > conta e instância > com o cadastro desligado, não é possível criar conta
-2026-11-22T15:12:58.314Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-22T15:22:11.707Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/conta.test.ts > conta e instância > com o cadastro desligado, não é possível criar conta
-2026-11-22T15:12:58.400Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-22T15:22:11.793Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/conta.test.ts > conta e instância > com o cadastro desligado, o primeiro Usuário ainda pode se cadastrar
-2026-11-22T15:12:58.511Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-22T15:22:11.903Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/volta-do-ciclo.test.ts > progresso na tela do Ciclo > cada Etapa traz o feito, e o Ciclo traz a Volta, os totais e as Matérias com progresso
-2026-11-22T15:12:59.465Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-22T15:22:12.842Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/volta-do-ciclo.test.ts > progresso na tela do Ciclo > depois de fechar a Volta, mostra a Volta 2 com o instante em que abriu e soma as horas extras
-2026-11-22T15:12:59.667Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-22T15:22:13.039Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 ```
