@@ -10,22 +10,30 @@ import { vencimentoDaRevisao } from "./formato";
 /** O que cumpre uma Revisão: a mesma frase na Hoje e na página Revisões (AD-031). */
 export const AVISO_DA_REVISAO = "Uma revisão é cumprida por um registro de estudo do tópico com questões.";
 
-/** "Todos" mais um segmento por Ciclo ativo; a escolha vai para `?ciclo=` de `base`, e a página filtra no servidor. */
-export function FiltroDeRevisoes({ base, ciclos, escolhido, rotuloTodos = "Todos" }: { base: string; ciclos: { id: string; nome: string }[]; escolhido: string | null; rotuloTodos?: string }) {
+const ITEM_ABREVIADO = "min-w-0 flex-1 px-1.5";
+
+/**
+ * "Todos" mais um segmento por Ciclo ativo; a escolha vai para `?ciclo=` de `base`, e a página filtra no servidor.
+ * Com `abreviar`, cada nome de Ciclo é cortado com reticências (o nome inteiro fica no rótulo de acessibilidade).
+ */
+export function FiltroDeRevisoes({ base, ciclos, escolhido, rotuloTodos = "Todos", abreviar }: { base: string; ciclos: { id: string; nome: string }[]; escolhido: string | null; rotuloTodos?: string; abreviar?: boolean }) {
   const router = useRouter();
   return (
     <SegmentedControl
       aria-label="Filtrar revisões por ciclo"
+      className={abreviar ? "flex w-full" : undefined}
       selectedKeys={[escolhido ?? "todos"]}
       onSelectionChange={(chaves) => {
         const chave = String([...chaves][0]);
         router.push(chave === "todos" ? base : `${base}?ciclo=${chave}`);
       }}
     >
-      <SegmentedControlItem id="todos">{rotuloTodos}</SegmentedControlItem>
+      <SegmentedControlItem id="todos" className={abreviar ? ITEM_ABREVIADO : undefined}>
+        {abreviar ? <span className="block truncate">{rotuloTodos}</span> : rotuloTodos}
+      </SegmentedControlItem>
       {ciclos.map((c) => (
-        <SegmentedControlItem key={c.id} id={c.id}>
-          {c.nome}
+        <SegmentedControlItem key={c.id} id={c.id} aria-label={c.nome} className={abreviar ? ITEM_ABREVIADO : undefined}>
+          {abreviar ? <span className="block truncate">{c.nome}</span> : c.nome}
         </SegmentedControlItem>
       ))}
     </SegmentedControl>

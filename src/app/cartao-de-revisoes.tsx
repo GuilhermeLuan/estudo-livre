@@ -21,8 +21,8 @@ export function CartaoDeRevisoes({ lista }: { lista: ListaDeRevisoes }) {
           </h2>
           <Counter aria-label={`${totalVencidas} vencidas`}>{totalVencidas}</Counter>
         </div>
-        <div className="min-w-0 overflow-x-auto">
-          <FiltroDeRevisoes base="/" ciclos={ciclos} escolhido={filtro} />
+        <div className="min-w-0 flex-1">
+          <FiltroDeRevisoes base="/" ciclos={ciclos} escolhido={filtro} abreviar />
         </div>
       </header>
 
