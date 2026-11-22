@@ -118,8 +118,8 @@ Dificuldade e Questões da prova sobrevivem a exportar, importar e copiar Matér
 1. WHEN o Usuário exporta o backup THEN the system SHALL incluir em cada Matéria `dificuldade` (`"facil"`, `"media"`, `"dificil"` ou `null`) e `questoesDaProva` (inteiro ou `null`)
 2. WHEN o Usuário importa um backup exportado com Matérias que têm os dois campos THEN the system SHALL recriar cada Matéria com os mesmos valores
 3. WHEN o Usuário importa um backup versão 1 sem `dificuldade` nem `questoesDaProva` THEN the system SHALL importar normalmente, com os dois campos nulos
-4. IF o arquivo traz `dificuldade` fora de `facil`, `media`, `dificil` ou `questoesDaProva` que não seja inteiro maior que zero THEN the system SHALL recusar o arquivo com a recusa de arquivo inválido que a importação já tem, sem substituir nenhum Ciclo
-   - `"dificil2"` → recusado; `0` → recusado; `2.5` → recusado; `"7"` → recusado; `null` → aceito
+4. IF o arquivo traz `dificuldade` fora de `facil`, `media`, `dificil` ou `questoesDaProva` que não seja inteiro de 1 a 10.000 (AD-037) THEN the system SHALL recusar o arquivo com a recusa de arquivo inválido que a importação já tem, sem substituir nenhum Ciclo
+   - `"dificil2"` → recusado; `0` → recusado; `2.5` → recusado; `"7"` → recusado; `10001` → recusado; `null` → aceito
 5. WHEN o Usuário copia uma Matéria com Dificuldade THEN the system SHALL criar a cópia com a mesma Dificuldade e Questões da prova nulo
 6. WHEN o Usuário acrescenta uma Etapa de Matéria nova pelo "Adicionar etapa" THEN the system SHALL criar a Matéria com Dificuldade e Questões da prova nulos
 

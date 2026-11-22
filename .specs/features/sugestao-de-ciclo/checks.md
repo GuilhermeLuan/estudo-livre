@@ -26,6 +26,7 @@ Proof: walk - usar a lixeira de uma linha e conferir que a lista de Ciclos não 
 
 **C5** - Com 50 linhas, "Adicionar matéria" recusa com "A sugestão aceita até 50 matérias." (AC 5)
 Proof: run vitest | ✓ recusa nome de Matéria vazio, repetido ou lista cheia
+Proof: run vitest | ✓ recusa mais de 50 Matérias e aceita 50
 Proof: walk - adicionar 50 linhas e tentar a 51ª
 
 **C6** - Sem linhas, "Criar ciclo" cria o Ciclo com a Volta 1 aberta, sem Matérias nem Etapas, e vai para `/ciclos/{id}`; "Visualizar ciclo" fica desabilitado (AC 6)
@@ -35,9 +36,12 @@ Proof: walk - criar com a tabela vazia
 **C7** - "Questões" vazio, 0, negativo, decimal ou acima de 10.000 é recusado com "Informe as questões da prova (inteiro de 1 a 10.000)." e nada é gravado: 1 → aceito; 10.000 → aceito; 0 → recusado; "7,5" → recusado; 10.001 → recusado (AC 7)
 Proof: run vitest | ✓ aceita Questões da prova de 1 a 10.000 e recusa o resto
 Proof: run vitest | ✓ recusa Questões da prova inválidas no caso de uso sem gravar nada
+Proof: walk - digitar "7,5" em Questões e usar Visualizar ciclo
 
 **C8** - "Duração da etapa (h)" fora de zero a 10.000 horas é recusada com "A carga horária precisa ser maior que zero e no máximo 10.000 horas." sem gravar: "0,5" → Etapas de 30 minutos; "0" → recusado; "10000" → aceito; "10001" → recusado (AC 8)
 Proof: run vitest | ✓ aceita duração da Etapa de 30 minutos a 10.000 horas e recusa o resto
+Proof: run vitest | ✓ converte as horas digitadas em minutos, aceitando vírgula e ponto
+Proof: walk - digitar "0" e depois "0,5" em Duração da etapa com uma linha na tabela
 
 **C9** - O peso de cada Matéria é Questões da prova × fator, com 1 para Fácil, 1,5 para Média e 2 para Difícil (AC 10)
 Proof: run vitest | ✓ pesa a Matéria por questões vezes o fator da dificuldade
@@ -87,7 +91,7 @@ Proof: run vitest | ✓ importa de volta Dificuldade e Questões da prova iguais
 **C23** - Importar um backup versão 1 sem os dois campos importa normalmente, com os dois nulos (AC S2.3)
 Proof: run vitest | ✓ importa backup antigo sem os campos com os dois nulos
 
-**C24** - Dificuldade fora de `facil`, `media`, `dificil`, ou Questões da prova que não seja inteiro maior que zero, recusa o arquivo sem substituir nenhum Ciclo: `"dificil2"`, `0`, `2.5`, `"7"` → recusados; `null` → aceito (AC S2.4)
+**C24** - Dificuldade fora de `facil`, `media`, `dificil`, ou Questões da prova que não seja inteiro de 1 a 10.000, recusa o arquivo sem substituir nenhum Ciclo: `"dificil2"`, `0`, `2.5`, `"7"`, `10001` → recusados; `null` → aceito (AC S2.4)
 Proof: run vitest | ✓ recusa arquivo com Dificuldade ou Questões da prova inválidas sem substituir nada
 
 **C25** - Copiar uma Matéria com Dificuldade cria a cópia com a mesma Dificuldade e Questões da prova nulo (AC S2.5)
@@ -107,7 +111,7 @@ Proof: run vitest | ✓ Matéria criada por Etapa manual nasce sem Dificuldade n
 | AC 8, duração da Etapa (4 examples) | "0,5" C8 · "0" C8 · "10000" C8 · "10001" C8 | - |
 | AC 11, Etapas por Matéria (4 examples) | 3 contra 2 C10 · 100 contra 5 C10 · uma só C10 · pesos iguais C10 | - |
 | fatores de dificuldade (3) | Fácil C9 · Média C9 · Difícil C9 | - |
-| AC S2.4, valores inválidos no arquivo (5) | `"dificil2"` C24 · `0` C24 · `2.5` C24 · `"7"` C24 · `null` C24 | - |
+| AC S2.4, valores inválidos no arquivo (6) | `"dificil2"` C24 · `0` C24 · `2.5` C24 · `"7"` C24 · `10001` C24 · `null` C24 | - |
 | controles da tela (6) | Adicionar matéria C2 · lixeira C4 · Visualizar ciclo C12 · Voltar C13 · Criar ciclo C14 · Dificuldade C2 | - |
 | leitores do dado novo (3) | backup exporta C21 · backup importa C22 · copiar matéria C25 | - |
 
@@ -126,7 +130,7 @@ Proof: run vitest | ✓ Matéria criada por Etapa manual nasce sem Dificuldade n
 ## Handoff
 
 - **Settled mid-build:** none (C3 reescrito para dizer que a mensagem usa o nome digitado, como o `<nome>` do AC 3)
-- **Dispatched:** none
+- **Dispatched:** Verifier, em `23db68b`: returned (FAIL, 6 achados, fechados no commit seguinte). Sem sub-agente de telas: nenhum critério cita captura.
 - **Boundary:** none
 - **Abandoned:** none
 - **Walked:** none

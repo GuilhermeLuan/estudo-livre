@@ -17,7 +17,7 @@ import {
   ValidacaoError,
 } from "@/casos-de-uso";
 import { obterDb } from "@/db";
-import type { MateriaParaSugerir } from "@/dominio";
+import { minutosDeHoras, type MateriaParaSugerir } from "@/dominio";
 import { avisoDaVoltaConcluida } from "./formato";
 import { exigirUsuario } from "@/sessao";
 
@@ -29,7 +29,7 @@ function texto(dados: FormData, campo: string) {
 
 /** Carga horária digitada em horas (aceita vírgula ou ponto), guardada em minutos. */
 function minutos(dados: FormData) {
-  return Math.round(Number(texto(dados, "horas").replace(",", ".")) * 60);
+  return minutosDeHoras(texto(dados, "horas"));
 }
 
 /** `operacao` devolve o número da Volta que fechou, se fechou: vira o aviso da tela (AD-018). */
@@ -69,8 +69,7 @@ export async function novoCiclo(_: EstadoCiclo, dados: FormData): Promise<Estado
   let id = "";
   const estado = await executar(async () => {
     const materias = materiasDoFormulario(dados);
-    const duracaoEtapaMinutos = materias.length ? minutos(dados) : undefined;
-    id = (await criarCiclo(obterDb(), usuario, { nome: texto(dados, "nome"), duracaoEtapaMinutos, materias })).id;
+    id = (await criarCiclo(obterDb(), usuario, { nome: texto(dados, "nome"), duracaoEtapaMinutos: minutos(dados), materias })).id;
   });
   if (estado.erro) return estado;
   redirect(`/ciclos/${id}`);

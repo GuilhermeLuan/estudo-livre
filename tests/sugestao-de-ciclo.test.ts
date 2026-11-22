@@ -11,9 +11,12 @@ import {
 } from "@/casos-de-uso";
 import {
   erroDaNovaMateria,
+  LISTA_CHEIA,
+  minutosDeHoras,
   pesoDaMateria,
   QUESTOES_INVALIDAS,
   questoesDaProvaValidas,
+  questoesDeTexto,
   sugerirEtapas,
   type MateriaParaSugerir,
 } from "@/dominio";
@@ -59,6 +62,8 @@ describe("pesos e Etapas (domínio)", () => {
     // uma só Matéria → 1; pesos iguais → o mesmo número
     expect(contar([M("A", 40, "dificil")])).toEqual([1]);
     expect(contar([M("A", 10, "media"), M("B", 15, "facil"), M("C", 10, "media")])).toEqual([1, 1, 1]);
+    // bordas do arredondamento e do teto: 7 → 7; 7,5 → 8; 8,5 → 9 → teto 8
+    expect(contar([M("A", 2, "facil"), M("B", 14, "facil"), M("C", 10, "media"), M("D", 17, "facil")])).toEqual([1, 7, 8, 8]);
     expect(sugerirEtapas([])).toEqual([]);
   });
 
@@ -83,6 +88,12 @@ describe("pesos e Etapas (domínio)", () => {
 });
 
 describe("regras da lista (domínio)", () => {
+  it("converte as horas digitadas em minutos, aceitando vírgula e ponto", () => {
+    expect([minutosDeHoras("1"), minutosDeHoras("0,5"), minutosDeHoras("1.5"), minutosDeHoras(" 2 "), minutosDeHoras("10000"), minutosDeHoras("10001")]).toEqual([60, 30, 90, 120, 600_000, 600_060]);
+    expect(minutosDeHoras("0")).toBe(0);
+    expect([minutosDeHoras(""), minutosDeHoras("abc")].map((m) => (Number.isNaN(m) ? "NaN" : m))).toEqual([0, "NaN"]);
+  });
+
   it("recusa nome de Matéria vazio, repetido ou lista cheia", () => {
     expect(erroDaNovaMateria([], "Língua Portuguesa")).toBeNull();
     expect(erroDaNovaMateria([], "   ")).toBe("Informe o nome da matéria.");
@@ -95,6 +106,10 @@ describe("regras da lista (domínio)", () => {
   it("aceita Questões da prova de 1 a 10.000 e recusa o resto", () => {
     expect([1, 10_000].map(questoesDaProvaValidas)).toEqual([true, true]);
     expect([0, -3, 7.5, 10_001, Number.NaN, "7", null, undefined].map(questoesDaProvaValidas)).toEqual(Array(8).fill(false));
+    // o texto digitado na tela: só dígitos valem; vírgula, ponto de milhar, vazio e letras não
+    const texto = (t: string) => questoesDaProvaValidas(questoesDeTexto(t));
+    expect(["1", "50", " 7 ", "10000"].map(texto)).toEqual([true, true, true, true]);
+    expect(["", "0", "7,5", "7.5", "-3", "10.000", "10001", "abc"].map(texto)).toEqual(Array(8).fill(false));
     expect(QUESTOES_INVALIDAS).toBe("Informe as questões da prova (inteiro de 1 a 10.000).");
   });
 });
@@ -131,8 +146,9 @@ describe("criarCiclo com Matérias", () => {
     expect(new Set(detalhe.etapas.map((e) => e.cargaMinutos))).toEqual(new Set([60]));
     expect(detalhe.cargaMinutos).toBe(23 * 60);
     const gravadas = await db.select().from(materia).where(eq(materia.cicloId, id)).orderBy(asc(materia.nome));
-    expect(gravadas.map((m) => [m.nome, m.dificuldade, m.questoesDaProva])).toEqual(
-      DO_PRINT.map((m) => [m.nome, m.dificuldade, m.questoesDaProva]).sort((a, b) => String(a[0]).localeCompare(String(b[0]), "pt")),
+    const porNome = (a: unknown[], b: unknown[]) => (a[0] === b[0] ? 0 : String(a[0]) < String(b[0]) ? -1 : 1);
+    expect(gravadas.map((m) => [m.nome, m.dificuldade, m.questoesDaProva]).sort(porNome)).toEqual(
+      DO_PRINT.map((m) => [m.nome, m.dificuldade, m.questoesDaProva]).sort(porNome),
     );
   });
 
@@ -171,6 +187,15 @@ describe("criarCiclo com Matérias", () => {
     expect(await quantos()).toMatchObject({ ciclos: 1, materias: 1 });
   });
 
+  it("recusa mais de 50 Matérias e aceita 50", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const lista = (n: number) => Array.from({ length: n }, (_, i) => M(`Matéria ${i}`, 5, "media"));
+    await expect(criarCiclo(db, ana, { nome: "Banco", materias: lista(51) })).rejects.toThrow(new ValidacaoError(LISTA_CHEIA));
+    expect(await quantos()).toEqual(NADA);
+    const { id } = await criarCiclo(db, ana, { nome: "Banco", materias: lista(50) });
+    expect((await obterCiclo(db, ana, id)).etapas).toHaveLength(50);
+  });
+
   it("aceita duração da Etapa de 30 minutos a 10.000 horas e recusa o resto", async () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
     const com = (duracaoEtapaMinutos: number) => criarCiclo(db, ana, { nome: "Banco", duracaoEtapaMinutos, materias: [M("Inglês", 5, "facil")] });
@@ -181,6 +206,8 @@ describe("criarCiclo com Matérias", () => {
     const mensagem = new ValidacaoError("A carga horária precisa ser maior que zero e no máximo 10.000 horas.");
     await expect(com(0)).rejects.toThrow(mensagem);
     await expect(com(10_001 * 60)).rejects.toThrow(mensagem);
+    // a duração é conferida mesmo sem Matérias
+    await expect(criarCiclo(db, ana, { nome: "Vazio", duracaoEtapaMinutos: 0 })).rejects.toThrow(mensagem);
     expect(await quantos()).toEqual(antes);
   });
 });
@@ -237,7 +264,7 @@ describe("backup e cópia", () => {
       arquivo.ciclos[0].materias[0][campo] = valor;
       return JSON.stringify(arquivo);
     };
-    for (const [campo, valor] of [["dificuldade", "dificil2"], ["questoesDaProva", 0], ["questoesDaProva", 2.5], ["questoesDaProva", "7"]] as const) {
+    for (const [campo, valor] of [["dificuldade", "dificil2"], ["questoesDaProva", 0], ["questoesDaProva", 2.5], ["questoesDaProva", "7"], ["questoesDaProva", 10_001]] as const) {
       await expect(importarBackup(db, bia, await com(campo, valor))).rejects.toThrow(new ValidacaoError(INVALIDO));
       expect(await nomesDeBia()).toEqual(["Do arquivo da Bia"]);
     }

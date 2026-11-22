@@ -10,8 +10,10 @@ import {
   cargaEmLimites,
   DIFICULDADES,
   erroDaNovaMateria,
+  minutosDeHoras,
   QUESTOES_INVALIDAS,
   questoesDaProvaValidas,
+  questoesDeTexto,
   ROTULO_DA_DIFICULDADE,
   sugerirEtapas,
   type Dificuldade,
@@ -21,11 +23,6 @@ import type { EstadoCiclo } from "./acoes-ciclos";
 import { tempo } from "./formato";
 
 type Linha = { chave: number; nome: string; questoes: string; dificuldade: Dificuldade };
-
-/** "50" -> 50; vazio, decimal ("7,5") ou texto viram NaN, que a regra do domínio recusa. */
-const questoesDe = (texto: string) => (/^\d+$/.test(texto.trim()) ? Number(texto.trim()) : Number.NaN);
-/** Horas digitadas (aceita vírgula ou ponto) em minutos. */
-const minutosDe = (horas: string) => Math.round(Number(horas.trim().replace(",", ".")) * 60);
 
 const grade = "grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 lg:grid-cols-[minmax(0,1fr)_7.5rem_10rem_2.25rem]";
 
@@ -47,9 +44,9 @@ export function SugestaoDeCiclo({ acao }: Props) {
   const [proxima, setProxima] = useState(0);
   const [enviando, iniciar] = useTransition();
 
-  const duracao = minutosDe(horas);
-  const erroDaDuracao = linhas.length && !cargaEmLimites(duracao) ? CARGA_INVALIDA : undefined;
-  const erroDasQuestoes = (l: Linha) => (questoesDaProvaValidas(questoesDe(l.questoes)) ? undefined : QUESTOES_INVALIDAS);
+  const duracao = minutosDeHoras(horas);
+  const erroDaDuracao = cargaEmLimites(duracao) ? undefined : CARGA_INVALIDA;
+  const erroDasQuestoes = (l: Linha) => (questoesDaProvaValidas(questoesDeTexto(l.questoes)) ? undefined : QUESTOES_INVALIDAS);
   const valido = !erroDaDuracao && linhas.every((l) => !erroDasQuestoes(l));
 
   function adicionar() {
@@ -65,7 +62,7 @@ export function SugestaoDeCiclo({ acao }: Props) {
   const remover = (chave: number) => setLinhas((atuais) => atuais.filter((l) => l.chave !== chave));
 
   const sugeridas = previa
-    ? sugerirEtapas(linhas.map((l): MateriaParaSugerir => ({ nome: l.nome, questoesDaProva: questoesDe(l.questoes), dificuldade: l.dificuldade })))
+    ? sugerirEtapas(linhas.map((l): MateriaParaSugerir => ({ nome: l.nome, questoesDaProva: questoesDeTexto(l.questoes), dificuldade: l.dificuldade })))
     : [];
 
   function visualizar() {
@@ -84,7 +81,7 @@ export function SugestaoDeCiclo({ acao }: Props) {
     const dados = new FormData();
     dados.set("nome", nome);
     dados.set("horas", horas);
-    dados.set("materias", JSON.stringify(linhas.map((l) => ({ nome: l.nome, questoesDaProva: questoesDe(l.questoes), dificuldade: l.dificuldade }))));
+    dados.set("materias", JSON.stringify(linhas.map((l) => ({ nome: l.nome, questoesDaProva: questoesDeTexto(l.questoes), dificuldade: l.dificuldade }))));
     iniciar(async () => {
       const estado = await acao({}, dados);
       if (estado.erro) setErro(estado.erro);

@@ -78,6 +78,12 @@ export const cargaEmLimites = (minutos: number) => Number.isInteger(minutos) && 
 export const questoesDaProvaValidas = (x: unknown): x is number =>
   typeof x === "number" && Number.isInteger(x) && x >= 1 && x <= LIMITES_DA_SUGESTAO.questoesMaximas;
 
+/** "50" -> 50; vazio, decimal ("7,5"), com ponto de milhar ou texto viram NaN, que `questoesDaProvaValidas` recusa. */
+export const questoesDeTexto = (texto: string) => (/^\d+$/.test(texto.trim()) ? Number(texto.trim()) : Number.NaN);
+
+/** Horas digitadas (aceita vírgula ou ponto) em minutos arredondados; texto que não é número vira NaN. */
+export const minutosDeHoras = (horas: string) => Math.round(Number(horas.trim().replace(",", ".")) * 60);
+
 export type MateriaParaSugerir = { nome: string; questoesDaProva: number; dificuldade: Dificuldade };
 export type EtapaSugerida = { nome: string };
 
