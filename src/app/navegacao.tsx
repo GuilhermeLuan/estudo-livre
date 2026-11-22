@@ -10,6 +10,7 @@ import {
   RiLogoutBoxRLine,
   RiRefreshLine,
   RiUser3Line,
+  RiDatabase2Line,
 } from "@remixicon/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -128,6 +129,9 @@ export function Sidebar({ usuario, ciclos, arquivados, revisoes }: DadosDoMenu) 
       <div className="mt-auto grid gap-2 pt-3">
         <CartaoDoCronometro variante="cartao" />
         <nav aria-label="Conta" className="grid gap-1">
+          <ItemDeNavegacao href="/backup" selecionado={caminho === "/backup"} icone={RiDatabase2Line}>
+            Backup
+          </ItemDeNavegacao>
           {usuario.admin && (
             <ItemDeNavegacao href="/usuarios" selecionado={ativoEm(caminho, "/usuarios")} icone={RiUser3Line}>
               Usuários
@@ -146,7 +150,7 @@ export function Sidebar({ usuario, ciclos, arquivados, revisoes }: DadosDoMenu) 
   );
 }
 
-const TITULOS: Record<string, string> = { "/": "Hoje", "/revisoes": "Revisões", "/registros": "Registros", "/estatisticas": "Estatísticas", "/ciclos/arquivados": "Arquivados" };
+const TITULOS: Record<string, string> = { "/": "Hoje", "/revisoes": "Revisões", "/registros": "Registros", "/estatisticas": "Estatísticas", "/ciclos/arquivados": "Arquivados", "/backup": "Backup" };
 
 /** O topo do celular (< 1024px): a marca, o título da rota e o avatar que abre o menu. */
 export function CabecalhoMovel({ usuario, ciclos, arquivados }: DadosDoMenu) {
@@ -173,6 +177,9 @@ export function CabecalhoMovel({ usuario, ciclos, arquivados }: DadosDoMenu) {
             </DropdownItem>
           </DropdownGroup>
           <DropdownDivider />
+          <DropdownItem onSelect={() => router.push("/backup")} selected={caminho === "/backup"}>
+            Backup
+          </DropdownItem>
           {usuario.admin && <DropdownItem onSelect={() => router.push("/usuarios")}>Usuários</DropdownItem>}
           <DropdownGroup label="Tema">
             <SeletorDeTema />

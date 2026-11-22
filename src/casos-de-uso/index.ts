@@ -48,3 +48,4 @@ export {
   type MateriaComTopicos,
   type TopicoDaMateria,
 } from "./topicos";
+export { exportarBackup, importarBackup, nomeDoArquivoDeBackup, type Backup } from "./backup";

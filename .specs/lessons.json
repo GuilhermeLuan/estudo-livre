@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 7,
+  "next_id": 9,
   "lessons": [
     {
       "id": "L-001",
@@ -112,6 +112,42 @@
       ],
       "created": "2026-11-22T15:25:22Z",
       "last_seen": "2026-11-22T15:25:22Z"
+    },
+    {
+      "id": "L-007",
+      "key": "ac_gap::um importador valida cada campo com a mesma funcao e a mesma unidade de medida que o caso de uso de criacao usa caracteres nao utf 16 e testa a ida e volta com valores no limite do app",
+      "text": "Um importador valida cada campo com a mesma função e a mesma unidade de medida que o caso de uso de criação usa (caracteres, não UTF-16), e testa a ida e volta com valores no limite do app.",
+      "signal": "ac_gap",
+      "scope": "importacao",
+      "status": "candidate",
+      "features": [
+        "backup-json"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "BKP-11 / C23 (importacao)"
+      ],
+      "created": "2026-11-22T16:05:53Z",
+      "last_seen": "2026-11-22T16:05:53Z"
+    },
+    {
+      "id": "L-008",
+      "key": "ac_gap::validar arquivo externo inclui os limites do tipo da coluna e as regras cruzadas do caso de uso acertos sem questoes topico e conteudo juntos erros de dado do postgres classes 22 23 viram a mensagem de invalido",
+      "text": "Validar arquivo externo inclui os limites do tipo da coluna e as regras cruzadas do caso de uso (acertos sem questões, tópico e conteúdo juntos); erros de dado do Postgres (classes 22/23) viram a mensagem de inválido.",
+      "signal": "ac_gap",
+      "scope": "importacao",
+      "status": "candidate",
+      "features": [
+        "backup-json"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "BKP-09 AC 1 / C17 (importacao)"
+      ],
+      "created": "2026-11-22T16:05:53Z",
+      "last_seen": "2026-11-22T16:05:53Z"
     }
   ]
 }

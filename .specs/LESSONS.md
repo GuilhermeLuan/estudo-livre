@@ -50,6 +50,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: hoje.running.png (screens.md) (telas)
 - last seen: 2026-11-22T15:25:22Z
 
+### L-007 - Um importador valida cada campo com a mesma função e a mesma unidade de medida que o caso de uso de criação usa (caracteres, não UTF-16), e testa a ida e volta com valores no limite do app.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `importacao` · harmful: 0
+- features: backup-json
+- evidence: BKP-11 / C23 (importacao)
+- last seen: 2026-11-22T16:05:53Z
+
+### L-008 - Validar arquivo externo inclui os limites do tipo da coluna e as regras cruzadas do caso de uso (acertos sem questões, tópico e conteúdo juntos); erros de dado do Postgres (classes 22/23) viram a mensagem de inválido.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `importacao` · harmful: 0
+- features: backup-json
+- evidence: BKP-09 AC 1 / C17 (importacao)
+- last seen: 2026-11-22T16:05:53Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

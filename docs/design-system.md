@@ -46,7 +46,7 @@ Cartões e painéis em `rounded-3xl`; campos e linhas de menu em `rounded-xl`; c
 Um único ponto de quebra: **1024px**.
 
 - **A partir de 1024px**: Sidebar flutuante de 260px à esquerda e conteúdo ao lado, com no máximo 1160px.
-- **Abaixo de 1024px**: Sidebar oculta; cabeçalho com a marca, o título e o avatar (menu com Ciclos, Novo ciclo, Usuários, tema e Sair); barra de abas inferior com Hoje, o botão central "+" e Estatísticas. Os cartões das telas empilham em uma coluna.
+- **Abaixo de 1024px**: Sidebar oculta; cabeçalho com a marca, o título e o avatar (menu com Ciclos, Novo ciclo, Arquivados, Backup, Usuários, tema e Sair); barra de abas inferior com Hoje, o botão central "+" e Estatísticas. Os cartões das telas empilham em uma coluna.
 
 ## Componentes do BoardUI
 
@@ -58,7 +58,7 @@ Instalados de `list_components` do MCP do BoardUI: Button, IconButton, LinkButto
 
 ## Componentes do produto
 
-- **Sidebar** (`src/app/navegacao.tsx`): marca, Hoje, Estatísticas, a seção Ciclos (um item por Ciclo e um "+" para `/ciclos/novo`), o cartão do Cronômetro, Usuários (só Admin), Sair e o cartão do usuário (abre o seletor de tema). O item da rota atual usa o gradiente do botão primário e `aria-current="page"`.
+- **Sidebar** (`src/app/navegacao.tsx`): marca, Hoje, Estatísticas, a seção Ciclos (um item por Ciclo e um "+" para `/ciclos/novo`), o cartão do Cronômetro, Backup, Usuários (só Admin), Sair e o cartão do usuário (abre o seletor de tema). O item da rota atual usa o gradiente do botão primário e `aria-current="page"`.
 - **Cronômetro** (`src/app/cronometro.tsx`): o provedor guarda o estado e o modal de registro; `CartaoDoCronometro` desenha o cartão da Sidebar, o cartão grande da Hoje no celular e a faixa compacta acima da barra de abas.
 - **StatCard** (`src/app/cartao-de-indicador.tsx`): ícone, rótulo, valor e Chip de variação. Na Hoje, abaixo de 1024px vira o cartão pequeno só com rótulo curto e valor.
 - **EtapaRow** (`src/app/lista-etapas.tsx`): alça de arrastar, posição, Matéria, carga, barra com percentual e um Chip de Situação (Concluída, Próxima etapa com a linha realçada, Em andamento, Não iniciada ou "+<tempo> extra"), mais o menu ⋮ com Editar e Remover etapa.
@@ -66,6 +66,7 @@ Instalados de `list_components` do MCP do BoardUI: Button, IconButton, LinkButto
 - **Registrar estudo** (`src/app/formulario-de-registro.tsx`): Matéria, Conteúdo, Data, Duração (Horas e Minutos), Tipo de estudo, Questões, Acertos, o campo calculado Acerto e Anotação; o erro do servidor aparece sob o campo a que se refere.
 - **Telas de conta**: cartão central de 420px com a marca, título, descrição, campos, botão de largura total e o link para a tela irmã.
 - **Estados vazios**: cartão com título, uma frase que diz o que fazer e o botão da ação ("Criar ciclo", "Adicionar etapa", "Registrar estudo"). Sem gráficos zerados.
+- **Backup** (`src/app/(app)/backup/page.tsx`, sem frame no Figma): título "Backup" e dois cartões `rounded-3xl` com borda, lado a lado a partir de 1024px e empilhados abaixo. "Exportar" tem uma frase e o `ButtonLink` primário "Exportar backup" (`RiDownload2Line`). "Importar" tem uma frase sobre a substituição, o campo de arquivo e o `Button` primário "Importar backup". O campo (`src/app/importar-backup.tsx`) é um `<input type="file">` oculto, aberto pelo `Button` secundário "Escolher arquivo", com o nome do arquivo ao lado e o erro sob ele. A confirmação usa o `AlertDialog` e o resultado, o Aviso. O `file-upload` do BoardUI não é usado porque simula o envio com uma barra de progresso falsa.
 - **Aviso** (`src/app/aviso.tsx`): passageiro, no topo, some em 5s.
 
 ## Acessibilidade e movimento
