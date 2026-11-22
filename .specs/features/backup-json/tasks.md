@@ -108,7 +108,7 @@ T2 → T3 → T4 → T5 → T6
 
 **Done when**:
 
-- [ ] Os testes `importar`, `recusar` e `ida e volta` passam. Eles cobrem:
+- [x] Os testes `importar`, `recusar` e `ida e volta` passam. Eles cobrem:
   - a substituição dos Ciclos existentes e a contagem devolvida;
   - o arquivado que volta arquivado, com a mesma data;
   - Cartões recalculados mesmo com `cartoes` adulterado no arquivo;
@@ -123,7 +123,7 @@ T2 → T3 → T4 → T5 → T6
   - Registro sem Tópico nem conteúdo livre;
   - exportar A, importar em B e exportar B dá o mesmo arquivo sem ids e sem `exportadoEm`;
   - a mesma Volta, o mesmo progresso, as mesmas Horas extras, os mesmos totais das Estatísticas e as mesmas próximas revisões.
-- [ ] Gate full passes: `npx vitest run`
+- [x] Gate full passes: `npx vitest run`
 
 **Tests**: integration
 **Gate**: full

@@ -1,6 +1,13 @@
+import { asc, eq } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import {
   adicionarEtapa,
+  importarBackup,
+  obterCartao,
+  obterCiclo,
+  obterEstatisticas,
+  obterMateria,
+  ValidacaoError,
   arquivarCiclo,
   criarCiclo,
   criarTopico,
@@ -12,6 +19,7 @@ import {
   reiniciarVolta,
   salvarFaixas,
 } from "@/casos-de-uso";
+import { ciclo, materia, topico } from "@/db/schema";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
 const db = bancoDeTeste();
@@ -135,5 +143,204 @@ describe("exportar", () => {
     await criarCiclo(db, ana, { nome: "Só da Ana" });
     const { ciclos } = await exportarBackup(db, ana);
     expect(ciclos.map((c) => c.nome)).toEqual(["Só da Ana"]);
+  });
+});
+
+const INVALIDO = "O arquivo não é um backup válido do Estudo Livre.";
+const AGORA = new Date("2026-11-22T12:00:00Z");
+type Usuario = { id: string };
+
+const exportar = async (usuario: Usuario) => JSON.stringify(await exportarBackup(db, usuario, AGORA));
+const nomesDosCiclos = async (usuario: Usuario) =>
+  (await db.select({ nome: ciclo.nome }).from(ciclo).where(eq(ciclo.usuarioId, usuario.id)).orderBy(asc(ciclo.criadoEm))).map((c) => c.nome);
+
+/** O arquivo sem nada que dependa dos ids e sem a data da exportação. */
+function semIds(x: unknown): unknown {
+  if (x instanceof Date) return x.toISOString();
+  if (Array.isArray(x)) return x.map(semIds);
+  if (x && typeof x === "object")
+    return Object.fromEntries(Object.entries(x).filter(([k]) => k !== "id" && !k.endsWith("Id") && k !== "exportadoEm").map(([k, v]) => [k, semIds(v)]));
+  return x;
+}
+
+async function recusa(usuario: Usuario, conteudo: string, mensagem: string) {
+  const antes = await exportar(usuario);
+  await expect(importarBackup(db, usuario, conteudo)).rejects.toThrow(new ValidacaoError(mensagem));
+  expect(await exportar(usuario)).toBe(antes);
+}
+
+describe("importar", () => {
+  it("substitui os ciclos da conta pelos do arquivo", async () => {
+    const { usuario: ana } = await cenario("ana@exemplo.com");
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    await criarCiclo(db, bia, { nome: "Antigo da Bia" });
+    expect(await importarBackup(db, bia, await exportar(ana))).toEqual({ ciclos: 2 });
+    expect(await nomesDosCiclos(bia)).toEqual(["TRF", "INSS"]);
+  });
+
+  it("recalcula os cartões ignorando os do arquivo", async () => {
+    const { usuario: ana, crase } = await cenario();
+    const original = await obterCartao(db, ana, crase);
+    const arquivo = JSON.parse(await exportar(ana));
+    arquivo.ciclos[0].cartoes[0].proximaRevisao = "2099-01-01T00:00:00.000Z";
+    arquivo.ciclos[0].cartoes[0].estado = { adulterado: true };
+    arquivo.ciclos[0].logDeRevisao = [];
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    await importarBackup(db, bia, JSON.stringify(arquivo));
+    const [novo] = await db.select({ id: topico.id }).from(topico).innerJoin(materia, eq(materia.id, topico.materiaId)).innerJoin(ciclo, eq(ciclo.id, materia.cicloId)).where(eq(ciclo.usuarioId, bia.id)).orderBy(asc(topico.posicao));
+    expect(await obterCartao(db, bia, novo.id)).toEqual(original);
+    const reexportado = JSON.parse(await exportar(bia));
+    expect(semIds(reexportado.ciclos[0].logDeRevisao)).toEqual(semIds(JSON.parse(await exportar(ana)).ciclos[0].logDeRevisao));
+    expect(reexportado.ciclos[0].logDeRevisao).toHaveLength(2);
+  });
+
+  it("mantém ciclos arquivados com a mesma data", async () => {
+    const { usuario: ana } = await cenario();
+    const arquivo = JSON.parse(await exportar(ana));
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    await importarBackup(db, bia, JSON.stringify(arquivo));
+    const linhas = await db.select({ nome: ciclo.nome, arquivadoEm: ciclo.arquivadoEm }).from(ciclo).where(eq(ciclo.usuarioId, bia.id)).orderBy(asc(ciclo.criadoEm));
+    expect(linhas.map((l) => [l.nome, l.arquivadoEm?.toISOString() ?? null])).toEqual([
+      ["TRF", null],
+      ["INSS", arquivo.ciclos[1].arquivadoEm],
+    ]);
+    expect(arquivo.ciclos[1].arquivadoEm).not.toBeNull();
+  });
+
+  it("não toca os ciclos de outro usuário", async () => {
+    const { usuario: ana } = await cenario("ana@exemplo.com");
+    const antesDaAna = await exportar(ana);
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    await importarBackup(db, bia, antesDaAna);
+    await importarBackup(db, bia, JSON.stringify({ formato: "estudo-livre", versao: 1, exportadoEm: AGORA.toISOString(), ciclos: [] }));
+    expect(await exportar(ana)).toBe(antesDaAna);
+    expect(await nomesDosCiclos(bia)).toEqual([]);
+  });
+
+  it("lista vazia esvazia a conta", async () => {
+    const { usuario } = await cenario();
+    expect(await importarBackup(db, usuario, JSON.stringify({ formato: "estudo-livre", versao: 1, exportadoEm: AGORA.toISOString(), ciclos: [] }))).toEqual({ ciclos: 0 });
+    expect(await nomesDosCiclos(usuario)).toEqual([]);
+  });
+
+  it("importar duas vezes não duplica", async () => {
+    const { usuario } = await cenario();
+    const arquivo = await exportar(usuario);
+    await importarBackup(db, usuario, arquivo);
+    await importarBackup(db, usuario, arquivo);
+    expect(await nomesDosCiclos(usuario)).toEqual(["TRF", "INSS"]);
+    expect(semIds(JSON.parse(await exportar(usuario)))).toEqual(semIds(JSON.parse(arquivo)));
+  });
+
+  it("aceita registro sem tópico nem conteúdo livre", async () => {
+    const { usuario } = await cenario();
+    const arquivo = JSON.parse(await exportar(usuario));
+    const semConteudo = arquivo.ciclos[1].registros[0];
+    expect(semConteudo).toMatchObject({ topicoId: null, conteudoLivre: null });
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    await importarBackup(db, bia, JSON.stringify(arquivo));
+    expect(JSON.parse(await exportar(bia)).ciclos[1].registros).toEqual([expect.objectContaining({ topicoId: null, conteudoLivre: null, duracaoMinutos: 45, tipo: "Leitura de lei" })]);
+  });
+});
+
+describe("recusar", () => {
+  it("recusa arquivo inválido sem alterar a conta", async () => {
+    const { usuario } = await cenario();
+    const valido = JSON.parse(await exportar(usuario));
+    const variante = (mudar: (a: typeof valido) => void) => {
+      const copia = structuredClone(valido);
+      mudar(copia);
+      return JSON.stringify(copia);
+    };
+    const invalidos = [
+      "isto não é json",
+      "{\"formato\": \"estudo-livre\", \"versao\": 1, \"ciclos\": [",
+      "[]",
+      variante((a) => (a.formato = "outro-app")),
+      variante((a) => delete a.formato),
+      variante((a) => delete a.ciclos),
+      variante((a) => delete a.ciclos[0].nome),
+      variante((a) => delete a.ciclos[0].registros[0].duracaoMinutos),
+      variante((a) => (a.ciclos[0].registros[0].duracaoMinutos = "60")),
+      variante((a) => (a.ciclos[0].registros[0].duracaoMinutos = 0)),
+      variante((a) => (a.ciclos[0].registros[0].tipo = "Cochilo")),
+      variante((a) => (a.ciclos[0].registros[0].nota = "Ótimo")),
+      variante((a) => (a.ciclos[0].registros[0].dataHora = "ontem")),
+      variante((a) => (a.ciclos[0].registros[0].acertos = 11)),
+      variante((a) => (a.ciclos[0].registros[0].materiaId = "nao-existe")),
+      variante((a) => (a.ciclos[0].registros[0].topicoId = "nao-existe")),
+      variante((a) => (a.ciclos[0].etapas[0].materiaId = "nao-existe")),
+      variante((a) => (a.ciclos[0].logDeRevisao[0].registroId = "nao-existe")),
+      variante((a) => (a.ciclos[0].faixas.bomAte = 10)),
+      variante((a) => (a.ciclos[0].voltas[1].fim = a.ciclos[0].voltas[1].inicio)),
+    ];
+    for (const conteudo of invalidos) await recusa(usuario, conteudo, INVALIDO);
+    expect(await nomesDosCiclos(usuario)).toEqual(["TRF", "INSS"]);
+  });
+
+  it("recusa versão desconhecida", async () => {
+    const { usuario } = await cenario();
+    const arquivo = JSON.parse(await exportar(usuario));
+    arquivo.versao = 2;
+    await recusa(usuario, JSON.stringify(arquivo), "Versão de backup desconhecida: 2.");
+  });
+
+  it("recusa arquivo acima de 50 MB", async () => {
+    const { usuario } = await cenario();
+    const arquivo = JSON.parse(await exportar(usuario));
+    const base = JSON.stringify(arquivo);
+    // Exatamente 50 MB passa da checagem de tamanho; um byte a mais é recusado.
+    const limite = 50 * 1024 * 1024;
+    const noLimite = base.replace(/}$/, `,"x":"${"a".repeat(limite - Buffer.byteLength(base) - 7)}"}`);
+    expect(Buffer.byteLength(noLimite)).toBe(limite);
+    await importarBackup(db, usuario, noLimite);
+    await recusa(usuario, noLimite.replace(/"}$/, 'a"}'), "O arquivo passa de 50 MB.");
+  });
+
+  it("recusa com cronômetro ativo", async () => {
+    const { usuario, ti } = await cenario();
+    await iniciarCronometro(db, usuario, ti);
+    await recusa(usuario, await exportar(usuario), "Pare ou descarte o cronômetro antes de importar.");
+  });
+
+  it("desfaz tudo quando a gravação falha no meio", async () => {
+    const { usuario } = await cenario();
+    const arquivo = JSON.parse(await exportar(usuario));
+    // O segundo Ciclo repete a Matéria com outra caixa: o banco recusa depois que o primeiro já foi gravado.
+    arquivo.ciclos[1].materias.push({ id: "repetida", nome: "direito", topicos: [] });
+    await recusa(usuario, JSON.stringify(arquivo), INVALIDO);
+  });
+});
+
+/** O que o Usuário vê de cada Ciclo, das Estatísticas e das próximas revisões, sem ids. */
+async function estadoVisivel(usuario: Usuario) {
+  const ciclos = await db.select({ id: ciclo.id }).from(ciclo).where(eq(ciclo.usuarioId, usuario.id)).orderBy(asc(ciclo.criadoEm));
+  const detalhes = await Promise.all(ciclos.map((c) => obterCiclo(db, usuario, c.id)));
+  const materias = await Promise.all(detalhes.flatMap((d) => d.materias.map((m) => obterMateria(db, usuario, d.id, m.id))));
+  return semIds({
+    ciclos: detalhes.map((d) => ({ nome: d.nome, volta: d.volta, etapas: d.etapas, materias: d.materias, extraMinutos: d.extraMinutos, feitoMinutos: d.feitoMinutos, percentual: d.percentual })),
+    estatisticas: await obterEstatisticas(db, usuario),
+    revisoes: materias.map((m) => m.topicos.map((t) => [t.nome, t.proximaRevisao, t.estudado, t.registros])),
+  });
+}
+
+describe("ida e volta", () => {
+  it("reexportar dá o mesmo arquivo", async () => {
+    const { usuario: ana } = await cenario("ana@exemplo.com");
+    const deA = JSON.parse(await exportar(ana));
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    await importarBackup(db, bia, JSON.stringify(deA));
+    const deB = JSON.parse(await exportar(bia));
+    expect(semIds(deB)).toEqual(semIds(deA));
+    expect(deB.ciclos[0].registros).toHaveLength(3);
+  });
+
+  it("reproduz voltas, progresso, estatísticas e revisões", async () => {
+    const { usuario: ana } = await cenario("ana@exemplo.com");
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    await importarBackup(db, bia, await exportar(ana));
+    const deA = await estadoVisivel(ana);
+    expect(await estadoVisivel(bia)).toEqual(deA);
+    expect((deA as { ciclos: { volta: { numero: number } }[] }).ciclos[0].volta.numero).toBe(2);
   });
 });
