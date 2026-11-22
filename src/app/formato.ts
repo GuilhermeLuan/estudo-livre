@@ -78,3 +78,10 @@ export function textoDaProximaRevisao(dia: string | null) {
   const [ano, mes, diaDoMes] = dia.split("-");
   return `Próxima revisão: ${diaDoMes}/${mes}/${ano}`;
 }
+
+/** O chip de vencimento de uma Revisão: "Atrasada 2d", "Hoje", "Amanhã" ou a data ("18/11"). `diasDeAtraso` > 0 é atraso. */
+export function vencimentoDaRevisao(diasDeAtraso: number, dia: string): { texto: string; cor: "rose" | "yellow" | "neutral" } {
+  if (diasDeAtraso > 0) return { texto: `Atrasada ${diasDeAtraso}d`, cor: "rose" };
+  if (diasDeAtraso === 0) return { texto: "Hoje", cor: "yellow" };
+  return { texto: diasDeAtraso === -1 ? "Amanhã" : diaMes(dia), cor: "neutral" };
+}

@@ -2,7 +2,9 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import {
   adicionarEtapa,
   criarCiclo,
+  criarTopico,
   descartarCronometro,
+  excluirTopico,
   iniciarCronometro,
   NaoEncontradoError,
   obterCronometro,
@@ -14,6 +16,7 @@ import {
   retomarCronometro,
   ValidacaoError,
 } from "@/casos-de-uso";
+import { registroDeEstudo } from "@/db/schema";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
 const db = bancoDeTeste();
@@ -48,6 +51,7 @@ describe("cronômetro: iniciar e consultar", () => {
       materia: "Português",
       cicloId,
       ciclo: "TRF",
+      topicoId: null,
       segundos: 90,
       rodando: true,
     });
@@ -162,7 +166,7 @@ describe("cronômetro: parar e registrar", () => {
 
     const parado = await pararCronometro(db, ana, depois(25 * 60 + 40));
 
-    expect(parado).toEqual({ materiaId: portugues, duracaoMinutos: 26, passouDoLimite: false });
+    expect(parado).toEqual({ materiaId: portugues, topicoId: null, duracaoMinutos: 26, passouDoLimite: false });
     expect(await obterCronometro(db, ana, depois(9999))).toMatchObject({ segundos: 25 * 60 + 40, rodando: false });
   });
 
@@ -228,6 +232,70 @@ describe("cronômetro: parar e registrar", () => {
 
     await removerEtapa(db, ana, etapaDePortugues);
 
+    expect(await obterCronometro(db, ana, T0)).toBeNull();
+  });
+});
+
+describe("Tópico do Cronômetro", () => {
+  async function comTopico() {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { portugues, direito } = await cicloCom(ana);
+    const { id: crase } = await criarTopico(db, ana, portugues, { nome: "Crase" });
+    return { ana, portugues, direito, crase };
+  }
+
+  it("inicia guardando o Tópico", async () => {
+    const { ana, portugues, crase } = await comTopico();
+
+    await iniciarCronometro(db, ana, portugues, T0, crase);
+
+    expect(await obterCronometro(db, ana, depois(60))).toMatchObject({ materiaId: portugues, topicoId: crase, rodando: true, segundos: 60 });
+  });
+
+  it("parar devolve o Tópico para o registro", async () => {
+    const { ana, portugues, crase } = await comTopico();
+    await iniciarCronometro(db, ana, portugues, T0, crase);
+
+    const parado = await pararCronometro(db, ana, depois(25 * 60));
+
+    expect(parado).toEqual({ materiaId: portugues, topicoId: crase, duracaoMinutos: 25, passouDoLimite: false });
+  });
+
+  it("recusa o início com Cronômetro existente, com a mensagem", async () => {
+    const { ana, portugues, direito, crase } = await comTopico();
+    const mensagem = new ValidacaoError("Já existe um cronômetro rodando. Pare ou descarte antes de iniciar outro.");
+    await iniciarCronometro(db, ana, direito, T0);
+
+    await expect(iniciarCronometro(db, ana, portugues, depois(5), crase)).rejects.toThrow(mensagem);
+    await pausarCronometro(db, ana, depois(10));
+    await expect(iniciarCronometro(db, ana, portugues, depois(20), crase)).rejects.toThrow(mensagem);
+    expect(await obterCronometro(db, ana, depois(30))).toMatchObject({ materiaId: direito, topicoId: null });
+  });
+
+  it("descartar apaga sem criar Registro", async () => {
+    const { ana, portugues, crase } = await comTopico();
+    await iniciarCronometro(db, ana, portugues, T0, crase);
+
+    await descartarCronometro(db, ana);
+
+    expect(await obterCronometro(db, ana, depois(60))).toBeNull();
+    expect(await db.select().from(registroDeEstudo)).toEqual([]);
+  });
+
+  it("excluir o Tópico mantém o Cronômetro sem Tópico", async () => {
+    const { ana, portugues, crase } = await comTopico();
+    await iniciarCronometro(db, ana, portugues, T0, crase);
+
+    await excluirTopico(db, ana, crase);
+
+    expect(await obterCronometro(db, ana, depois(60))).toMatchObject({ materiaId: portugues, topicoId: null, segundos: 60 });
+    expect(await pararCronometro(db, ana, depois(120))).toMatchObject({ materiaId: portugues, topicoId: null });
+  });
+
+  it("recusa um Tópico que não é da Matéria", async () => {
+    const { ana, direito, crase } = await comTopico();
+
+    await expect(iniciarCronometro(db, ana, direito, T0, crase)).rejects.toThrow(NaoEncontradoError);
     expect(await obterCronometro(db, ana, T0)).toBeNull();
   });
 });

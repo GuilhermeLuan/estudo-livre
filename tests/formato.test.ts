@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avisoDaImportacao, avisoDaVoltaConcluida, dataDaVolta, descricaoDaVolta, duracaoDaVolta, rotuloDaDiferenca, rotuloDaVariacao, situacaoDaEtapa, textoDaProximaRevisao } from "@/app/formato";
+import { avisoDaImportacao, avisoDaVoltaConcluida, dataDaVolta, descricaoDaVolta, duracaoDaVolta, rotuloDaDiferenca, rotuloDaVariacao, situacaoDaEtapa, textoDaProximaRevisao, vencimentoDaRevisao } from "@/app/formato";
 import { conteudoDoRegistro, lerFormularioDeRegistro } from "@/app/campos-do-registro";
 import { percentualDeAcerto, variacaoPercentual } from "@/dominio";
 
@@ -107,5 +107,14 @@ describe("Formulário de registro", () => {
     expect(formulario("Bom")).toMatchObject({ estudo: { nota: "Bom" } });
     expect(formulario("")).toMatchObject({ estudo: { nota: undefined } });
     expect(formulario()).toMatchObject({ estudo: { nota: undefined } });
+  });
+});
+
+describe("chip de vencimento da Revisão", () => {
+  it("atrasada mostra os dias; hoje, amanhã e as datas seguintes têm o seu rótulo", () => {
+    expect(vencimentoDaRevisao(2, "2026-11-14")).toEqual({ texto: "Atrasada 2d", cor: "rose" });
+    expect(vencimentoDaRevisao(0, "2026-11-16")).toEqual({ texto: "Hoje", cor: "yellow" });
+    expect(vencimentoDaRevisao(-1, "2026-11-17")).toEqual({ texto: "Amanhã", cor: "neutral" });
+    expect(vencimentoDaRevisao(-2, "2026-11-18")).toEqual({ texto: "18/11", cor: "neutral" });
   });
 });

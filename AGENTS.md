@@ -17,6 +17,10 @@ Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agent
 Toda UI deve seguir o **design system** em `docs/design-system.md` e os frames do **Figma** "Estudo Livre — BoardUI" (arquivo `ig7Pq2uPxPWjeWuCKmTuBW`, <https://www.figma.com/design/ig7Pq2uPxPWjeWuCKmTuBW>). Use os tokens semânticos do BoardUI em vez de cores e tamanhos literais, reproduza os componentes e o layout dos frames e mantenha os textos em pt-BR com o vocabulário do `CONTEXT.md`. Se precisar de algo que nenhum dos dois cobre, siga os princípios do design system e atualize o documento no mesmo PR. Se o Figma e o documento divergirem, o Figma vence e o documento deve ser corrigido no mesmo PR.
 Sempre utilize a skills /frontend-design para implementar.
 
+### Ambiente de teste (tailnet)
+
+Sempre que subir o app para o usuário testar, exponha-o na **tailnet** (Tailscale): rode o servidor em `0.0.0.0` e defina `BETTER_AUTH_URL` com o IP da tailnet desta máquina (`tailscale ip -4`), por exemplo `next start -H 0.0.0.0 -p 3100` com `BETTER_AUTH_URL=http://<ip-da-tailnet>:3100`. Teste o endereço da tailnet antes de avisar o usuário e informe o endereço e as credenciais de teste.
+
 ## 1. Commit Message Format
 
 All commit messages **must** follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.

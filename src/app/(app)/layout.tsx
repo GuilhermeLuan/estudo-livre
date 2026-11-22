@@ -1,16 +1,17 @@
 import { BarraDeAbas, CabecalhoMovel, FaixaMovelDoCronometro, Sidebar } from "@/app/navegacao";
 import { ProvedorDoCronometro } from "@/app/cronometro";
-import { listarFaixasDosCiclos, listarTopicosDasMaterias, obterCronometro, obterHome } from "@/casos-de-uso";
+import { contarRevisoesVencidas, listarFaixasDosCiclos, listarTopicosDasMaterias, obterCronometro, obterHome } from "@/casos-de-uso";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const usuarioLogado = await exigirUsuario();
-  const [{ usuario, ciclos, arquivados }, ativo, topicos, faixasDosCiclos] = await Promise.all([
+  const [{ usuario, ciclos, arquivados }, ativo, topicos, faixasDosCiclos, revisoes] = await Promise.all([
     obterHome(obterDb(), usuarioLogado),
     obterCronometro(obterDb(), usuarioLogado),
     listarTopicosDasMaterias(obterDb(), usuarioLogado),
     listarFaixasDosCiclos(obterDb(), usuarioLogado),
+    contarRevisoesVencidas(obterDb(), usuarioLogado),
   ]);
   const paraRegistro = (c: { id: string; nome: string; materias: { id: string; nome: string }[] }) => {
     const { minimo, ...faixas } = faixasDosCiclos.get(c.id)!;
@@ -18,7 +19,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   };
   const materias = ciclos.flatMap(paraRegistro);
   const materiasArquivadas = arquivados.flatMap(paraRegistro);
-  const menu = { usuario, ciclos: ciclos.map((c) => ({ id: c.id, nome: c.nome })), arquivados: arquivados.length };
+  const menu = { usuario, ciclos: ciclos.map((c) => ({ id: c.id, nome: c.nome })), arquivados: arquivados.length, revisoes };
   return (
     <ProvedorDoCronometro ativo={ativo} materias={materias} materiasArquivadas={materiasArquivadas} materiaPadrao={ciclos[0]?.proxima?.materiaId ?? materias[0]?.id ?? ""}>
       <Sidebar {...menu} />
