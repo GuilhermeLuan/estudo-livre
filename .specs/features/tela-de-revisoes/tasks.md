@@ -240,8 +240,8 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] A página lê `?ciclo=` e chama `listarRevisoes`
-- [ ] Gate check passes: `npm run typecheck; npm run build`
+- [x] A página lê `?ciclo=` e chama `listarRevisoes`
+- [x] Gate check passes: `npm run typecheck; npm run build`
 
 **Tests**: none
 **Gate**: build
