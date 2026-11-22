@@ -156,9 +156,9 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] `abrirRegistro` e `iniciarComTopico` ficam no contexto; `acoes-cronometro.ts` repassa `topicoId`
-- [ ] Ao parar, a sessão leva o `topicoId` ao modal
-- [ ] Gate check passes: `npm run typecheck`
+- [x] `abrirRegistro` e `iniciarComTopico` ficam no contexto; `acoes-cronometro.ts` repassa `topicoId`
+- [x] Ao parar, a sessão leva o `topicoId` ao modal
+- [x] Gate check passes: `npm run typecheck`
 
 **Tests**: none
 **Gate**: build

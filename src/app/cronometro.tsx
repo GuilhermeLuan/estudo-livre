@@ -42,8 +42,10 @@ type Contexto = {
   /** A Matéria da Próxima etapa do primeiro Ciclo, ou a primeira Matéria que existir. */
   materiaPadrao: string;
   pendente: boolean;
-  abrirRegistro: (materiaId?: string) => void;
-  iniciar: (materia: { materiaId: string; nome: string }) => void;
+  /** Abre o modal de registro; com `topicoId` (um Tópico da Matéria), ele já vem escolhido. */
+  abrirRegistro: (materiaId?: string, topicoId?: string) => void;
+  /** Inicia o Cronômetro na Matéria; com `topicoId`, o registro ao parar sai com o Tópico. */
+  iniciar: (materia: { materiaId: string; nome: string; topicoId?: string }) => void;
   pausarOuRetomar: () => void;
   pararERegistrar: () => void;
   descartar: () => void;
@@ -72,7 +74,7 @@ export function ProvedorDoCronometro({ ativo, materias, materiasArquivadas, mate
   const [aviso, setAviso] = useState<string | null>(null);
   // A sessão guarda o que o formulário precisa: salvar consome o Cronômetro e o card some do servidor,
   // mas o modal precisa continuar montado até mostrar o aviso de sucesso.
-  const [registro, setRegistro] = useState<{ aberto: boolean; abertura: number; materiaId: string; sessao?: CronometroParado }>({
+  const [registro, setRegistro] = useState<{ aberto: boolean; abertura: number; materiaId: string; topicoId?: string | null; sessao?: CronometroParado }>({
     aberto: false,
     abertura: 0,
     materiaId: "",
@@ -91,8 +93,8 @@ export function ProvedorDoCronometro({ ativo, materias, materiasArquivadas, mate
     };
   }, [router, existe]);
 
-  const abrir = (materiaId: string, sessao?: CronometroParado) =>
-    setRegistro((r) => ({ aberto: true, abertura: r.abertura + 1, materiaId, sessao }));
+  const abrir = (materiaId: string, sessao?: CronometroParado, topicoId?: string | null) =>
+    setRegistro((r) => ({ aberto: true, abertura: r.abertura + 1, materiaId, topicoId, sessao }));
 
   function fazer(acao: () => Promise<ResultadoDoCronometro>) {
     executar(async () => {
@@ -107,10 +109,10 @@ export function ProvedorDoCronometro({ ativo, materias, materiasArquivadas, mate
     materiasArquivadas,
     materiaPadrao,
     pendente,
-    abrirRegistro: (materiaId) => abrir(materiaId ?? materiaPadrao),
+    abrirRegistro: (materiaId, topicoId) => abrir(materiaId ?? materiaPadrao, undefined, topicoId),
     iniciar: (materia) =>
       executar(async () => {
-        const { erro } = await iniciarNoServidor(materia.materiaId);
+        const { erro } = await iniciarNoServidor(materia.materiaId, materia.topicoId);
         setAviso(erro ?? `Cronômetro iniciado em ${materia.nome}.`);
       }),
     pausarOuRetomar: () => fazer(ativo?.rodando ? pausar : retomar),
@@ -118,7 +120,7 @@ export function ProvedorDoCronometro({ ativo, materias, materiasArquivadas, mate
       executar(async () => {
         const resultado = await parar();
         if (!resultado.parado) return setAviso(resultado.erro ?? null);
-        abrir(resultado.parado.materiaId, resultado.parado);
+        abrir(resultado.parado.materiaId, resultado.parado, resultado.parado.topicoId);
       }),
     descartar: () => fazer(descartar),
   };
@@ -132,6 +134,7 @@ export function ProvedorDoCronometro({ ativo, materias, materiasArquivadas, mate
         abertura={registro.abertura}
         materias={materias}
         materiaInicial={registro.materiaId}
+        topicoInicial={registro.topicoId}
         sessaoCronometrada={registro.sessao}
         aoSalvar={(texto) => {
           setRegistro((r) => ({ ...r, aberto: false, sessao: undefined }));
