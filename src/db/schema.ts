@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { TIPOS_DE_ESTUDO } from "@/dominio";
+import { DIFICULDADES, TIPOS_DE_ESTUDO } from "@/dominio";
 import { NOTAS } from "@/revisao";
 import { boolean, integer, index, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
@@ -70,10 +70,15 @@ export const ciclo = pgTable("ciclo", {
   criadoEm: timestamp("criado_em").notNull().defaultNow(),
 }, (t) => [index("ciclo_usuario").on(t.usuarioId)]);
 
+export const dificuldadeDaMateria = pgEnum("dificuldade_da_materia", DIFICULDADES);
+
 export const materia = pgTable("materia", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   cicloId: text("ciclo_id").notNull().references(() => ciclo.id, { onDelete: "cascade" }),
   nome: text("nome").notNull(),
+  // Alimentam a Sugestão de ciclo (AD-037); nulos nas Matérias que não nasceram por ela.
+  dificuldade: dificuldadeDaMateria("dificuldade"),
+  questoesDaProva: integer("questoes_da_prova"),
 }, (t) => [uniqueIndex("materia_ciclo_nome").on(t.cicloId, sql`lower(${t.nome})`)]);
 
 export const etapa = pgTable("etapa", {

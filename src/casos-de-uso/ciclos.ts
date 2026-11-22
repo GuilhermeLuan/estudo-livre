@@ -1,7 +1,21 @@
 import { and, asc, eq, isNull, max, sql } from "drizzle-orm";
 import type { Db, Tx } from "@/db";
 import { ciclo, etapa, materia, registroDeEstudo, topico, volta } from "@/db/schema";
-import { concluida } from "@/dominio";
+import {
+  cargaEmLimites,
+  CARGA_INVALIDA,
+  CARGA_MAXIMA_MINUTOS as LIMITE_DA_CARGA,
+  concluida,
+  DIFICULDADES,
+  DURACAO_PADRAO_DA_ETAPA_MINUTOS,
+  erroDaNovaMateria,
+  LIMITES_DA_SUGESTAO,
+  LISTA_CHEIA,
+  QUESTOES_INVALIDAS,
+  questoesDaProvaValidas,
+  sugerirEtapas,
+  type MateriaParaSugerir,
+} from "@/dominio";
 import { avaliarFechamentoDaVolta, progressoDosCiclos, type Executor, type MateriaComProgresso } from "./progresso";
 import { ESCRITA_EM_ARQUIVADO, NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
@@ -29,7 +43,7 @@ export type CicloDetalhe = {
   proximaEtapaId: string | null;
 };
 
-export const CARGA_MAXIMA_MINUTOS = 10_000 * 60;
+export const CARGA_MAXIMA_MINUTOS = LIMITE_DA_CARGA;
 
 export function nomeValido(nome: string, rotulo: string) {
   const limpo = nome.trim();
@@ -38,8 +52,7 @@ export function nomeValido(nome: string, rotulo: string) {
 }
 
 export function cargaValida(minutos: number) {
-  if (!Number.isInteger(minutos) || minutos <= 0 || minutos > CARGA_MAXIMA_MINUTOS)
-    throw new ValidacaoError("A carga horária precisa ser maior que zero e no máximo 10.000 horas.");
+  if (!cargaEmLimites(minutos)) throw new ValidacaoError(CARGA_INVALIDA);
   return minutos;
 }
 
@@ -93,11 +106,45 @@ async function descartarMateriaSemUso(tx: Tx, materiaId: string) {
   if (!comEstudo && !comTopico) await tx.delete(materia).where(eq(materia.id, materiaId));
 }
 
-export async function criarCiclo(db: Db, usuario: Usuario, dados: { nome: string }): Promise<{ id: string }> {
+/** As Matérias da Sugestão de ciclo, já conferidas: nome, Questões da prova, Dificuldade, lista e repetição. */
+function materiasValidas(entrada: readonly MateriaParaSugerir[]): MateriaParaSugerir[] {
+  if (entrada.length > LIMITES_DA_SUGESTAO.materiasMaximas) throw new ValidacaoError(LISTA_CHEIA);
+  const nomes: string[] = [];
+  return entrada.map((m) => {
+    const nome = nomeValido(m.nome, "da matéria");
+    const erro = erroDaNovaMateria(nomes, nome);
+    if (erro) throw new ValidacaoError(erro);
+    if (!questoesDaProvaValidas(m.questoesDaProva)) throw new ValidacaoError(QUESTOES_INVALIDAS);
+    if (!DIFICULDADES.includes(m.dificuldade)) throw new ValidacaoError("Escolha a dificuldade da matéria.");
+    nomes.push(nome);
+    return { nome, questoesDaProva: m.questoesDaProva, dificuldade: m.dificuldade };
+  });
+}
+
+/**
+ * Cria o Ciclo com a Volta 1 e, se vierem Matérias, a Sugestão de ciclo: uma Matéria por item e as Etapas que o
+ * domínio sugere, todas de `duracaoEtapaMinutos`. O que vem do cliente são só as Matérias; as Etapas são sempre
+ * derivadas aqui. Tudo na mesma transação.
+ */
+export async function criarCiclo(
+  db: Db,
+  usuario: Usuario,
+  dados: { nome: string; duracaoEtapaMinutos?: number; materias?: MateriaParaSugerir[] },
+): Promise<{ id: string }> {
   const nome = nomeValido(dados.nome, "do ciclo");
+  const materias = materiasValidas(dados.materias ?? []);
+  const duracao = materias.length ? cargaValida(dados.duracaoEtapaMinutos ?? DURACAO_PADRAO_DA_ETAPA_MINUTOS) : 0;
   return db.transaction(async (tx) => {
     const [linha] = await tx.insert(ciclo).values({ usuarioId: usuario.id, nome }).returning({ id: ciclo.id });
     await tx.insert(volta).values({ cicloId: linha.id, numero: 1 });
+    if (materias.length) {
+      const criadas = await tx
+        .insert(materia)
+        .values(materias.map((m) => ({ cicloId: linha.id, nome: m.nome, dificuldade: m.dificuldade, questoesDaProva: m.questoesDaProva })))
+        .returning({ id: materia.id, nome: materia.nome });
+      const idDe = new Map(criadas.map((m) => [m.nome.toLowerCase(), m.id]));
+      await tx.insert(etapa).values(sugerirEtapas(materias).map((e, posicao) => ({ cicloId: linha.id, materiaId: idDe.get(e.nome.toLowerCase())!, cargaMinutos: duracao, posicao })));
+    }
     return linha;
   });
 }

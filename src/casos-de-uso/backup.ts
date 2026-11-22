@@ -2,7 +2,7 @@ import { asc, eq } from "drizzle-orm";
 import { hojeEmBrasilia } from "@/dia";
 import type { Db } from "@/db";
 import { cartaoDeRevisao, ciclo, cronometro, etapa, logDeRevisao, materia, registroDeEstudo, topico, volta } from "@/db/schema";
-import { BACKUP_GRANDE, LIMITE_DO_BACKUP_BYTES, LIMITES_DO_REGISTRO, LIMITES_DO_TOPICO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
+import { BACKUP_GRANDE, DIFICULDADES, LIMITE_DO_BACKUP_BYTES, LIMITES_DO_REGISTRO, LIMITES_DO_TOPICO, questoesDaProvaValidas, TIPOS_DE_ESTUDO, type Dificuldade, type TipoDeEstudo } from "@/dominio";
 import { NOTAS, validarFaixas, type Nota } from "@/revisao";
 import { CARGA_MAXIMA_MINUTOS } from "./ciclos";
 import { ValidacaoError } from "./erros";
@@ -61,6 +61,8 @@ export async function exportarBackup(db: Db, usuario: Usuario, agora = new Date(
             .map(({ m }) => ({
               id: m.id,
               nome: m.nome,
+              dificuldade: m.dificuldade,
+              questoesDaProva: m.questoesDaProva,
               topicos: topicos.filter(({ t }) => t.materiaId === m.id).map(({ t }) => ({ id: t.id, nome: t.nome, estudado: t.estudado, posicao: t.posicao })),
             })),
           etapas: etapas.filter(({ e }) => e.cicloId === c.id).map(({ e }) => ({ materiaId: e.materiaId, cargaMinutos: e.cargaMinutos, posicao: e.posicao })),
@@ -109,6 +111,9 @@ const texto = (x: unknown, max = Infinity) => (exigir(typeof x === "string" && x
 const textoOuNulo = (x: unknown, max: number) => (x === null ? null : (exigir(typeof x === "string" && x.length <= max), x as string));
 const inteiro = (x: unknown, min: number, max = INTEIRO_MAXIMO) => (exigir(Number.isInteger(x) && (x as number) >= min && (x as number) <= max), x as number);
 const inteiroOuNulo = (x: unknown, min: number, max: number) => (x === null ? null : inteiro(x, min, max));
+// Campos da Sugestão de ciclo: opcionais, então um backup anterior a eles (sem a chave) lê como nulo.
+const dificuldadeOuNula = (x: unknown) => (x === undefined || x === null ? null : (exigir(DIFICULDADES.includes(x as Dificuldade)), x as Dificuldade));
+const questoesDaProvaOuNula = (x: unknown) => (x === undefined || x === null ? null : (exigir(questoesDaProvaValidas(x)), x as number));
 const booleano = (x: unknown) => (exigir(typeof x === "boolean"), x as boolean);
 const instante = (x: unknown) => {
   exigir(typeof x === "string" && /^\d{4}-\d{2}-\d{2}T.*(Z|[+-]\d{2}:\d{2})$/.test(x));
@@ -144,6 +149,8 @@ function lerBackup(conteudo: string) {
         return {
           id,
           nome: texto(m.nome),
+          dificuldade: dificuldadeOuNula(m.dificuldade),
+          questoesDaProva: questoesDaProvaOuNula(m.questoesDaProva),
           topicos: lista(m.topicos).map((z) => {
             const t = objeto(z);
             const topicoId = texto(t.id, 200);
@@ -239,7 +246,7 @@ export async function importarBackup(db: Db, usuario: Usuario, conteudo: string)
           novo.set(antigo, id);
           return id;
         };
-        if (c.materias.length) await tx.insert(materia).values(c.materias.map((m) => ({ id: novoId(m.id), cicloId, nome: m.nome })));
+        if (c.materias.length) await tx.insert(materia).values(c.materias.map((m) => ({ id: novoId(m.id), cicloId, nome: m.nome, dificuldade: m.dificuldade, questoesDaProva: m.questoesDaProva })));
         const topicos = c.materias.flatMap((m) => m.topicos.map((t) => ({ id: novoId(t.id), materiaId: novo.get(m.id)!, nome: t.nome, estudado: t.estudado, posicao: t.posicao })));
         if (topicos.length) await tx.insert(topico).values(topicos);
         if (c.etapas.length) await tx.insert(etapa).values(c.etapas.map((e) => ({ cicloId, materiaId: novo.get(e.materiaId)!, cargaMinutos: e.cargaMinutos, posicao: e.posicao })));
