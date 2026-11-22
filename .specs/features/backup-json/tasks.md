@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: inline (below, "Design inline"); sem `design.md`: nenhuma tabela nova, só leitura e escrita das que existem
-**Status**: In Progress
+**Status**: Done
 **Approved**: 2026-11-22 - user: "aprovado, pode começar"
 **Build**: `npm run typecheck; npm run build`
 **Run unit**: `npx vitest run tests/backup.test.ts --reporter=verbose`
