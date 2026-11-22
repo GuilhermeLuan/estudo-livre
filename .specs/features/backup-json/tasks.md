@@ -25,7 +25,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
     - `versao` diferente de 1;
     - Cronômetro do Usuário ativo.
     - O validador é escrito à mão (o repo não tem zod). Ele checa `tipo ∈ TIPOS_DE_ESTUDO`, `nota ∈ NOTAS | null`, inteiros ≥ 0, `duracaoMinutos > 0`, datas ISO válidas e referências a Matéria, Tópico ou Registro presentes no arquivo.
-    - Numa única transação: apaga os Ciclos do Usuário (o cascade leva Matérias, Etapas, Voltas, Tópicos, Registros, Cartões e log), insere tudo com ids novos via mapa de ids e chama `recalcularTopico` para cada Tópico com Registros. O `cartoes`/`logDeRevisao` do arquivo é lido só pelo validador (AD-031).
+    - Numa única transação: apaga os Ciclos do Usuário (o cascade leva Matérias, Etapas, Voltas, Tópicos, Registros, Cartões e log), insere tudo com ids novos via mapa de ids e chama `recalcularTopico` para cada Tópico com Registros. O `cartoes`/`logDeRevisao` do arquivo é lido só pelo validador (AD-035).
     - Uma violação de unicidade do Postgres (`23505`: nome de Matéria ou Tópico repetido, Volta duplicada ou duas abertas) vira o mesmo `ValidacaoError` de arquivo inválido, e a transação desfaz tudo.
   - Mensagens: `INVALIDO = "O arquivo não é um backup válido do Estudo Livre."`, `"Versão de backup desconhecida: <v>."`, `"O arquivo passa de 50 MB."`, `"Pare ou descarte o cronômetro antes de importar."`.
 - `src/app/api/backup/route.ts`: `GET` com `exigirUsuario()` (o proxy já manda quem não tem cookie para `/entrar`) e `Response.json(backup, { headers: { "Content-Disposition": attachment; filename=... } })`.

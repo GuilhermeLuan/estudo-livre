@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 const CARTAO = "grid content-start gap-4 rounded-3xl border border-border-button-default bg-background-primary-default p-6";
 
-/** Exportar e importar o backup em JSON (AD-029). Importar troca todos os Ciclos da conta (AD-028). */
+/** Exportar e importar o backup em JSON (AD-033). Importar troca todos os Ciclos da conta (AD-032). */
 export default async function PaginaDoBackup() {
   const { ciclos, arquivados } = await obterHome(obterDb(), await exigirUsuario());
   return (

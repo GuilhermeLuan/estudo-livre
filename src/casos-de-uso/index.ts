@@ -31,6 +31,7 @@ export { obterEstatisticas, type Estatisticas, type MateriaNasEstatisticas } fro
 export { instanteDoDia, registrarEstudo, type DadosDoEstudo, type OpcoesDoRegistro } from "./estudo";
 export { editarRegistro, excluirRegistro, listarRegistros, LIMITE_DA_LISTA, type RegistroDoHistorico, type FiltroDeRegistros, type ListaDeRegistros } from "./registros";
 export { listarFaixasDosCiclos, obterFaixas, salvarFaixas, type FaixasDoCiclo } from "./faixas";
+export { contarRevisoesVencidas, LIMITE_DO_CARTAO_DE_REVISOES, listarRevisoes, type ListaDeRevisoes, type RevisaoDaLista } from "./lista-de-revisoes";
 export { estimarProximaRevisao, obterCartao, recalcularTopico, type RascunhoDeRegistro } from "./revisao";
 export { listarVoltas, reiniciarVolta, type VoltaDoHistorico } from "./voltas";
 export { copiarMateria, listarMateriasCopiaveis, type MateriaCopiavel } from "./copiar-materia";

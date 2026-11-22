@@ -1,7 +1,7 @@
 import { and, eq, isNotNull, isNull, sql, type SQL } from "drizzle-orm";
 import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
 import type { Db } from "@/db";
-import { ciclo, cronometro, materia } from "@/db/schema";
+import { ciclo, cronometro, materia, topico } from "@/db/schema";
 import { LIMITES_DO_REGISTRO } from "@/dominio";
 import { ESCRITA_EM_ARQUIVADO, NaoEncontradoError, ValidacaoError } from "./erros";
 import type { Usuario } from "./usuario";
@@ -11,6 +11,8 @@ export type CronometroAtivo = {
   materia: string;
   cicloId: string;
   ciclo: string;
+  /** O Tópico da Revisão que ele estuda, ou nulo. */
+  topicoId: string | null;
   /** Tempo estudado até `agora`, sem o tempo pausado. */
   segundos: number;
   rodando: boolean;
@@ -24,7 +26,7 @@ export type SugestaoDeRegistro = {
   passouDoLimite: boolean;
 };
 
-export type CronometroParado = SugestaoDeRegistro & { materiaId: string };
+export type CronometroParado = SugestaoDeRegistro & { materiaId: string; topicoId: string | null };
 
 const POSTGRES_VIOLACAO_DE_UNICIDADE = "23505";
 
@@ -39,6 +41,7 @@ export async function obterCronometro(db: Db, usuario: Usuario, agora = new Date
       materia: materia.nome,
       cicloId: ciclo.id,
       ciclo: ciclo.nome,
+      topicoId: cronometro.topicoId,
       segundos: segundosAte(agora),
       rodando: sql<boolean>`${cronometro.rodandoDesde} is not null`,
     })
@@ -49,7 +52,8 @@ export async function obterCronometro(db: Db, usuario: Usuario, agora = new Date
   return linha ?? null;
 }
 
-export async function iniciarCronometro(db: Db, usuario: Usuario, materiaId: string, agora = new Date()): Promise<void> {
+/** Inicia o Cronômetro na Matéria; com `topicoId` (um Tópico dela), o registro ao parar já sai com ele. */
+export async function iniciarCronometro(db: Db, usuario: Usuario, materiaId: string, agora = new Date(), topicoId: string | null = null): Promise<void> {
   try {
     // O Ciclo fica travado até o insert: arquivar (que trava o mesmo Ciclo) não deixa um Cronômetro passar a vez.
     await db.transaction(async (tx) => {
@@ -61,8 +65,12 @@ export async function iniciarCronometro(db: Db, usuario: Usuario, materiaId: str
         .for("update", { of: ciclo });
       if (!alvo) throw new NaoEncontradoError("Matéria");
       if (alvo.arquivadoEm) throw new ValidacaoError(ESCRITA_EM_ARQUIVADO);
+      if (topicoId) {
+        const [doTopico] = await tx.select({ id: topico.id }).from(topico).where(and(eq(topico.id, topicoId), eq(topico.materiaId, materiaId)));
+        if (!doTopico) throw new NaoEncontradoError("Tópico");
+      }
       // A chave primária é o Usuário: o banco garante um único Cronômetro, mesmo com cliques simultâneos.
-      await tx.insert(cronometro).values({ usuarioId: usuario.id, materiaId, rodandoDesde: agora });
+      await tx.insert(cronometro).values({ usuarioId: usuario.id, materiaId, topicoId, rodandoDesde: agora });
     });
   } catch (erro) {
     if ((erro as { cause?: { code?: string } }).cause?.code === POSTGRES_VIOLACAO_DE_UNICIDADE)
@@ -108,5 +116,5 @@ export async function pararCronometro(db: Db, usuario: Usuario, agora = new Date
   if (!ativo) throw new NaoEncontradoError("Cronômetro");
   const minutos = Math.max(1, Math.round(ativo.segundos / 60));
   const { duracaoMaximaMinutos } = LIMITES_DO_REGISTRO;
-  return { materiaId: ativo.materiaId, duracaoMinutos: Math.min(minutos, duracaoMaximaMinutos), passouDoLimite: minutos > duracaoMaximaMinutos };
+  return { materiaId: ativo.materiaId, topicoId: ativo.topicoId, duracaoMinutos: Math.min(minutos, duracaoMaximaMinutos), passouDoLimite: minutos > duracaoMaximaMinutos };
 }

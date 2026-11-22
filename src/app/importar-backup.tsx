@@ -8,7 +8,7 @@ import { BACKUP_GRANDE, LIMITE_DO_BACKUP_BYTES } from "@/dominio";
 import { importar } from "./acoes-backup";
 import { Aviso } from "./aviso";
 
-/** Campo de arquivo, "Importar backup", a confirmação quando a conta tem Ciclos (AD-032) e o resultado. */
+/** Campo de arquivo, "Importar backup", a confirmação quando a conta tem Ciclos (AD-036) e o resultado. */
 export function ImportarBackup({ totalDeCiclos }: { totalDeCiclos: number }) {
   const campo = useRef<HTMLInputElement>(null);
   const [arquivo, setArquivo] = useState<File | null>(null);

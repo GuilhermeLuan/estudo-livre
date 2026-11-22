@@ -8,6 +8,7 @@ import {
   RiFileListLine,
   RiHome5Line,
   RiLogoutBoxRLine,
+  RiRefreshLine,
   RiUser3Line,
   RiDatabase2Line,
 } from "@remixicon/react";
@@ -29,6 +30,8 @@ export type DadosDoMenu = {
   ciclos: { id: string; nome: string }[];
   /** Quantos Ciclos arquivados; o item "Arquivados" mostra o Counter só quando há. */
   arquivados: number;
+  /** O total de Revisões vencidas de todos os Ciclos ativos; o item "Revisões" mostra o Counter só quando há. */
+  revisoes?: number;
 };
 
 const iniciais = (nome: string) =>
@@ -85,7 +88,7 @@ function CartaoDoUsuario({ usuario }: Pick<DadosDoMenu, "usuario">) {
 }
 
 /** A Sidebar do computador (≥ 1024px). */
-export function Sidebar({ usuario, ciclos, arquivados }: DadosDoMenu) {
+export function Sidebar({ usuario, ciclos, arquivados, revisoes }: DadosDoMenu) {
   const caminho = usePathname();
   return (
     <aside aria-label="Navegação" className="fixed top-3 bottom-3 left-3 z-30 hidden w-[260px] flex-col gap-1 overflow-y-auto rounded-3xl border border-separator-border bg-background-secondary-default p-3 lg:flex">
@@ -96,6 +99,9 @@ export function Sidebar({ usuario, ciclos, arquivados }: DadosDoMenu) {
       <nav aria-label="Principal" className="grid gap-1">
         <ItemDeNavegacao href="/" selecionado={caminho === "/"} icone={RiHome5Line}>
           Hoje
+        </ItemDeNavegacao>
+        <ItemDeNavegacao href="/revisoes" selecionado={ativoEm(caminho, "/revisoes")} icone={RiRefreshLine} contador={revisoes}>
+          Revisões
         </ItemDeNavegacao>
         <ItemDeNavegacao href="/registros" selecionado={ativoEm(caminho, "/registros")} icone={RiFileListLine}>
           Registros
@@ -144,7 +150,7 @@ export function Sidebar({ usuario, ciclos, arquivados }: DadosDoMenu) {
   );
 }
 
-const TITULOS: Record<string, string> = { "/": "Hoje", "/registros": "Registros", "/estatisticas": "Estatísticas", "/ciclos/arquivados": "Arquivados", "/backup": "Backup" };
+const TITULOS: Record<string, string> = { "/": "Hoje", "/revisoes": "Revisões", "/registros": "Registros", "/estatisticas": "Estatísticas", "/ciclos/arquivados": "Arquivados", "/backup": "Backup" };
 
 /** O topo do celular (< 1024px): a marca, o título da rota e o avatar que abre o menu. */
 export function CabecalhoMovel({ usuario, ciclos, arquivados }: DadosDoMenu) {
@@ -206,7 +212,7 @@ function Aba({ href, selecionada, icone: Icone, children }: { href: string; sele
   );
 }
 
-/** A barra de abas do celular: Hoje e Registros, o "+" central que registra estudo e Estatísticas. */
+/** A barra de abas do celular: Hoje, Revisões e Registros, o "+" central que registra estudo e Estatísticas. */
 export function BarraDeAbas() {
   const caminho = usePathname();
   const { abrirRegistro, materias } = useCronometro();
@@ -214,6 +220,9 @@ export function BarraDeAbas() {
     <nav aria-label="Principal (celular)" className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t border-separator-border bg-background-full px-6 pt-2 pb-[max(env(safe-area-inset-bottom),12px)] lg:hidden">
       <Aba href="/" selecionada={caminho === "/"} icone={RiHome5Line}>
         Hoje
+      </Aba>
+      <Aba href="/revisoes" selecionada={ativoEm(caminho, "/revisoes")} icone={RiRefreshLine}>
+        Revisões
       </Aba>
       <Aba href="/registros" selecionada={ativoEm(caminho, "/registros")} icone={RiFileListLine}>
         Registros

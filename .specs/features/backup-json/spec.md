@@ -16,7 +16,7 @@ Numa instância self-hosted, o Usuário só tem os próprios dados enquanto o ba
 | Feature | Reason |
 | --- | --- |
 | Backup da instância inteira pelo Admin | A issue deixa fora: aqui é por Usuário |
-| Somar o backup aos Ciclos existentes, ou importar só alguns Ciclos | AD-028: importar substitui tudo |
+| Somar o backup aos Ciclos existentes, ou importar só alguns Ciclos | AD-032: importar substitui tudo |
 | Exportar ou importar o Cronômetro, sessões, senha, e-mail, nome ou o papel de Admin | Critério da issue: credenciais e estado efêmero ficam fora |
 | Importar formatos de outros apps (planilha, CSV) | Não pedido |
 | Backup automático ou agendado | Não pedido |
@@ -33,10 +33,10 @@ Numa instância self-hosted, o Usuário só tem os próprios dados enquanto o ba
 | Datas no arquivo | Instantes em ISO 8601 com fuso (UTC, `Z`) | Formato legível e sem ambiguidade de fuso | n |
 | Mensagem de arquivo inválido | Uma só: "O arquivo não é um backup válido do Estudo Livre." para JSON malformado, formato errado, campo faltando ou referência quebrada | O Usuário não conserta o arquivo à mão; um texto claro basta | n |
 | Aviso após importar | Aviso de sucesso "Backup importado: N ciclos." na própria página | A issue pede `Aviso` para o resultado | n |
-| Exportar com conta vazia | Permitido: baixa um arquivo com a lista de Ciclos vazia | Simples e coerente; importar esse arquivo esvazia a conta (AD-028) | n |
+| Exportar com conta vazia | Permitido: baixa um arquivo com a lista de Ciclos vazia | Simples e coerente; importar esse arquivo esvazia a conta (AD-032) | n |
 | Ordem das chaves e dos itens no arquivo | Ciclos pela data de criação; Etapas por posição; Voltas por número; Tópicos por posição; Registros por data e hora | Duas exportações do mesmo estado saem iguais, o que permite comparar | n |
 
-**Open questions:** none - todas resolvidas acima ou nas AD-028 a AD-032.
+**Open questions:** none - todas resolvidas acima ou nas AD-032 a AD-036.
 
 ---
 
@@ -78,7 +78,7 @@ Numa instância self-hosted, o Usuário só tem os próprios dados enquanto o ba
 5. WHEN o Usuário usa "Cancelar" no AlertDialog THEN the system SHALL fechar o diálogo e não alterar nada
 6. WHEN a importação é concluída THEN the system SHALL apagar todos os Ciclos do Usuário (e o que pende deles) e criar os Ciclos do arquivo na conta do Usuário da sessão, numa única transação
 7. WHEN a importação é concluída THEN the system SHALL mostrar o aviso de sucesso "Backup importado: N ciclos." (com N = 1, "Backup importado: 1 ciclo."), com N = quantidade de Ciclos do arquivo, e a Sidebar passa a mostrar os Ciclos importados
-8. The system SHALL recalcular, na importação, o Cartão de revisão e o log de cada Tópico a partir dos Registros importados, ignorando os Cartões e o log do arquivo (AD-031)
+8. The system SHALL recalcular, na importação, o Cartão de revisão e o log de cada Tópico a partir dos Registros importados, ignorando os Cartões e o log do arquivo (AD-035)
 9. The system SHALL importar os Ciclos arquivados do arquivo como arquivados, com a mesma data de arquivamento
 10. The system SHALL gravar os dados importados só na conta do Usuário da sessão
 
@@ -90,14 +90,14 @@ Numa instância self-hosted, o Usuário só tem os próprios dados enquanto o ba
 
 **User Story**: Como Usuário, quero que um arquivo ruim seja recusado sem estragar o que já tenho.
 
-**Why P1**: A importação apaga tudo (AD-028); um erro no meio não pode deixar a conta pela metade.
+**Why P1**: A importação apaga tudo (AD-032); um erro no meio não pode deixar a conta pela metade.
 
 **Acceptance Criteria**:
 
 1. IF o arquivo não é JSON, não tem `"formato": "estudo-livre"`, falta um campo obrigatório, tem um campo com tipo ou valor fora do que o app aceita, ou uma referência a Matéria ou Tópico que não existe no arquivo THEN the system SHALL recusar com "O arquivo não é um backup válido do Estudo Livre." e não alterar nada
 2. IF o arquivo tem `"formato": "estudo-livre"` e uma `"versao"` diferente de 1 THEN the system SHALL recusar com "Versão de backup desconhecida: <versao>." e não alterar nada
-3. IF o arquivo passa de 50 MB THEN the system SHALL recusar com "O arquivo passa de 50 MB." e não alterar nada (AD-030)
-4. IF o Usuário tem Cronômetro ativo THEN the system SHALL recusar com "Pare ou descarte o cronômetro antes de importar." e não alterar nada (AD-032)
+3. IF o arquivo passa de 50 MB THEN the system SHALL recusar com "O arquivo passa de 50 MB." e não alterar nada (AD-034)
+4. IF o Usuário tem Cronômetro ativo THEN the system SHALL recusar com "Pare ou descarte o cronômetro antes de importar." e não alterar nada (AD-036)
 5. IF a gravação falha no meio da importação THEN the system SHALL desfazer tudo e deixar os Ciclos do Usuário como estavam antes
 6. IF quem pede a importação não tem sessão THEN the system SHALL recusar sem alterar nada
 
@@ -152,7 +152,7 @@ Numa instância self-hosted, o Usuário só tem os próprios dados enquanto o ba
 
 - Issue #33 (https://github.com/GuilhermeLuan/estudo-livre/issues/33) - o que construir, critérios e componentes (`Button`, `AlertDialog`, `Aviso`, campo de arquivo)
 - ADR-0002 - Cartão e log são derivados dos Registros
-- AD-028 a AD-032 em `.specs/STATE.md`
+- AD-032 a AD-036 em `.specs/STATE.md`
 - Sem frame no Figma: a página segue `docs/design-system.md`, atualizado no mesmo PR
 
 ---

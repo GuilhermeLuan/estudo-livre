@@ -34,8 +34,8 @@ async function executar(operacao: (usuario: Usuario) => Promise<ResultadoDoCrono
   }
 }
 
-export async function iniciar(materiaId: string) {
-  return executar((u) => iniciarCronometro(obterDb(), u, materiaId));
+export async function iniciar(materiaId: string, topicoId?: string) {
+  return executar((u) => iniciarCronometro(obterDb(), u, materiaId, new Date(), topicoId ?? null));
 }
 
 export async function pausar() {

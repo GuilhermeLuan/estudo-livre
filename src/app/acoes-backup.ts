@@ -7,7 +7,7 @@ import { exigirUsuario } from "@/sessao";
 
 export type EstadoBackup = { erro?: string; aviso?: string };
 
-/** "Importar backup": o arquivo vem no campo `arquivo`; troca todos os Ciclos do Usuário pelos dele (AD-028). */
+/** "Importar backup": o arquivo vem no campo `arquivo`; troca todos os Ciclos do Usuário pelos dele (AD-032). */
 export async function importar(dados: FormData): Promise<EstadoBackup> {
   const usuario = await exigirUsuario();
   const arquivo = dados.get("arquivo");

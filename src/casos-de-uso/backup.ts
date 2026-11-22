@@ -184,7 +184,7 @@ function lerBackup(conteudo: string) {
       });
       const registroIds = new Set(registros.map((r) => r.id));
       exigir(registroIds.size === registros.length);
-      // Cartões e log vêm só para leitura (AD-031): são conferidos e depois recalculados dos Registros.
+      // Cartões e log vêm só para leitura (AD-035): são conferidos e depois recalculados dos Registros.
       for (const y of lista(c.cartoes)) topicoDe(objeto(y).topicoId);
       for (const y of lista(c.logDeRevisao)) {
         const l = objeto(y);
@@ -218,8 +218,8 @@ function lerBackup(conteudo: string) {
 }
 
 /**
- * Troca todos os Ciclos do Usuário pelos do arquivo (AD-028), numa transação: qualquer recusa ou falha deixa a conta
- * como estava. Tudo recebe id novo; os Cartões e o log são recalculados dos Registros (AD-031).
+ * Troca todos os Ciclos do Usuário pelos do arquivo (AD-032), numa transação: qualquer recusa ou falha deixa a conta
+ * como estava. Tudo recebe id novo; os Cartões e o log são recalculados dos Registros (AD-035).
  */
 export async function importarBackup(db: Db, usuario: Usuario, conteudo: string): Promise<{ ciclos: number }> {
   const ciclos = lerBackup(conteudo);

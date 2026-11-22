@@ -32,17 +32,35 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification.md finding 1, C14 (use-cases) (use-cases)
 - last seen: 2026-11-21T12:44:21Z
 
-### L-004 - Um importador valida cada campo com a mesma função e a mesma unidade de medida que o caso de uso de criação usa (caracteres, não UTF-16), e testa a ida e volta com valores no limite do app.
+### L-004 - Quando uma regra de ordem vale para duas listas, o teste afirma a ordem e o desempate de cada lista, com itens inseridos fora de ordem.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `listas` · harmful: 0
+- features: tela-de-revisoes
+- evidence: C29 (verification.md) (listas)
+- last seen: 2026-11-22T15:25:22Z
+
+### L-005 - Um limite de itens que a tela aplica mora numa constante do caso de uso, e o teste afirma o valor dela com mais itens que o limite.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `listas` · harmful: 0
+- features: tela-de-revisoes
+- evidence: C7 (verification.md) (listas)
+- last seen: 2026-11-22T15:25:22Z
+
+### L-006 - Antes de aprovar um cabeçalho que a captura desenha numa linha, confira com os nomes mais longos que os dados reais permitem, pois os de exemplo da captura são curtos.
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `telas` · harmful: 0
+- features: tela-de-revisoes
+- evidence: hoje.running.png (screens.md) (telas)
+- last seen: 2026-11-22T15:25:22Z
+
+### L-007 - Um importador valida cada campo com a mesma função e a mesma unidade de medida que o caso de uso de criação usa (caracteres, não UTF-16), e testa a ida e volta com valores no limite do app.
 - signal: `ac_gap` · recurrence: 1 feature(s) · scope: `importacao` · harmful: 0
 - features: backup-json
 - evidence: BKP-11 / C23 (importacao)
-- last seen: 2026-11-22T16:03:44Z
+- last seen: 2026-11-22T16:05:53Z
 
-### L-005 - Validar arquivo externo inclui os limites do tipo da coluna e as regras cruzadas do caso de uso (acertos sem questões, tópico e conteúdo juntos); erros de dado do Postgres (classes 22/23) viram a mensagem de inválido.
+### L-008 - Validar arquivo externo inclui os limites do tipo da coluna e as regras cruzadas do caso de uso (acertos sem questões, tópico e conteúdo juntos); erros de dado do Postgres (classes 22/23) viram a mensagem de inválido.
 - signal: `ac_gap` · recurrence: 1 feature(s) · scope: `importacao` · harmful: 0
 - features: backup-json
 - evidence: BKP-09 AC 1 / C17 (importacao)
-- last seen: 2026-11-22T16:03:44Z
+- last seen: 2026-11-22T16:05:53Z
 
 ## Quarantined (failed when applied - ignore)
 
