@@ -177,9 +177,9 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Chip "Atrasada Nd" (rosa), "Hoje" (amarelo), "Amanhã" e "dd/mm" (cinza) como em `captures/revisoes.png`
-- [ ] O aviso mostra o texto "Uma revisão é cumprida por um registro de estudo do tópico com questões." como em `captures/hoje.png`
-- [ ] Usa só tokens BoardUI; Gate check passes: `npm run typecheck`
+- [x] Chip "Atrasada Nd" (rosa), "Hoje" (amarelo), "Amanhã" e "dd/mm" (cinza) como em `captures/revisoes.png`
+- [x] O aviso mostra o texto "Uma revisão é cumprida por um registro de estudo do tópico com questões." como em `captures/hoje.png`
+- [x] Usa só tokens BoardUI; Gate check passes: `npm run typecheck`
 
 **Tests**: none
 **Gate**: build
