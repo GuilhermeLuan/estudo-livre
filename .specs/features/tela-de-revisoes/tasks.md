@@ -280,8 +280,8 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Sidebar: "Revisões" entre Hoje e Registros, Counter só com vencidas; abas: "Revisões" entre Hoje e o "+"
-- [ ] Gate check passes: `npm run typecheck`
+- [x] Sidebar: "Revisões" entre Hoje e Registros, Counter só com vencidas; abas: "Revisões" entre Hoje e o "+"
+- [x] Gate check passes: `npm run typecheck`
 
 **Tests**: none
 **Gate**: build
