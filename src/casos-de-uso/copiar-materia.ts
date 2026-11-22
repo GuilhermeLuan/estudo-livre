@@ -8,7 +8,7 @@ import type { Usuario } from "./usuario";
 
 /**
  * Cria no Ciclo uma Matéria nova a partir de outra de um Ciclo do Usuário (ADR-0001): uma Etapa no fim com a carga
- * dada e os Tópicos da origem, não estudados. Registros e Cartões não vão; a origem não é tocada.
+ * dada os Tópicos da origem, não estudados, e a Dificuldade (as Questões da prova são do concurso de destino e não vão). Registros e Cartões não vão; a origem não é tocada.
  */
 export async function copiarMateria(
   db: Db,
@@ -21,7 +21,7 @@ export async function copiarMateria(
   return db.transaction(async (tx) => {
     await travarCiclo(tx, usuario, cicloId);
     const [origem] = await tx
-      .select({ id: materia.id, cicloId: materia.cicloId })
+      .select({ id: materia.id, cicloId: materia.cicloId, dificuldade: materia.dificuldade })
       .from(materia)
       .innerJoin(ciclo, eq(ciclo.id, materia.cicloId))
       .where(and(eq(materia.id, dados.origemId), eq(ciclo.usuarioId, usuario.id)));
@@ -33,7 +33,7 @@ export async function copiarMateria(
       .where(and(eq(materia.cicloId, cicloId), sql`lower(${materia.nome}) = lower(${nome})`));
     if (repetida) throw new ValidacaoError(`Este ciclo já tem a matéria “${nome}”.`);
 
-    const [nova] = await tx.insert(materia).values({ cicloId, nome }).returning({ id: materia.id });
+    const [nova] = await tx.insert(materia).values({ cicloId, nome, dificuldade: origem.dificuldade }).returning({ id: materia.id });
     const [{ ultima }] = await tx.select({ ultima: max(etapa.posicao) }).from(etapa).where(eq(etapa.cicloId, cicloId));
     const [linha] = await tx
       .insert(etapa)

@@ -34,6 +34,18 @@ _Evitar_: Bloco, linha, matéria repetida
 Tempo de estudo que uma etapa precisa acumular para ser concluída em uma volta. A carga da matéria é a soma das cargas de suas etapas.
 _Evitar_: Meta, peso
 
+**Questões da prova**:
+Quantidade de questões que a prova do concurso dedica a uma Matéria; alimenta a Sugestão de ciclo. Não é o campo de questões de um Registro de estudo.
+_Evitar_: Peso, número de questões
+
+**Dificuldade**:
+Avaliação do Usuário sobre a própria dificuldade numa Matéria: Fácil, Média ou Difícil. Matéria mais difícil recebe mais Etapas na Sugestão de ciclo.
+_Evitar_: Nível, peso
+
+**Sugestão de ciclo**:
+Cálculo que transforma as Matérias, com Questões da prova e Dificuldade, em Etapas de duração fixa, na criação do Ciclo; depois de criado, o Ciclo é comum e não guarda que foi sugerido.
+_Evitar_: Ciclo automático, plano
+
 **Tópico**:
 Item do conteúdo programático de uma matéria (ex.: "IA" em TI). Não tem subtópicos.
 _Evitar_: Assunto, conteúdo, item do edital
