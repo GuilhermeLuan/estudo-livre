@@ -260,8 +260,8 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] A Hoje em 1440px segue `captures/hoje.png` e em 390px `captures/pwa-hoje.png`
-- [ ] Gate check passes: `npm run typecheck; npm run build`
+- [x] A Hoje em 1440px segue `captures/hoje.png` e em 390px `captures/pwa-hoje.png`
+- [x] Gate check passes: `npm run typecheck; npm run build`
 
 **Tests**: none
 **Gate**: build

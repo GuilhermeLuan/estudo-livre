@@ -1,10 +1,11 @@
-import { RiAddLine, RiCalendarLine, RiCheckboxCircleFill, RiTimeLine } from "@remixicon/react";
+import { RiAddLine, RiCalendarLine, RiCheckboxCircleFill, RiRefreshLine, RiTimeLine } from "@remixicon/react";
 import { AcoesDaHoje } from "@/app/acoes-da-hoje";
 import { CartaoDeIndicador } from "@/app/cartao-de-indicador";
+import { CartaoDeRevisoes } from "@/app/cartao-de-revisoes";
 import { CartaoDoCiclo } from "@/app/cartao-do-ciclo";
 import { CartaoDoCronometro } from "@/app/cronometro";
 import { rotuloDaDiferenca, rotuloDaVariacao, tempo } from "@/app/formato";
-import { obterHome } from "@/casos-de-uso";
+import { listarRevisoes, obterHome } from "@/casos-de-uso";
 import { ButtonLink } from "@/components/base/buttons/button";
 import { obterDb } from "@/db";
 import { exigirUsuario } from "@/sessao";
@@ -16,8 +17,16 @@ function hojePorExtenso() {
   return data.charAt(0).toUpperCase() + data.slice(1);
 }
 
-export default async function Hoje() {
-  const home = await obterHome(obterDb(), await exigirUsuario());
+/** As Revisões que o cartão mostra: as 6 mais atrasadas (a página Revisões lista todas). */
+const LIMITE_DO_CARTAO = 6;
+
+export default async function Hoje({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const { ciclo } = await searchParams;
+  const usuario = await exigirUsuario();
+  const [home, revisoes] = await Promise.all([
+    obterHome(obterDb(), usuario),
+    listarRevisoes(obterDb(), usuario, { cicloId: typeof ciclo === "string" ? ciclo : null, limiteVencidas: LIMITE_DO_CARTAO }),
+  ]);
   const { indicadores: i, ciclos } = home;
   return (
     <section aria-labelledby="h-hoje" className="grid gap-5 lg:gap-6">
@@ -43,7 +52,7 @@ export default async function Hoje() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-2 lg:gap-4">
+          <div className="grid grid-cols-3 gap-2 lg:grid-cols-4 lg:gap-4">
             <CartaoDeIndicador
               compacto
               icone={RiTimeLine}
@@ -52,6 +61,7 @@ export default async function Hoje() {
               valor={tempo(i.hojeMinutos)}
               chip={i.diferencaHojeMinutos === null ? null : { texto: rotuloDaDiferenca(i.diferencaHojeMinutos), cor: i.diferencaHojeMinutos > 0 ? "lime" : "rose" }}
             />
+            <CartaoDeIndicador compacto icone={RiRefreshLine} rotulo="Revisões de hoje" rotuloCurto="Revisões" valor={String(revisoes.totalVencidasGeral)} />
             <CartaoDeIndicador
               compacto
               icone={RiCheckboxCircleFill}
@@ -60,30 +70,37 @@ export default async function Hoje() {
               valor={String(i.questoesHoje)}
               chip={i.acertoHoje === null ? null : { texto: `${i.acertoHoje}% de acerto`, cor: "blue" }}
             />
-            <CartaoDeIndicador
-              compacto
-              icone={RiCalendarLine}
-              rotulo="Nesta semana"
-              rotuloCurto="Semana"
-              valor={tempo(i.semanaMinutos)}
-              chip={i.variacaoSemana === null ? null : { texto: rotuloDaVariacao(i.variacaoSemana), cor: i.variacaoSemana >= 0 ? "lime" : "rose" }}
-            />
+            <div className="max-lg:hidden lg:contents">
+              <CartaoDeIndicador
+                compacto
+                icone={RiCalendarLine}
+                rotulo="Nesta semana"
+                rotuloCurto="Semana"
+                valor={tempo(i.semanaMinutos)}
+                chip={i.variacaoSemana === null ? null : { texto: rotuloDaVariacao(i.variacaoSemana), cor: i.variacaoSemana >= 0 ? "lime" : "rose" }}
+              />
+            </div>
           </div>
 
-          <div className="grid gap-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-body-medium text-text-primary lg:text-title-3-medium">
-                <span className="lg:hidden">Próximas etapas</span>
-                <span className="max-lg:hidden">Ciclos ativos</span>
-              </h2>
-              <span className="text-body-regular text-text-secondary lg:hidden">{ciclos.length === 1 ? "1 ciclo" : `${ciclos.length} ciclos`}</span>
-              <ButtonLink href="/ciclos/novo" variant="secondary" leadingIcon={RiAddLine} className="max-lg:hidden">
-                Novo ciclo
-              </ButtonLink>
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-6">
+            <div className="grid gap-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-body-medium text-text-primary lg:text-title-3-medium">
+                  <span className="lg:hidden">Próximas etapas</span>
+                  <span className="max-lg:hidden">Ciclos ativos</span>
+                </h2>
+                <span className="text-body-regular text-text-secondary lg:hidden">{ciclos.length === 1 ? "1 ciclo" : `${ciclos.length} ciclos`}</span>
+                <ButtonLink href="/ciclos/novo" variant="secondary" leadingIcon={RiAddLine} className="max-lg:hidden">
+                  Novo ciclo
+                </ButtonLink>
+              </div>
+              {ciclos.map((c) => (
+                <CartaoDoCiclo key={c.id} ciclo={c} />
+              ))}
             </div>
-            {ciclos.map((c) => (
-              <CartaoDoCiclo key={c.id} ciclo={c} />
-            ))}
+            <div className="max-lg:hidden">
+              <CartaoDeRevisoes lista={revisoes} />
+            </div>
           </div>
         </>
       )}
