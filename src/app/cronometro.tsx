@@ -135,6 +135,8 @@ export function ProvedorDoCronometro({ ativo, materias, materiasArquivadas, mate
         materias={materias}
         materiaInicial={registro.materiaId}
         topicoInicial={registro.topicoId}
+        // Um Tópico inicial só vem de uma Revisão: o registro dela já abre como estudo do tipo Revisão.
+        tipoInicial={registro.topicoId ? "Revisão" : undefined}
         sessaoCronometrada={registro.sessao}
         aoSalvar={(texto) => {
           setRegistro((r) => ({ ...r, aberto: false, sessao: undefined }));
