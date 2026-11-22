@@ -2,7 +2,7 @@ import { asc, eq } from "drizzle-orm";
 import { hojeEmBrasilia } from "@/dia";
 import type { Db } from "@/db";
 import { cartaoDeRevisao, ciclo, cronometro, etapa, logDeRevisao, materia, registroDeEstudo, topico, volta } from "@/db/schema";
-import { LIMITES_DO_REGISTRO, LIMITES_DO_TOPICO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
+import { BACKUP_GRANDE, LIMITE_DO_BACKUP_BYTES, LIMITES_DO_REGISTRO, LIMITES_DO_TOPICO, TIPOS_DE_ESTUDO, type TipoDeEstudo } from "@/dominio";
 import { NOTAS, validarFaixas, type Nota } from "@/revisao";
 import { ValidacaoError } from "./erros";
 import { recalcularTopico } from "./revisao";
@@ -91,8 +91,6 @@ export async function exportarBackup(db: Db, usuario: Usuario, agora = new Date(
   );
 }
 
-export const LIMITE_DO_BACKUP_BYTES = 50 * 1024 * 1024;
-export const BACKUP_GRANDE = "O arquivo passa de 50 MB.";
 const INVALIDO = "O arquivo não é um backup válido do Estudo Livre.";
 const POSTGRES_VIOLACAO_DE_UNICIDADE = "23505";
 

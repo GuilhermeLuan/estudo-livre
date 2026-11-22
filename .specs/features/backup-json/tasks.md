@@ -184,7 +184,7 @@ T2 → T3 → T4 → T5 → T6
 
 - [ ] `src/app/(app)/backup/page.tsx` e `src/app/backup-importar.tsx` mostram os textos da spec, nos temas Claro suave e Escuro, a 390px e a 1440px
 - [ ] Na visita: sem arquivo aparece "Escolha um arquivo."; a conta com Ciclos abre "Substituir seus dados?" e "Cancelar" não muda nada; a conta vazia importa direto; o aviso diz "Backup importado: N ciclos."
-- [ ] Build gate passes
+- [x] Build gate passes
 
 **Tests**: none
 **Gate**: build
@@ -301,6 +301,6 @@ Proof: run unit | ✓ tests/backup.test.ts > importar > aceita registro sem tóp
 
 ## Handoff
 
-**Settled mid-build:** none
+**Settled mid-build:** none. Textos de N = 1 no aviso ("Backup importado: 1 ciclo.") e no diálogo ("O ciclo desta conta... será apagado") ajustados na spec por concordância. O `file-upload` do BoardUI simula o envio com progresso falso e textos em inglês; o campo usa `<input type="file">` oculto e o `Button` "Escolher arquivo". Os limites de 50 MB foram para `src/dominio.ts`, para o cliente usar sem puxar o banco.
 **Dispatched:** none
 **Walked:** none

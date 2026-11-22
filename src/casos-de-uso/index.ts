@@ -47,4 +47,4 @@ export {
   type MateriaComTopicos,
   type TopicoDaMateria,
 } from "./topicos";
-export { BACKUP_GRANDE, exportarBackup, importarBackup, LIMITE_DO_BACKUP_BYTES, nomeDoArquivoDeBackup, type Backup } from "./backup";
+export { exportarBackup, importarBackup, nomeDoArquivoDeBackup, type Backup } from "./backup";
