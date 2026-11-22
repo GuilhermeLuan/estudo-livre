@@ -162,8 +162,8 @@ T2 → T3 → T4 → T5 → T6
 
 **Done when**:
 
-- [ ] `next.config.ts` com `serverActions.bodySizeLimit` e `proxyClientMaxBodySize`
-- [ ] Build gate passes
+- [x] `next.config.ts` com `serverActions.bodySizeLimit` e `proxyClientMaxBodySize`
+- [x] Build gate passes
 
 **Tests**: none
 **Gate**: build

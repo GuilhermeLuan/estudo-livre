@@ -77,7 +77,7 @@ Numa instância self-hosted, o Usuário só tem os próprios dados enquanto o ba
 4. WHILE a conta do Usuário tem N ≥ 1 Ciclos (ativos ou arquivados), WHEN ele usa "Importar backup" com um arquivo THEN the system SHALL abrir um AlertDialog com o título "Substituir seus dados?", o texto "Os N ciclos desta conta, com registros e revisões, serão apagados e trocados pelos do arquivo. Isso não pode ser desfeito." e os botões "Cancelar" e "Substituir"
 5. WHEN o Usuário usa "Cancelar" no AlertDialog THEN the system SHALL fechar o diálogo e não alterar nada
 6. WHEN a importação é concluída THEN the system SHALL apagar todos os Ciclos do Usuário (e o que pende deles) e criar os Ciclos do arquivo na conta do Usuário da sessão, numa única transação
-7. WHEN a importação é concluída THEN the system SHALL mostrar o aviso de sucesso "Backup importado: N ciclos." com N = quantidade de Ciclos do arquivo, e a Sidebar passa a mostrar os Ciclos importados
+7. WHEN a importação é concluída THEN the system SHALL mostrar o aviso de sucesso "Backup importado: N ciclos." (com N = 1, "Backup importado: 1 ciclo."), com N = quantidade de Ciclos do arquivo, e a Sidebar passa a mostrar os Ciclos importados
 8. The system SHALL recalcular, na importação, o Cartão de revisão e o log de cada Tópico a partir dos Registros importados, ignorando os Cartões e o log do arquivo (AD-031)
 9. The system SHALL importar os Ciclos arquivados do arquivo como arquivados, com a mesma data de arquivamento
 10. The system SHALL gravar os dados importados só na conta do Usuário da sessão
