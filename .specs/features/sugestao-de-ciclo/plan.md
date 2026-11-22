@@ -15,7 +15,7 @@ Quando isto for entregue, o Usuário informa as Matérias com Questões da prova
 
 Reaproveita a criação atômica de Ciclo (com a Volta 1) e o vocabulário de Matéria e Etapa, sem criar entidade nova; a regra da sugestão roda no domínio puro (`src/dominio.ts`) e a criação nos casos de uso, as duas camadas que os testes de `tests/` alcançam com banco real.
 
-1. Usuário preenche `/ciclos/novo` (nome, duração da Etapa, Matérias com Questões da prova e Dificuldade) -> `FormularioNome` (exists) - envia nome, duração e a lista de Matérias
+1. Usuário preenche `/ciclos/novo` (nome, duração da Etapa, Matérias com Questões da prova e Dificuldade) -> `SugestaoDeCiclo` (new) - tela que guarda nome, duração e a lista de Matérias; substitui `FormularioNome` só nesta página
 2. "Visualizar ciclo" -> sugestão no domínio (new) - calcula as Etapas ordenadas; só leitura, não grava
 3. "Criar ciclo" -> action de `/ciclos/novo` (exists) - valida e entrega ao caso de uso `criarCiclo` (exists)
 4. `criarCiclo` (exists) - recalcula as Etapas com a mesma função do passo 2, numa só transação grava `ciclo`, `volta` 1, `materia` e `etapa`
@@ -23,7 +23,7 @@ Reaproveita a criação atômica de Ciclo (com a Volta 1) e o vocabulário de Ma
 
 ```mermaid
 sequenceDiagram
-    participant U as FormularioNome
+    participant U as SugestaoDeCiclo
     participant D as Sugestao (dominio)
     participant A as Action novo ciclo
     participant C as criarCiclo

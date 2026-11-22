@@ -17,6 +17,7 @@ import {
   ValidacaoError,
 } from "@/casos-de-uso";
 import { obterDb } from "@/db";
+import type { MateriaParaSugerir } from "@/dominio";
 import { avisoDaVoltaConcluida } from "./formato";
 import { exigirUsuario } from "@/sessao";
 
@@ -46,11 +47,30 @@ async function executar(operacao: () => Promise<unknown>): Promise<EstadoCiclo> 
   return fechada ? { aviso: avisoDaVoltaConcluida(fechada) } : {};
 }
 
+/** As Matérias da Sugestão de ciclo, vindas do formulário como JSON; o caso de uso confere cada valor. */
+function materiasDoFormulario(dados: FormData): MateriaParaSugerir[] {
+  const ilegivel = new ValidacaoError("Não foi possível ler as matérias. Atualize a página e tente de novo.");
+  let bruto: unknown;
+  try {
+    bruto = JSON.parse(texto(dados, "materias") || "[]");
+  } catch {
+    throw ilegivel;
+  }
+  if (!Array.isArray(bruto)) throw ilegivel;
+  return bruto.map((m: Record<string, unknown> | null) => ({
+    nome: String(m?.nome ?? ""),
+    questoesDaProva: typeof m?.questoesDaProva === "number" ? m.questoesDaProva : Number.NaN,
+    dificuldade: m?.dificuldade as MateriaParaSugerir["dificuldade"],
+  }));
+}
+
 export async function novoCiclo(_: EstadoCiclo, dados: FormData): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
   let id = "";
   const estado = await executar(async () => {
-    id = (await criarCiclo(obterDb(), usuario, { nome: texto(dados, "nome") })).id;
+    const materias = materiasDoFormulario(dados);
+    const duracaoEtapaMinutos = materias.length ? minutos(dados) : undefined;
+    id = (await criarCiclo(obterDb(), usuario, { nome: texto(dados, "nome"), duracaoEtapaMinutos, materias })).id;
   });
   if (estado.erro) return estado;
   redirect(`/ciclos/${id}`);
