@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 4,
+  "next_id": 7,
   "lessons": [
     {
       "id": "L-001",
@@ -58,6 +58,60 @@
       ],
       "created": "2026-11-21T12:44:21Z",
       "last_seen": "2026-11-21T12:44:21Z"
+    },
+    {
+      "id": "L-004",
+      "key": "weak_test::quando uma regra de ordem vale para duas listas o teste afirma a ordem e o desempate de cada lista com itens inseridos fora de ordem",
+      "text": "Quando uma regra de ordem vale para duas listas, o teste afirma a ordem e o desempate de cada lista, com itens inseridos fora de ordem.",
+      "signal": "weak_test",
+      "scope": "listas",
+      "status": "candidate",
+      "features": [
+        "tela-de-revisoes"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C29 (verification.md) (listas)"
+      ],
+      "created": "2026-11-22T15:25:22Z",
+      "last_seen": "2026-11-22T15:25:22Z"
+    },
+    {
+      "id": "L-005",
+      "key": "weak_test::um limite de itens que a tela aplica mora numa constante do caso de uso e o teste afirma o valor dela com mais itens que o limite",
+      "text": "Um limite de itens que a tela aplica mora numa constante do caso de uso, e o teste afirma o valor dela com mais itens que o limite.",
+      "signal": "weak_test",
+      "scope": "listas",
+      "status": "candidate",
+      "features": [
+        "tela-de-revisoes"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C7 (verification.md) (listas)"
+      ],
+      "created": "2026-11-22T15:25:22Z",
+      "last_seen": "2026-11-22T15:25:22Z"
+    },
+    {
+      "id": "L-006",
+      "key": "spec_deviation::antes de aprovar um cabecalho que a captura desenha numa linha confira com os nomes mais longos que os dados reais permitem pois os de exemplo da captura sao curtos",
+      "text": "Antes de aprovar um cabeçalho que a captura desenha numa linha, confira com os nomes mais longos que os dados reais permitem, pois os de exemplo da captura são curtos.",
+      "signal": "spec_deviation",
+      "scope": "telas",
+      "status": "candidate",
+      "features": [
+        "tela-de-revisoes"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "hoje.running.png (screens.md) (telas)"
+      ],
+      "created": "2026-11-22T15:25:22Z",
+      "last_seen": "2026-11-22T15:25:22Z"
     }
   ]
 }
