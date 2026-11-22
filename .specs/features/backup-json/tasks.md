@@ -204,8 +204,8 @@ T2 → T3 → T4 → T5 → T6
 **Done when**:
 
 - [ ] Sidebar (≥ 1024px) e menu do celular (< 1024px) levam a `/backup`; o topo do celular diz "Backup"
-- [ ] `docs/design-system.md` descreve a página Backup
-- [ ] Build gate passes
+- [x] `docs/design-system.md` descreve a página Backup
+- [x] Build gate passes
 
 **Tests**: none
 **Gate**: build
