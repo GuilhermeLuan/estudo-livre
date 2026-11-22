@@ -113,10 +113,10 @@ T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Um Tópico de outra Matéria é recusado como `NaoEncontradoError`
-- [ ] Os testes novos de `tests/cronometro.test.ts` cobrem REV-02 (2 a 6), com os nomes dos checks C15 a C20
-- [ ] Gate check passes: `npx vitest run tests/cronometro.test.ts`
-- [ ] Test count: os testes antigos do Cronômetro seguem passando
+- [x] Um Tópico de outra Matéria é recusado como `NaoEncontradoError`
+- [x] Os testes novos de `tests/cronometro.test.ts` cobrem REV-02 (2 a 6), com os nomes dos checks C15 a C20
+- [x] Gate check passes: `npx vitest run tests/cronometro.test.ts`
+- [x] Test count: os testes antigos do Cronômetro seguem passando
 
 **Tests**: integration
 **Gate**: quick
