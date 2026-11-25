@@ -348,6 +348,8 @@ Proof: run unit | ✓ tests/editar-ciclo.test.ts > backup > recusa duracaoEtapaM
 - EDIT-15: removendo as duas linhas, "Gerar ciclo" e "Visualizar ciclo" ficaram desabilitados.
 - C24: a 390px `scrollWidth` = 390 = largura da janela; as linhas empilham e "Visualizar ciclo" e "Gerar ciclo" aparecem ao rolar até o fim.
 - EDIT-14: `/ciclos/{id}?volta-concluida=1` mostrou o aviso "Volta 1 concluída. A Volta 2 começou." (o fechamento em si é provado pelo teste C14).
+- Rodada 2 (depois dos achados, build em 03a5b90, sessão `walk5@exemplo.com` / `senha-de-teste-123`): Ciclo "Fecha volta" criado pela tela com Portugues 12 Média e TI 50 Difícil (7 Etapas, Volta 1); como dado de preparo, 1h de Portugues inserida em `registro_de_estudo`. Em "Editar ciclo", remover TI e "Gerar ciclo" → confirmar levou a `/ciclos/{id}?volta-concluida=1` com o aviso "Volta 1 concluída. A Volta 2 começou."; depois de 5 s o aviso sumiu e o endereço voltou a `/ciclos/{id}` (EDIT-14, C14).
+- Rodada 2, lista cheia (C6): na edição desse Ciclo, com 50 linhas, acrescentar "M51" mostrou "A sugestão aceita até 50 matérias." e a tabela seguiu com 50 linhas.
 - EDIT-17/18: `/ciclos/{id}/editar` do Ciclo arquivado mostrou "Ciclo arquivado. Reative para alterar." sem o formulário; um id inexistente respondeu 404.
 
 ---
