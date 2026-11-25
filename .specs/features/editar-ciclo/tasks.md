@@ -333,7 +333,19 @@ Proof: run unit | ✓ tests/editar-ciclo.test.ts > backup > recusa duracaoEtapaM
 
 **Settled mid-build:** none
 **Dispatched:** none
-**Walked:** none
+**Walked:** O app rodou em `http://100.83.47.57:3100` (tailnet, `next start -H 0.0.0.0`, banco dev `postgres://postgres:dev@localhost:54330/dev`, container `estudo-livre-dev-pg`, migrações aplicadas). Cliques reais num Chromium headless (Playwright 1.49.1, no scratchpad), janela de 1860x1143 (tamanho da captura) e de 390x844. Sessão: `walk3@exemplo.com` / `senha-de-teste-123`, criada por `POST /api/auth/sign-up/email`.
+- Criar como na captura: `/ciclos/novo` com "TESTE", duração 1, "Portugues" 12 Média → `/ciclos/{id}`; o Novo ciclo ainda mostra "Sem matérias, o ciclo nasce vazio.".
+- C1: "Editar ciclo" aparece no topo do Ciclo ativo e leva a `/ciclos/{id}/editar`; depois de "Arquivar", o botão some.
+- C2: a edição abre com "Editar ciclo", Nome "TESTE", Duração "1", linha "Portugues" 12 Média, "Visualizar ciclo" e "Gerar ciclo" (`captures/editar-ciclo.running.png`, 1860x1143).
+- C22: a descrição é "Informe as questões da prova e a sua dificuldade em cada matéria para receber a sugestão de etapas." sem a frase de ciclo vazio.
+- C6: acrescentar "portugues" mostrou "A matéria “portugues” já está na lista."; Matemática com Questões "0" e "Gerar ciclo" mostrou "Informe as questões da prova (inteiro de 1 a 10.000)." sem abrir o diálogo; com 10 Difícil, "Visualizar ciclo" listou "1. Matemática 1h", "2. Portugues 1h"; "Voltar" devolveu as linhas.
+- C7: o AlertDialog mostrou "Gerar ciclo?", "As etapas atuais serão substituídas pelas da sugestão. Registros, tópicos e voltas continuam.", "Cancelar", "Gerar ciclo".
+- C8: "Cancelar" fechou o diálogo com as 2 linhas na tela; a página do Ciclo seguia com "1 etapa · 1 matéria · 1h00 por volta".
+- C21: depois de confirmar, o botão "Gerar ciclo" ficou desabilitado até abrir `/ciclos/{id}`, que mostrou "2 etapas · 2 matérias · 2h00 por volta"; reabrir a edição trouxe Matemática 10 e Portugues 12.
+- EDIT-15: removendo as duas linhas, "Gerar ciclo" e "Visualizar ciclo" ficaram desabilitados.
+- C24: a 390px `scrollWidth` = 390 = largura da janela; as linhas empilham e "Visualizar ciclo" e "Gerar ciclo" aparecem ao rolar até o fim.
+- EDIT-14: `/ciclos/{id}?volta-concluida=1` mostrou o aviso "Volta 1 concluída. A Volta 2 começou." (o fechamento em si é provado pelo teste C14).
+- EDIT-17/18: `/ciclos/{id}/editar` do Ciclo arquivado mostrou "Ciclo arquivado. Reative para alterar." sem o formulário; um id inexistente respondeu 404.
 
 ---
 
