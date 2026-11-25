@@ -8,12 +8,14 @@ import {
   concluida,
   DIFICULDADES,
   DURACAO_PADRAO_DA_ETAPA_MINUTOS,
+  duracaoDaEdicao,
   erroDaNovaMateria,
   LIMITES_DA_SUGESTAO,
   LISTA_CHEIA,
   QUESTOES_INVALIDAS,
   questoesDaProvaValidas,
   sugerirEtapas,
+  type Dificuldade,
   type MateriaParaSugerir,
 } from "@/dominio";
 import { avaliarFechamentoDaVolta, progressoDosCiclos, type Executor, type MateriaComProgresso } from "./progresso";
@@ -147,6 +149,40 @@ export async function criarCiclo(
     }
     return linha;
   });
+}
+
+export type SugestaoDoCiclo = {
+  id: string;
+  nome: string;
+  arquivado: boolean;
+  duracaoEtapaMinutos: number;
+  /** Matérias com Etapa, na ordem da primeira Etapa de cada uma; nulos nas criadas à mão. */
+  materias: { nome: string; questoesDaProva: number | null; dificuldade: Dificuldade | null }[];
+};
+
+/** O Ciclo como a tela de edição da Sugestão de ciclo o mostra (EDIT-03 a EDIT-05). */
+export async function obterSugestaoDoCiclo(db: Db, usuario: Usuario, cicloId: string): Promise<SugestaoDoCiclo> {
+  const { id, nome, arquivadoEm, duracaoEtapaMinutos } = await exigirCiclo(db, usuario, cicloId);
+  const etapas = await db
+    .select({ materiaId: etapa.materiaId, cargaMinutos: etapa.cargaMinutos, nome: materia.nome, questoesDaProva: materia.questoesDaProva, dificuldade: materia.dificuldade })
+    .from(etapa)
+    .innerJoin(materia, eq(materia.id, etapa.materiaId))
+    .where(eq(etapa.cicloId, cicloId))
+    .orderBy(asc(etapa.posicao));
+  const vistas = new Set<string>();
+  const materias: SugestaoDoCiclo["materias"] = [];
+  for (const e of etapas) {
+    if (vistas.has(e.materiaId)) continue;
+    vistas.add(e.materiaId);
+    materias.push({ nome: e.nome, questoesDaProva: e.questoesDaProva, dificuldade: e.dificuldade });
+  }
+  return {
+    id,
+    nome,
+    arquivado: arquivadoEm !== null,
+    duracaoEtapaMinutos: duracaoDaEdicao(duracaoEtapaMinutos, etapas.map((e) => e.cargaMinutos)),
+    materias,
+  };
 }
 
 export async function renomearCiclo(db: Db, usuario: Usuario, cicloId: string, dados: { nome: string }) {

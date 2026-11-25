@@ -103,7 +103,7 @@ T6 → T7 → T8 → T9
 
 ---
 
-### T3: Ler o Ciclo para a edição
+### T3: Ler o Ciclo para a edição ✅
 
 **What**: caso de uso `obterSugestaoDoCiclo`
 **Where**: `src/casos-de-uso/ciclos.ts`
