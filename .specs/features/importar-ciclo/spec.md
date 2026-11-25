@@ -399,7 +399,7 @@ Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa mat�
 ## Handoff
 
 **Settled mid-build:** none. Os testes rodam num Postgres dedicado (`docker run -d --name estudo-livre-teste-pinfish -e POSTGRES_PASSWORD=teste -e POSTGRES_DB=teste -p 54332:5432 postgres:17-alpine`): o container padrão `estudo-livre-teste-pg` é recriado por outras sessões no meio da execução e derrubava testes ao acaso.
-**Dispatched:** Verifier (round 1) at `6799eac`. Não há screens sub-agent: nenhum critério cita captura.
+**Dispatched:** Verifier (round 1) at `6799eac` - returned, 7 achados fechados em `36f7948`. Não há screens sub-agent: nenhum critério cita captura.
 **Walked:** `next start -H 0.0.0.0 -p 3120` com `DATABASE_URL=postgres://postgres:teste@localhost:54332/walk` (banco `walk` no container `estudo-livre-teste-pinfish`, migrações aplicadas) e `BETTER_AUTH_URL=http://100.83.47.57:3120` (tailnet; a 3100 estava ocupada). Cliques reais num Chromium headless (Playwright 1.49.1), 1440x960 tema claro e 390x844 com a classe `dark`; sessão por `POST /api/auth/sign-up/email` (`walk-<largura>-<timestamp>@exemplo.com`, senha `senha-de-teste-123`).
 - C1: em /ciclos/novo, abaixo da criação manual, o cartão mostra "Importar ciclo", "Crie um ciclo a partir de um arquivo JSON.", "Arquivo do ciclo", "Escolher arquivo", "Nenhum arquivo escolhido" e "Importar ciclo"; o campo aceita `.json,application/json`.
 - C2: "Importar ciclo" sem arquivo mostra "Escolha um arquivo." sob o campo.
