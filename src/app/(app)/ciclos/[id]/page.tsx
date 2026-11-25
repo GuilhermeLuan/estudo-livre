@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { RiEditLine } from "@remixicon/react";
 import { ArquivarCiclo, ReativarCiclo } from "@/app/arquivar-ciclo";
+import { AvisoDaVoltaConcluida } from "@/app/aviso-da-volta";
+import { ButtonLink } from "@/components/base/buttons/button";
 import { AdicionarEtapa, RenomearCiclo } from "@/app/dialogos-do-ciclo";
 import { descricaoDaVolta, quantidade, tempoHM } from "@/app/formato";
 import { FaixasDeAcerto } from "@/app/faixas-de-acerto";
@@ -16,8 +19,9 @@ import { exigirUsuario } from "@/sessao";
 
 export const dynamic = "force-dynamic";
 
-export default async function PaginaCiclo({ params }: { params: Promise<{ id: string }> }) {
+export default async function PaginaCiclo({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { id } = await params;
+  const voltaConcluida = Number((await searchParams)["volta-concluida"]);
   const usuario = await exigirUsuario();
   const [ciclo, voltas, faixas, copiaveis] = await Promise.all([obterCiclo(obterDb(), usuario, id), listarVoltas(obterDb(), usuario, id), obterFaixas(obterDb(), usuario, id), listarMateriasCopiaveis(obterDb(), usuario, id)]).catch((erro) => {
     if (erro instanceof NaoEncontradoError) notFound();
@@ -30,6 +34,7 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
 
   return (
     <section aria-labelledby="h-ciclo" className="grid gap-5">
+      <AvisoDaVoltaConcluida numero={Number.isInteger(voltaConcluida) && voltaConcluida > 0 ? voltaConcluida : null} />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="grid gap-1">
           <p className="text-caption-1-regular text-text-secondary">
@@ -53,6 +58,9 @@ export default async function PaginaCiclo({ params }: { params: Promise<{ id: st
             <ReativarCiclo cicloId={id} />
           ) : (
             <>
+              <ButtonLink href={`/ciclos/${id}/editar`} variant="secondary" leadingIcon={RiEditLine}>
+                Editar ciclo
+              </ButtonLink>
               <ReiniciarVolta cicloId={id} numero={volta.numero} />
               <ArquivarCiclo cicloId={id} nome={ciclo.nome} />
               <AdicionarEtapa cicloId={id} copiaveis={copiaveis} />

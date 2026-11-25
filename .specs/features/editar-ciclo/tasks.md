@@ -225,10 +225,10 @@ T6 → T7 → T8 → T9
 
 ---
 
-### T9: Botão "Editar ciclo" e aviso da Volta concluída
+### T9: Botão "Editar ciclo" e aviso da Volta concluída ✅
 
 **What**: link-botão "Editar ciclo" no topo de `/ciclos/[id]` (só não arquivado) e o `Aviso` lido de `?volta-concluida=N`
-**Where**: `src/app/(app)/ciclos/[id]/page.tsx`
+**Where**: `src/app/(app)/ciclos/[id]/page.tsx` (+ `src/app/aviso-da-volta.tsx`, componente cliente do aviso)
 **Depends on**: T8
 **Reuses**: `Button` (href), `Aviso`, `avisoDaVoltaConcluida`
 **Requirement**: EDIT-01, EDIT-14
