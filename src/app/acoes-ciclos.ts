@@ -7,6 +7,7 @@ import {
   arquivarCiclo,
   copiarMateria,
   criarCiclo,
+  importarCiclo,
   editarEtapa,
   NaoEncontradoError,
   reativarCiclo,
@@ -72,6 +73,21 @@ export async function novoCiclo(_: EstadoCiclo, dados: FormData): Promise<Estado
     id = (await criarCiclo(obterDb(), usuario, { nome: texto(dados, "nome"), duracaoEtapaMinutos: minutos(dados), materias })).id;
   });
   if (estado.erro) return estado;
+  redirect(`/ciclos/${id}`);
+}
+
+/** "Importar ciclo": o JSON vem no campo `arquivo`; cria um Ciclo novo (AD-041) e abre a página dele (AD-044). */
+export async function importarCicloDoArquivo(dados: FormData): Promise<EstadoCiclo> {
+  const usuario = await exigirUsuario();
+  const arquivo = dados.get("arquivo");
+  // Um arquivo escolhido e vazio segue para o caso de uso, que o recusa como JSON inválido.
+  if (!(arquivo instanceof File) || arquivo.name === "") return { erro: "Escolha um arquivo." };
+  let id = "";
+  const estado = await executar(async () => {
+    id = (await importarCiclo(obterDb(), usuario, await arquivo.text())).id;
+  });
+  if (estado.erro) return estado;
+  revalidatePath("/", "layout");
   redirect(`/ciclos/${id}`);
 }
 

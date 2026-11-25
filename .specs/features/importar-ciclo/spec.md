@@ -159,15 +159,15 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| IMPC-01 | P1: Importar (cartão, sem arquivo) | Specify | Pending |
-| IMPC-02 | P1: Importar (cria e abre; Matérias, Etapas, Tópicos, Volta 1) | Specify | Pending |
-| IMPC-03 | P1: Importar (soma, transação, sessão) | Specify | Pending |
-| IMPC-04 | P1: Recusa (tamanho, JSON, formato, versão, nome, listas) | Specify | Pending |
-| IMPC-05 | P1: Recusa (Matérias e Tópicos) | Specify | Pending |
-| IMPC-06 | P1: Recusa (Etapas, limites, ordem, falha, chaves extras) | Specify | Pending |
-| IMPC-07 | P1: Instruções para a IA | Specify | Pending |
+| IMPC-01 | P1: Importar (cartão, sem arquivo) | Execute | Implementing |
+| IMPC-02 | P1: Importar (cria e abre; Matérias, Etapas, Tópicos, Volta 1) | Execute | Implementing |
+| IMPC-03 | P1: Importar (soma, transação, sessão) | Execute | Implementing |
+| IMPC-04 | P1: Recusa (tamanho, JSON, formato, versão, nome, listas) | Execute | Implementing |
+| IMPC-05 | P1: Recusa (Matérias e Tópicos) | Execute | Implementing |
+| IMPC-06 | P1: Recusa (Etapas, limites, ordem, falha, chaves extras) | Execute | Implementing |
+| IMPC-07 | P1: Instruções para a IA | Execute | Implementing |
 
-**Coverage:** 7 total, 0 mapped to tasks, 7 unmapped ⚠️
+**Coverage:** 7 total, 7 mapped to checks, 0 unmapped
 
 ---
 
@@ -193,7 +193,7 @@ Tarefas implícitas (3 passos, sem `tasks.md`):
 
 1. Caso de uso `importarCiclo` e testes → files: `src/casos-de-uso/importar-ciclo.ts`, `src/casos-de-uso/index.ts`, `src/dominio.ts`, `tests/importar-ciclo.test.ts` → verify: run unit → commit: `feat(ciclos): importar ciclo a partir de um JSON` ✅
 2. Instruções para a IA → files: `docs/importar-ciclo-com-ia.md`, `tests/instrucoes-para-ia.test.ts` → verify: run unit → commit: `docs(ciclos): instruções para a IA montar o JSON do ciclo` ✅
-3. Cartão "Importar ciclo" em `/ciclos/novo` → files: `src/app/acoes-ciclos.ts`, `src/app/importar-ciclo.tsx`, `src/app/(app)/ciclos/novo/page.tsx`, `docs/design-system.md` → verify: build + walk → commit: `feat(ciclos): cartão importar ciclo na página novo ciclo`
+3. Cartão "Importar ciclo" em `/ciclos/novo` → files: `src/app/acoes-ciclos.ts`, `src/app/importar-ciclo.tsx`, `src/app/(app)/ciclos/novo/page.tsx`, `docs/design-system.md` → verify: build + walk → commit: `feat(ciclos): cartão importar ciclo na página novo ciclo` ✅
 
 ## Checks
 
@@ -338,4 +338,9 @@ Proof: run unit | ✓ tests/importar-ciclo.test.ts > importar ciclo > liga a eta
 
 **Settled mid-build:** none. Os testes rodam num Postgres dedicado (`docker run -d --name estudo-livre-teste-pinfish -e POSTGRES_PASSWORD=teste -e POSTGRES_DB=teste -p 54332:5432 postgres:17-alpine`): o container padrão `estudo-livre-teste-pg` é recriado por outras sessões no meio da execução e derrubava testes ao acaso.
 **Dispatched:** none
-**Walked:** pending
+**Walked:** `next start -H 0.0.0.0 -p 3120` com `DATABASE_URL=postgres://postgres:teste@localhost:54332/walk` (banco `walk` no container `estudo-livre-teste-pinfish`, migrações aplicadas) e `BETTER_AUTH_URL=http://100.83.47.57:3120` (tailnet; a 3100 estava ocupada). Cliques reais num Chromium headless (Playwright 1.49.1), 1440x960 tema claro e 390x844 com a classe `dark`; sessão por `POST /api/auth/sign-up/email` (`walk-<largura>-<timestamp>@exemplo.com`, senha `senha-de-teste-123`).
+- C1: em /ciclos/novo, abaixo da criação manual, o cartão mostra "Importar ciclo", "Crie um ciclo a partir de um arquivo JSON.", "Arquivo do ciclo", "Escolher arquivo", "Nenhum arquivo escolhido" e "Importar ciclo"; o campo aceita `.json,application/json`.
+- C2: "Importar ciclo" sem arquivo mostra "Escolha um arquivo." sob o campo.
+- Recusa: o exemplo do documento com a 3ª Etapa em "Direito Penal" mostra "Etapa 3: a matéria "Direito Penal" não está em materias." e a página continua em /ciclos/novo.
+- C3: o exemplo de `docs/importar-ciclo-com-ia.md` leva a /ciclos/{id}, com o título "TRF 5 - Analista Judiciário", 7 Etapas de 1h00 na ordem do arquivo, Volta 1, Matérias com 0/5, 0/4 e 0/2 Tópicos e Faixas padrão; a Sidebar mostra o Ciclo novo. Sem rolagem horizontal nas duas larguras.
+- C10: `POST /ciclos/novo` com `Next-Action` e sem cookie responde 307 para /entrar.
