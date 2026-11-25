@@ -332,7 +332,7 @@ Proof: run unit | ✓ tests/editar-ciclo.test.ts > backup > recusa duracaoEtapaM
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** none
+**Dispatched:** Verifier at 25b1074; screens round 1 at 25b1074
 **Walked:** O app rodou em `http://100.83.47.57:3100` (tailnet, `next start -H 0.0.0.0`, banco dev `postgres://postgres:dev@localhost:54330/dev`, container `estudo-livre-dev-pg`, migrações aplicadas). Cliques reais num Chromium headless (Playwright 1.49.1, no scratchpad), janela de 1860x1143 (tamanho da captura) e de 390x844. Sessão: `walk3@exemplo.com` / `senha-de-teste-123`, criada por `POST /api/auth/sign-up/email`.
 - Criar como na captura: `/ciclos/novo` com "TESTE", duração 1, "Portugues" 12 Média → `/ciclos/{id}`; o Novo ciclo ainda mostra "Sem matérias, o ciclo nasce vazio.".
 - C1: "Editar ciclo" aparece no topo do Ciclo ativo e leva a `/ciclos/{id}/editar`; depois de "Arquivar", o botão some.
