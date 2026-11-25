@@ -167,7 +167,7 @@ T6 → T7 → T8 → T9
 
 ---
 
-### T6: Action de gerar o ciclo
+### T6: Action de gerar o ciclo ✅
 
 **What**: server action `gerarCiclo` que chama `gerarEtapas` e redireciona para `/ciclos/{id}` (com `?volta-concluida=N` quando a Volta fechou)
 **Where**: `src/app/acoes-ciclos.ts`
