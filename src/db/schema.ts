@@ -68,6 +68,8 @@ export const ciclo = pgTable("ciclo", {
   // Arquivado = não nulo: sai da Hoje e das sugestões, e o histórico fica intacto.
   arquivadoEm: timestamp("arquivado_em", { withTimezone: true }),
   criadoEm: timestamp("criado_em").notNull().defaultNow(),
+  // Duração da etapa da Sugestão de ciclo (AD-041); nula nos Ciclos anteriores a ela.
+  duracaoEtapaMinutos: integer("duracao_etapa_minutos"),
 }, (t) => [index("ciclo_usuario").on(t.usuarioId)]);
 
 export const dificuldadeDaMateria = pgEnum("dificuldade_da_materia", DIFICULDADES);

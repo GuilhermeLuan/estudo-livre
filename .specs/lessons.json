@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 15,
+  "next_id": 18,
   "lessons": [
     {
       "id": "L-001",
@@ -256,6 +256,60 @@
       ],
       "created": "2026-11-22T22:01:56Z",
       "last_seen": "2026-11-22T22:01:56Z"
+    },
+    {
+      "id": "L-015",
+      "key": "weak_test::conversoes feitas na pagina valor gravado texto do campo ficam fora dos testes extraia para uma funcao pura em src dominio ts e teste o texto que o criterio fixa",
+      "text": "Conversões feitas na página (valor gravado → texto do campo) ficam fora dos testes: extraia para uma função pura em src/dominio.ts e teste o texto que o critério fixa.",
+      "signal": "weak_test",
+      "scope": "src/app",
+      "status": "candidate",
+      "features": [
+        "editar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C4 (src/app)"
+      ],
+      "created": "2026-11-25T23:38:48Z",
+      "last_seen": "2026-11-25T23:38:48Z"
+    },
+    {
+      "id": "L-016",
+      "key": "ac_gap::ao reaproveitar uma validacao de criacao numa edicao confira os limites contra dados que ja existem um ciclo pode ja passar do teto e teste a borda",
+      "text": "Ao reaproveitar uma validação de criação numa edição, confira os limites contra dados que já existem (um Ciclo pode já passar do teto) e teste a borda.",
+      "signal": "ac_gap",
+      "scope": "src/casos-de-uso",
+      "status": "candidate",
+      "features": [
+        "editar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "Edge Cases EDIT-03 (src/casos-de-uso)"
+      ],
+      "created": "2026-11-25T23:38:48Z",
+      "last_seen": "2026-11-25T23:38:48Z"
+    },
+    {
+      "id": "L-017",
+      "key": "weak_test::no teste de falha no meio da transacao envie valores diferentes dos gravados e confira cada linha tocada senao um update fora da transacao passa despercebido",
+      "text": "No teste de falha no meio da transação, envie valores diferentes dos gravados e confira cada linha tocada, senão um update fora da transação passa despercebido.",
+      "signal": "weak_test",
+      "scope": "tests",
+      "status": "candidate",
+      "features": [
+        "editar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C16 (tests)"
+      ],
+      "created": "2026-11-25T23:38:48Z",
+      "last_seen": "2026-11-25T23:38:48Z"
     }
   ]
 }

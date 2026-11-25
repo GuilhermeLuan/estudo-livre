@@ -54,6 +54,7 @@ export async function exportarBackup(db: Db, usuario: Usuario, agora = new Date(
           nome: c.nome,
           criadoEm: c.criadoEm.toISOString(),
           arquivadoEm: iso(c.arquivadoEm),
+          duracaoEtapaMinutos: c.duracaoEtapaMinutos,
           faixas: { erreiAte: c.faixaErreiAte, dificilAte: c.faixaDificilAte, bomAte: c.faixaBomAte },
           minimoDeQuestoes: c.minimoDeQuestoes,
           materias: materias
@@ -114,6 +115,7 @@ const inteiroOuNulo = (x: unknown, min: number, max: number) => (x === null ? nu
 // Campos da Sugestão de ciclo: opcionais, então um backup anterior a eles (sem a chave) lê como nulo.
 const dificuldadeOuNula = (x: unknown) => (x === undefined || x === null ? null : (exigir(DIFICULDADES.includes(x as Dificuldade)), x as Dificuldade));
 const questoesDaProvaOuNula = (x: unknown) => (x === undefined || x === null ? null : (exigir(questoesDaProvaValidas(x)), x as number));
+const duracaoOuNula = (x: unknown) => (x === undefined || x === null ? null : inteiro(x, 1, CARGA_MAXIMA_MINUTOS));
 const booleano = (x: unknown) => (exigir(typeof x === "boolean"), x as boolean);
 const instante = (x: unknown) => {
   exigir(typeof x === "string" && /^\d{4}-\d{2}-\d{2}T.*(Z|[+-]\d{2}:\d{2})$/.test(x));
@@ -208,6 +210,7 @@ function lerBackup(conteudo: string) {
         nome: texto(c.nome),
         criadoEm: instante(c.criadoEm),
         arquivadoEm: instanteOuNulo(c.arquivadoEm),
+        duracaoEtapaMinutos: duracaoOuNula(c.duracaoEtapaMinutos),
         faixas,
         materias,
         etapas: lista(c.etapas).map((y) => {
@@ -238,7 +241,7 @@ export async function importarBackup(db: Db, usuario: Usuario, conteudo: string)
       for (const c of ciclos) {
         const [{ id: cicloId }] = await tx
           .insert(ciclo)
-          .values({ usuarioId: usuario.id, nome: c.nome, criadoEm: c.criadoEm, arquivadoEm: c.arquivadoEm, faixaErreiAte: c.faixas.erreiAte, faixaDificilAte: c.faixas.dificilAte, faixaBomAte: c.faixas.bomAte, minimoDeQuestoes: c.faixas.minimo })
+          .values({ usuarioId: usuario.id, nome: c.nome, criadoEm: c.criadoEm, arquivadoEm: c.arquivadoEm, duracaoEtapaMinutos: c.duracaoEtapaMinutos, faixaErreiAte: c.faixas.erreiAte, faixaDificilAte: c.faixas.dificilAte, faixaBomAte: c.faixas.bomAte, minimoDeQuestoes: c.faixas.minimo })
           .returning({ id: ciclo.id });
         const novo = new Map<string, string>();
         const novoId = (antigo: string) => {

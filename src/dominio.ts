@@ -69,6 +69,7 @@ export const DURACAO_PADRAO_DA_ETAPA_MINUTOS = 60;
 export const NOME_DA_MATERIA_VAZIO = "Informe o nome da matéria.";
 export const LISTA_CHEIA = `A sugestão aceita até ${LIMITES_DA_SUGESTAO.materiasMaximas} matérias.`;
 export const QUESTOES_INVALIDAS = `Informe as questões da prova (inteiro de 1 a ${LIMITES_DA_SUGESTAO.questoesMaximas.toLocaleString("pt-BR")}).`;
+export const LISTA_VAZIA = "Adicione ao menos uma matéria para gerar as etapas.";
 export const materiaRepetida = (nome: string) => `A matéria “${nome}” já está na lista.`;
 
 export const CARGA_MAXIMA_MINUTOS = 10_000 * 60;
@@ -120,3 +121,27 @@ export function sugerirEtapas(materias: readonly MateriaParaSugerir[]): EtapaSug
   }
   return sugeridas;
 }
+
+/**
+ * A Duração da etapa que a edição do Ciclo mostra (AD-041): a gravada no Ciclo; sem ela, a carga mais comum das
+ * Etapas (no empate, a menor); sem Etapas, o padrão de 1h.
+ */
+export function duracaoDaEdicao(gravada: number | null, cargas: readonly number[]): number {
+  if (gravada !== null) return gravada;
+  const vezes = new Map<number, number>();
+  for (const c of cargas) vezes.set(c, (vezes.get(c) ?? 0) + 1);
+  let escolhida = DURACAO_PADRAO_DA_ETAPA_MINUTOS;
+  let maior = 0;
+  for (const [carga, n] of vezes) if (n > maior || (n === maior && carga < escolhida)) [escolhida, maior] = [carga, n];
+  return escolhida;
+}
+
+/** Minutos em horas como o campo "Duração da etapa (h)" mostra: 90 → "1,5", 60 → "1", 20 → "0,33". */
+export const horasDeMinutos = (minutos: number) => String(Number((minutos / 60).toFixed(2))).replace(".", ",");
+
+/** Uma Matéria do Ciclo como linha da tela de edição: sem valores gravados, "Questões" vazio e Dificuldade "Média" (EDIT-04). */
+export const linhaDaEdicao = (m: { nome: string; questoesDaProva: number | null; dificuldade: Dificuldade | null }) => ({
+  nome: m.nome,
+  questoes: m.questoesDaProva === null ? "" : String(m.questoesDaProva),
+  dificuldade: m.dificuldade ?? ("media" as Dificuldade),
+});

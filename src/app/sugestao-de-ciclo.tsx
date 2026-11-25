@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { RiAddLine, RiDeleteBinLine } from "@remixicon/react";
+import { RiAddLine, RiDeleteBinLine, RiRefreshLine } from "@remixicon/react";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
+import { AlertDialog } from "@/components/base/modal/modal";
 import { Select, SelectItem } from "@/components/base/select/select";
 import {
   CARGA_INVALIDA,
@@ -26,22 +27,32 @@ type Linha = { chave: number; nome: string; questoes: string; dificuldade: Dific
 
 const grade = "grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 lg:grid-cols-[minmax(0,1fr)_7.5rem_10rem_2.25rem]";
 
-type Props = { acao: (estado: EstadoCiclo, dados: FormData) => Promise<EstadoCiclo> };
+/** Valores com que a tela abre: na edição, o Ciclo como `obterSugestaoDoCiclo` o devolve. */
+export type InicialDaSugestao = { nome: string; horas: string; materias: { nome: string; questoes: string; dificuldade: Dificuldade }[] };
+
+type Props = {
+  acao: (estado: EstadoCiclo, dados: FormData) => Promise<EstadoCiclo>;
+  /** Edição de um Ciclo existente (AD-042, AD-043): "Gerar ciclo" com confirmação e lista vazia recusada. */
+  edicao?: boolean;
+  inicial?: InicialDaSugestao;
+};
 
 /**
  * Nome do ciclo e, opcionalmente, a Sugestão de ciclo: as Matérias com Questões da prova e Dificuldade viram Etapas.
  * A prévia usa a mesma função do domínio que o servidor roda ao criar; sem Matérias, cria o Ciclo vazio.
  */
-export function SugestaoDeCiclo({ acao }: Props) {
-  const [nome, setNome] = useState("");
-  const [horas, setHoras] = useState("1");
-  const [linhas, setLinhas] = useState<Linha[]>([]);
+export function SugestaoDeCiclo({ acao, edicao = false, inicial }: Props) {
+  const [nome, setNome] = useState(inicial?.nome ?? "");
+  const [horas, setHoras] = useState(inicial?.horas ?? "1");
+  const [linhas, setLinhas] = useState<Linha[]>(() => (inicial?.materias ?? []).map((m, chave) => ({ chave, ...m })));
   const [novaMateria, setNovaMateria] = useState("");
   const [erroDaNova, setErroDaNova] = useState<string>();
   const [conferir, setConferir] = useState(false);
   const [previa, setPrevia] = useState(false);
   const [erro, setErro] = useState<string>();
-  const [proxima, setProxima] = useState(0);
+  const [proxima, setProxima] = useState(inicial?.materias.length ?? 0);
+  const [confirmar, setConfirmar] = useState(false);
+  const [gerando, setGerando] = useState(false);
   const [enviando, iniciar] = useTransition();
 
   const duracao = minutosDeHoras(horas);
@@ -78,15 +89,29 @@ export function SugestaoDeCiclo({ acao }: Props) {
       setPrevia(false);
       return;
     }
+    if (edicao) setConfirmar(true);
+    else iniciar(enviar);
+  }
+
+  async function enviar() {
     const dados = new FormData();
     dados.set("nome", nome);
     dados.set("horas", horas);
     dados.set("materias", JSON.stringify(linhas.map((l) => ({ nome: l.nome, questoesDaProva: questoesDeTexto(l.questoes), dificuldade: l.dificuldade }))));
-    iniciar(async () => {
-      const estado = await acao({}, dados);
-      if (estado.erro) setErro(estado.erro);
-    });
+    const estado = await acao({}, dados);
+    if (estado.erro) setErro(estado.erro);
   }
+
+  async function gerar() {
+    setGerando(true);
+    try {
+      await enviar();
+    } finally {
+      setGerando(false);
+    }
+  }
+
+  const ocupado = enviando || gerando;
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
@@ -111,7 +136,7 @@ export function SugestaoDeCiclo({ acao }: Props) {
             Matérias
           </h2>
           <p className="text-body-regular text-text-secondary">
-            Informe as questões da prova e a sua dificuldade em cada matéria para receber a sugestão de etapas. Sem matérias, o ciclo nasce vazio.
+            Informe as questões da prova e a sua dificuldade em cada matéria para receber a sugestão de etapas.{edicao ? "" : " Sem matérias, o ciclo nasce vazio."}
           </p>
         </div>
 
@@ -239,14 +264,28 @@ export function SugestaoDeCiclo({ acao }: Props) {
             Voltar
           </Button>
         ) : (
-          <Button type="button" variant="secondary" disabled={!linhas.length || enviando} onClick={visualizar}>
+          <Button type="button" variant="secondary" disabled={!linhas.length || ocupado} onClick={visualizar}>
             Visualizar ciclo
           </Button>
         )}
-        <Button type="button" disabled={enviando} onClick={criar}>
-          Criar ciclo
+        <Button type="button" disabled={ocupado || (edicao && !linhas.length)} onClick={criar}>
+          {edicao ? "Gerar ciclo" : "Criar ciclo"}
         </Button>
       </div>
+
+      {edicao && (
+        <AlertDialog
+          isOpen={confirmar}
+          onOpenChange={setConfirmar}
+          variant="default"
+          icon={RiRefreshLine}
+          title="Gerar ciclo?"
+          description="As etapas atuais serão substituídas pelas da sugestão. Registros, tópicos e voltas continuam."
+          confirmLabel="Gerar ciclo"
+          cancelLabel="Cancelar"
+          onConfirm={gerar}
+        />
+      )}
     </div>
   );
 }
