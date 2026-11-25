@@ -5,7 +5,9 @@ import {
   arquivarCiclo,
   criarCiclo,
   criarTopico,
+  exportarBackup,
   gerarEtapas,
+  importarBackup,
   listarVoltas,
   NaoEncontradoError,
   obterCiclo,
@@ -265,5 +267,52 @@ describe("gerarEtapas", () => {
       new ValidacaoError("Informe o nome do ciclo."),
     );
     expect(await etapasDo(id)).toEqual(antes);
+  });
+});
+
+const INVALIDO = "O arquivo não é um backup válido do Estudo Livre.";
+const exportar = async (usuario: { id: string }) => JSON.parse(JSON.stringify(await exportarBackup(db, usuario)));
+
+describe("backup", () => {
+  it("exporta duracaoEtapaMinutos", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    await criarCiclo(db, ana, { nome: "Banco", duracaoEtapaMinutos: 90, materias: [M("Português", 12, "media")] });
+    const antigo = await criarCiclo(db, ana, { nome: "TRF" });
+    await db.update(ciclo).set({ duracaoEtapaMinutos: null }).where(eq(ciclo.id, antigo.id));
+    const arquivo = await exportar(ana);
+    const porNome = Object.fromEntries(arquivo.ciclos.map((c: { nome: string; duracaoEtapaMinutos: unknown }) => [c.nome, c.duracaoEtapaMinutos]));
+    expect(porNome).toEqual({ Banco: 90, TRF: null });
+  });
+
+  it("importa duracaoEtapaMinutos ou nulo quando ausente", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    await criarCiclo(db, ana, { nome: "Banco", duracaoEtapaMinutos: 90, materias: [M("Português", 12, "media")] });
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    await importarBackup(db, bia, JSON.stringify(await exportar(ana)));
+    const [daBia] = await db.select().from(ciclo).where(eq(ciclo.usuarioId, bia.id));
+    expect(daBia.duracaoEtapaMinutos).toBe(90);
+    expect((await obterSugestaoDoCiclo(db, bia, daBia.id)).duracaoEtapaMinutos).toBe(90);
+
+    const semCampo = await exportar(ana);
+    delete semCampo.ciclos[0].duracaoEtapaMinutos;
+    await importarBackup(db, bia, JSON.stringify(semCampo));
+    const [deNovo] = await db.select().from(ciclo).where(eq(ciclo.usuarioId, bia.id));
+    expect(deNovo.duracaoEtapaMinutos).toBeNull();
+  });
+
+  it("recusa duracaoEtapaMinutos inválida sem substituir nada", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    await criarCiclo(db, ana, { nome: "Banco", duracaoEtapaMinutos: 90 });
+    const bia = await cadastrar(db, "bia@exemplo.com");
+    await criarCiclo(db, bia, { nome: "Da Bia" });
+    for (const valor of [0, 2.5, "60", 600_001]) {
+      const arquivo = await exportar(ana);
+      arquivo.ciclos[0].duracaoEtapaMinutos = valor;
+      await expect(importarBackup(db, bia, JSON.stringify(arquivo))).rejects.toThrow(new ValidacaoError(INVALIDO));
+      expect((await exportar(bia)).ciclos.map((c: { nome: string }) => c.nome)).toEqual(["Da Bia"]);
+    }
+    const limite = await exportar(ana);
+    limite.ciclos[0].duracaoEtapaMinutos = 600_000;
+    await expect(importarBackup(db, bia, JSON.stringify(limite))).resolves.toEqual({ ciclos: 1 });
   });
 });

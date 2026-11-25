@@ -147,7 +147,7 @@ T6 → T7 → T8 → T9
 
 ---
 
-### T5: Duração da Etapa no backup
+### T5: Duração da Etapa no backup ✅
 
 **What**: exportar e importar `duracaoEtapaMinutos` por Ciclo
 **Where**: `src/casos-de-uso/backup.ts`
