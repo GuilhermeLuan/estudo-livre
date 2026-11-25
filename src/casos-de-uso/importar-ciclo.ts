@@ -29,6 +29,14 @@ const textoLimpo = (x: unknown) => (typeof x === "string" ? x.trim() : "");
 const recusar = (mensagem: string): never => {
   throw new ValidacaoError(mensagem);
 };
+/** Algum texto do arquivo, em qualquer profundidade, tem o caractere nulo, que o Postgres não guarda. */
+const temNulo = (x: unknown): boolean =>
+  typeof x === "string" ? x.includes("\u0000") : typeof x === "object" && x !== null ? Object.values(x).some(temNulo) : false;
+// O índice único do banco compara `lower(nome)`, que dobra alguns caracteres diferente do JS (ex.: "Σ" final, "İ").
+const REPETIDO_NO_BANCO: Record<string, string> = {
+  materia_ciclo_nome: "Duas matérias têm o mesmo nome sem diferenciar maiúsculas.",
+  topico_materia_nome: "Uma matéria tem dois tópicos com o mesmo nome sem diferenciar maiúsculas.",
+};
 
 /**
  * Lê o arquivo de ciclo enxuto (AD-039) e recusa no primeiro problema, dizendo onde ele está (AD-043), na ordem:
@@ -42,8 +50,9 @@ export function lerCicloImportado(conteudo: string): CicloLido {
   } catch {
     return recusar("O arquivo não é um JSON válido.");
   }
+  if (temNulo(raiz)) recusar("O arquivo tem um texto com o caractere nulo (\\u0000), que o app não guarda.");
   if (!objeto(raiz) || raiz.formato !== "estudo-livre-ciclo") return recusar('O arquivo não é um ciclo do Estudo Livre: falta "formato": "estudo-livre-ciclo".');
-  if (raiz.versao !== 1) recusar(`Versão de ciclo desconhecida: ${String(raiz.versao)}.`);
+  if (raiz.versao !== 1) recusar(`Versão de ciclo desconhecida: ${raiz.versao === undefined ? "(ausente)" : JSON.stringify(raiz.versao)}.`);
   const nome = textoLimpo(raiz.nome) || recusar('Informe o nome do ciclo em "nome".');
   if (!Array.isArray(raiz.materias)) recusar('"materias" precisa ser uma lista.');
   if (!Array.isArray(raiz.etapas)) recusar('"etapas" precisa ser uma lista.');
@@ -51,6 +60,8 @@ export function lerCicloImportado(conteudo: string): CicloLido {
   const etapasBrutas = raiz.etapas as unknown[];
   if (materiasBrutas.length > materiasMaximas) recusar(`O ciclo aceita até ${materiasMaximas} matérias.`);
 
+  // Os nomes que as Etapas citam, lidos antes para a regra "sem etapa nem tópico" sair na vez da Matéria (AC 17).
+  const citadas = new Set(etapasBrutas.map((x) => textoLimpo(objeto(x) ? x.materia : undefined).toLowerCase()));
   const vistas = new Map<string, string>();
   const materias = materiasBrutas.map((x, i) => {
     const m = objeto(x) ? x : {};
@@ -63,7 +74,7 @@ export function lerCicloImportado(conteudo: string): CicloLido {
     const questoesDaProva = m.questoesDaProva ?? null;
     if (questoesDaProva !== null && !questoesDaProvaValidas(questoesDaProva))
       recusar(`${onde}: questoesDaProva precisa ser um inteiro de 1 a ${milhar(LIMITES_DA_SUGESTAO.questoesMaximas)}.`);
-    const topicosBrutos = m.topicos ?? [];
+    const topicosBrutos = m.topicos === undefined ? [] : m.topicos;
     if (!Array.isArray(topicosBrutos)) return recusar(`${onde}: "topicos" precisa ser uma lista.`);
     if (topicosBrutos.length > topicosMaximos) recusar(`${onde}: até ${topicosMaximos} tópicos.`);
     const topicosVistos = new Set<string>();
@@ -75,6 +86,8 @@ export function lerCicloImportado(conteudo: string): CicloLido {
       topicosVistos.add(limpo.toLowerCase());
       return limpo;
     });
+    // O app descarta a Matéria sem Etapa e sem Tópico (AD-008); importá-la vazia não faz sentido.
+    if (!topicos.length && !citadas.has(nomeDaMateria.toLowerCase())) recusar(`${onde}: informe ao menos uma etapa ou um tópico.`);
     return { nome: nomeDaMateria, dificuldade: dificuldade as Dificuldade | null, questoesDaProva: questoesDaProva as number | null, topicos };
   });
 
@@ -89,10 +102,6 @@ export function lerCicloImportado(conteudo: string): CicloLido {
     return { materia: materiaDaEtapa, cargaMinutos: carga as number };
   });
 
-  // O app descarta a Matéria sem Etapa e sem Tópico (AD-008); importá-la vazia não faz sentido.
-  const comEtapa = new Set(etapas.map((e) => e.materia));
-  for (const m of materias) if (!m.topicos.length && !comEtapa.has(m.nome)) recusar(`Matéria "${m.nome}": informe ao menos uma etapa ou um tópico.`);
-
   return { nome, materias, etapas };
 }
 
@@ -102,6 +111,17 @@ export function lerCicloImportado(conteudo: string): CicloLido {
  */
 export async function importarCiclo(db: Db, usuario: Usuario, conteudo: string): Promise<{ id: string }> {
   const lido = lerCicloImportado(conteudo);
+  try {
+    return await gravar(db, usuario, lido);
+  } catch (erro) {
+    const causa = (erro as { cause?: { code?: string; constraint?: string } }).cause;
+    const repetido = causa?.code === "23505" && causa.constraint ? REPETIDO_NO_BANCO[causa.constraint] : undefined;
+    if (repetido) throw new ValidacaoError(repetido);
+    throw erro;
+  }
+}
+
+function gravar(db: Db, usuario: Usuario, lido: CicloLido) {
   return db.transaction(async (tx) => {
     const [novo] = await tx.insert(ciclo).values({ usuarioId: usuario.id, nome: lido.nome }).returning({ id: ciclo.id });
     await tx.insert(volta).values({ cicloId: novo.id, numero: 1 });

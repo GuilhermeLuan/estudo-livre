@@ -145,6 +145,25 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 
 ---
 
+### P1: Recusa - achados da verificação ⭐ MVP
+
+**User Story**: Como Usuário, quero que os arquivos que o Verifier achou (tópicos nulos, caractere nulo, nomes que o banco vê iguais, versão em texto) sejam recusados com mensagem, nunca com erro da tela.
+
+**Why P1**: Um erro sem mensagem quebra a tela e não diz à IA o que corrigir (AD-043).
+
+**Acceptance Criteria** (cada recusa mostra a mensagem sob o campo e não cria nada):
+
+1. IF `topicos` de uma Matéria está presente e não é lista (inclusive `null`) THEN the system SHALL recusar com "Matéria "<nome>": "topicos" precisa ser uma lista."
+2. IF algum texto do arquivo tem o caractere nulo THEN the system SHALL recusar com "O arquivo tem um texto com o caractere nulo (\u0000), que o app não guarda."
+3. IF duas Matérias têm nomes que o banco considera iguais sem diferenciar maiúsculas (ex.: "AΣ" e "aσ") THEN the system SHALL recusar com "Duas matérias têm o mesmo nome sem diferenciar maiúsculas."
+4. IF dois Tópicos da mesma Matéria têm nomes que o banco considera iguais THEN the system SHALL recusar com "Uma matéria tem dois tópicos com o mesmo nome sem diferenciar maiúsculas."
+5. IF `versao` é texto ou falta THEN the system SHALL mostrar o valor como JSON ou "(ausente)": "Versão de ciclo desconhecida: "1"." e "Versão de ciclo desconhecida: (ausente)."
+6. WHEN uma Matéria não tem Etapa nem Tópico THEN the system SHALL recusá-la na vez dela entre as Matérias, antes dos problemas das Matérias seguintes e das Etapas
+
+**Independent Test**: Importar um arquivo com `"topicos": null` e ler a mensagem, sem Ciclo novo.
+
+---
+
 ## Edge Cases
 
 - WHEN `materias` e `etapas` são listas vazias THEN the system SHALL criar o Ciclo vazio, como a criação manual sem Matérias
@@ -166,8 +185,9 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 | IMPC-05 | P1: Recusa (Matérias e Tópicos) | Execute | Implementing |
 | IMPC-06 | P1: Recusa (Etapas, limites, ordem, falha, chaves extras) | Execute | Implementing |
 | IMPC-07 | P1: Instruções para a IA | Execute | Implementing |
+| IMPC-08 | P1: Recusa - achados da verificação | Execute | Implementing |
 
-**Coverage:** 7 total, 7 mapped to checks, 0 unmapped
+**Coverage:** 8 total, 8 mapped to checks, 0 unmapped
 
 ---
 
@@ -218,7 +238,7 @@ Proof: run unit | ✓ tests/importar-ciclo.test.ts > importar ciclo > deixa difi
 **C6** - Ciclo nasce na Volta 1, sem Registros, com Faixas 60/75/90 e Mínimo 5 (IMPC-02, AC 7)
 Proof: run unit | ✓ tests/importar-ciclo.test.ts > importar ciclo > abre o ciclo na volta 1 sem registros e com faixas padrão
 
-**C7** - Os Ciclos que o Usuário já tinha continuam (IMPC-03, AC 8)
+**C7** - Os Ciclos que o Usuário já tinha, ativos e arquivados, continuam como estavam (IMPC-03, AC 8)
 Proof: run unit | ✓ tests/importar-ciclo.test.ts > importar ciclo > mantém os ciclos que o usuário já tinha
 
 **C8** - Grava só na conta da sessão (IMPC-03, AC 9)
@@ -332,12 +352,54 @@ Proof: run unit | ✓ tests/importar-ciclo.test.ts > importar ciclo > cria maté
 **C44** - Etapa casa a Matéria sem diferenciar maiúsculas e os textos perdem os espaços das pontas (Edge Cases 4 e 5)
 Proof: run unit | ✓ tests/importar-ciclo.test.ts > importar ciclo > liga a etapa à matéria sem diferenciar maiúsculas e tira espaços das pontas
 
+**C45** - Tópico de 120 caracteres (120 emojis) é aceito (IMPC-05, AC 11)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > aceitar no limite > aceita tópico de 120 caracteres contados por caractere
+
+**C46** - Cargas de 1 e 600.000 minutos são aceitas (IMPC-06, AC 15)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > aceitar no limite > aceita carga de 1 e de 600.000 minutos
+
+**C47** - 50 Matérias são aceitas (IMPC-06, AC 16)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > aceitar no limite > aceita 50 matérias
+
+**C48** - 200 Etapas são aceitas (IMPC-06, AC 16)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > aceitar no limite > aceita 200 etapas
+
+**C49** - 200 Tópicos numa Matéria são aceitos (IMPC-06, AC 16)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > aceitar no limite > aceita 200 tópicos numa matéria
+
+**C50** - `topicos` em texto recusa (IMPC-08, AC 1)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa topicos que não é lista sem criar nada
+
+**C51** - `topicos: null` recusa (IMPC-08, AC 1)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa topicos nulo sem criar nada
+
+**C52** - Caractere nulo num texto recusa com a mensagem (IMPC-08, AC 2)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa caractere nulo num texto sem criar nada
+
+**C53** - Matérias "AΣ" e "aσ" recusam com a mensagem de repetidas (IMPC-08, AC 3)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matérias que o banco vê repetidas sem criar nada
+
+**C54** - Tópicos "AΣ" e "aσ" recusam com a mensagem de repetidos (IMPC-08, AC 4)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa tópicos que o banco vê repetidos sem criar nada
+
+**C55** - `"versao": "1"` mostra 'Versão de ciclo desconhecida: "1".' (IMPC-08, AC 5)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa versão em texto sem criar nada
+
+**C56** - Sem `versao` mostra "Versão de ciclo desconhecida: (ausente)." (IMPC-08, AC 5)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa versão ausente sem criar nada
+
+**C57** - Matéria vazia sai antes da dificuldade inválida da Matéria seguinte (IMPC-08, AC 6)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes da dificuldade de outra sem criar nada
+
+**C58** - Matéria vazia sai antes do problema de uma Etapa (IMPC-08, AC 6)
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes de etapa sem criar nada
+
 ---
 
 ## Handoff
 
 **Settled mid-build:** none. Os testes rodam num Postgres dedicado (`docker run -d --name estudo-livre-teste-pinfish -e POSTGRES_PASSWORD=teste -e POSTGRES_DB=teste -p 54332:5432 postgres:17-alpine`): o container padrão `estudo-livre-teste-pg` é recriado por outras sessões no meio da execução e derrubava testes ao acaso.
-**Dispatched:** none
+**Dispatched:** Verifier (round 1) at `6799eac`. Não há screens sub-agent: nenhum critério cita captura.
 **Walked:** `next start -H 0.0.0.0 -p 3120` com `DATABASE_URL=postgres://postgres:teste@localhost:54332/walk` (banco `walk` no container `estudo-livre-teste-pinfish`, migrações aplicadas) e `BETTER_AUTH_URL=http://100.83.47.57:3120` (tailnet; a 3100 estava ocupada). Cliques reais num Chromium headless (Playwright 1.49.1), 1440x960 tema claro e 390x844 com a classe `dark`; sessão por `POST /api/auth/sign-up/email` (`walk-<largura>-<timestamp>@exemplo.com`, senha `senha-de-teste-123`).
 - C1: em /ciclos/novo, abaixo da criação manual, o cartão mostra "Importar ciclo", "Crie um ciclo a partir de um arquivo JSON.", "Arquivo do ciclo", "Escolher arquivo", "Nenhum arquivo escolhido" e "Importar ciclo"; o campo aceita `.json,application/json`.
 - C2: "Importar ciclo" sem arquivo mostra "Escolha um arquivo." sob o campo.

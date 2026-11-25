@@ -1,6 +1,6 @@
 import { asc, eq, sql } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { criarCiclo, importarCiclo, obterCiclo, obterFaixas, obterMateria, type Usuario, ValidacaoError } from "@/casos-de-uso";
+import { arquivarCiclo, criarCiclo, importarCiclo, obterCiclo, obterFaixas, obterMateria, type Usuario, ValidacaoError } from "@/casos-de-uso";
 import { ciclo, etapa, materia, registroDeEstudo, topico, volta } from "@/db/schema";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
@@ -102,12 +102,17 @@ describe("importar ciclo", () => {
   it("mantém os ciclos que o usuário já tinha", async () => {
     const usuario = await cadastrar(db, "ana@exemplo.com");
     const { id: antigo } = await criarCiclo(db, usuario, { nome: "INSS" });
+    const { id: arquivado } = await criarCiclo(db, usuario, { nome: "TRT" });
+    await arquivarCiclo(db, usuario, arquivado);
+    const antes = await contagem(usuario);
     const { id } = await importar(usuario, exemplo());
-    const ciclos = await db.select({ id: ciclo.id, nome: ciclo.nome }).from(ciclo).where(eq(ciclo.usuarioId, usuario.id)).orderBy(asc(ciclo.criadoEm));
+    const ciclos = await db.select({ id: ciclo.id, nome: ciclo.nome, arquivado: sql<boolean>`${ciclo.arquivadoEm} is not null` }).from(ciclo).where(eq(ciclo.usuarioId, usuario.id)).orderBy(asc(ciclo.criadoEm));
     expect(ciclos).toEqual([
-      { id: antigo, nome: "INSS" },
-      { id, nome: "TRF 5 - Analista Judiciário" },
+      { id: antigo, nome: "INSS", arquivado: false },
+      { id: arquivado, nome: "TRT", arquivado: true },
+      { id, nome: "TRF 5 - Analista Judiciário", arquivado: false },
     ]);
+    expect(await contagem(usuario)).toEqual({ ...antes, ciclos: 3, materias: 2, etapas: 3, topicos: 2, voltas: 3 });
   });
 
   it("grava só na conta do usuário da sessão", async () => {
@@ -168,6 +173,40 @@ describe("importar ciclo", () => {
   });
 });
 
+describe("aceitar no limite", () => {
+  it("aceita tópico de 120 caracteres contados por caractere", async () => {
+    const usuario = await cadastrar(db, "ana@exemplo.com");
+    // 120 emojis: 120 caracteres, 240 unidades UTF-16.
+    const { id } = await importar(usuario, com((a) => (a.materias[0].topicos = ["📚".repeat(120)])));
+    const [m] = await db.select({ id: materia.id }).from(materia).where(eq(materia.nome, "Português"));
+    expect((await obterMateria(db, usuario, id, m.id)).topicos.map((t) => t.nome)).toEqual(["📚".repeat(120)]);
+  });
+
+  it("aceita carga de 1 e de 600.000 minutos", async () => {
+    const usuario = await cadastrar(db, "ana@exemplo.com");
+    const { id } = await importar(usuario, com((a) => ((a.etapas[0].cargaMinutos = 1), (a.etapas[1].cargaMinutos = 600_000))));
+    expect((await obterCiclo(db, usuario, id)).etapas.map((e) => e.cargaMinutos)).toEqual([1, 600_000, 90]);
+  });
+
+  it("aceita 50 matérias", async () => {
+    const usuario = await cadastrar(db, "ana@exemplo.com");
+    await importar(usuario, com((a) => ((a.materias = Array.from({ length: 50 }, (_, i) => ({ nome: `M${i}`, topicos: ["T"] }))), (a.etapas = []))));
+    expect((await contagem(usuario)).materias).toBe(50);
+  });
+
+  it("aceita 200 etapas", async () => {
+    const usuario = await cadastrar(db, "ana@exemplo.com");
+    await importar(usuario, com((a) => (a.etapas = Array.from({ length: 200 }, (_, i) => ({ materia: i % 2 ? "Português" : "Direito Constitucional", cargaMinutos: 30 })))));
+    expect((await contagem(usuario)).etapas).toBe(200);
+  });
+
+  it("aceita 200 tópicos numa matéria", async () => {
+    const usuario = await cadastrar(db, "ana@exemplo.com");
+    await importar(usuario, com((a) => (a.materias[0].topicos = Array.from({ length: 200 }, (_, i) => `T${i}`))));
+    expect((await contagem(usuario)).topicos).toBe(200);
+  });
+});
+
 describe("recusar ciclo", () => {
   const casos: { caso: string; arquivo: unknown; mensagem: string }[] = [
     { caso: "arquivo que não é JSON", arquivo: "{ nome: TRF", mensagem: "O arquivo não é um JSON válido." },
@@ -191,10 +230,19 @@ describe("recusar ciclo", () => {
     { caso: "carga zero", arquivo: com((a) => (a.etapas[0].cargaMinutos = 0)), mensagem: "Etapa 1: cargaMinutos precisa ser um inteiro de 1 a 600.000." },
     { caso: "carga acima do limite", arquivo: com((a) => (a.etapas[1].cargaMinutos = 600_001)), mensagem: "Etapa 2: cargaMinutos precisa ser um inteiro de 1 a 600.000." },
     { caso: "mais de 50 matérias", arquivo: com((a) => ((a.materias = Array.from({ length: 51 }, (_, i) => ({ nome: `M${i}`, topicos: ["T"] }))), (a.etapas = []))), mensagem: "O ciclo aceita até 50 matérias." },
-    { caso: "mais de 200 etapas", arquivo: com((a) => (a.etapas = Array.from({ length: 201 }, () => ({ materia: "Português", cargaMinutos: 30 })))), mensagem: "O ciclo aceita até 200 etapas." },
+    { caso: "mais de 200 etapas", arquivo: com((a) => (a.etapas = Array.from({ length: 201 }, (_, i) => ({ materia: i % 2 ? "Português" : "Direito Constitucional", cargaMinutos: 30 })))), mensagem: "O ciclo aceita até 200 etapas." },
     { caso: "mais de 200 tópicos", arquivo: com((a) => (a.materias[0].topicos = Array.from({ length: 201 }, (_, i) => `T${i}`))), mensagem: 'Matéria "Português": até 200 tópicos.' },
     { caso: "vários problemas, mostra o primeiro", arquivo: com((a) => ((a.etapas[0].cargaMinutos = 0), (a.materias[1].dificuldade = "x"), (a.nome = ""))), mensagem: 'Informe o nome do ciclo em "nome".' },
     { caso: "matéria antes de etapa", arquivo: com((a) => ((a.etapas[0].cargaMinutos = 0), (a.materias[1].dificuldade = "x"))), mensagem: 'Matéria "Direito Constitucional": dificuldade precisa ser "facil", "media" ou "dificil".' },
+    { caso: "versão em texto", arquivo: com((a) => (a.versao = "1")), mensagem: 'Versão de ciclo desconhecida: "1".' },
+    { caso: "versão ausente", arquivo: com((a) => delete a.versao), mensagem: "Versão de ciclo desconhecida: (ausente)." },
+    { caso: "topicos que não é lista", arquivo: com((a) => (a.materias[0].topicos = "Crase")), mensagem: 'Matéria "Português": "topicos" precisa ser uma lista.' },
+    { caso: "topicos nulo", arquivo: com((a) => (a.materias[0].topicos = null)), mensagem: 'Matéria "Português": "topicos" precisa ser uma lista.' },
+    { caso: "caractere nulo num texto", arquivo: com((a) => (a.materias[1].topicos = ["a\u0000b"])), mensagem: "O arquivo tem um texto com o caractere nulo (\\u0000), que o app não guarda." },
+    { caso: "matéria vazia antes da dificuldade de outra", arquivo: com((a) => a.materias.unshift({ nome: "TI" }) && (a.materias[2].dificuldade = "x")), mensagem: 'Matéria "TI": informe ao menos uma etapa ou um tópico.' },
+    { caso: "matéria vazia antes de etapa", arquivo: com((a) => a.materias.push({ nome: "TI" }) && (a.etapas[0].cargaMinutos = 0)), mensagem: 'Matéria "TI": informe ao menos uma etapa ou um tópico.' },
+    { caso: "matérias que o banco vê repetidas", arquivo: com((a) => ((a.materias = [{ nome: "AΣ", topicos: ["t"] }, { nome: "aσ", topicos: ["t"] }]), (a.etapas = []))), mensagem: "Duas matérias têm o mesmo nome sem diferenciar maiúsculas." },
+    { caso: "tópicos que o banco vê repetidos", arquivo: com((a) => (a.materias[0].topicos = ["AΣ", "aσ"])), mensagem: "Uma matéria tem dois tópicos com o mesmo nome sem diferenciar maiúsculas." },
     { caso: "tamanho antes de JSON", arquivo: "x".repeat(1024 * 1024 + 1), mensagem: "O arquivo passa de 1 MB." },
   ];
 

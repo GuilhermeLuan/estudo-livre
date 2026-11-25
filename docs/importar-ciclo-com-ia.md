@@ -35,7 +35,7 @@ Cada Matéria em `materias`:
 | `nome` | texto | sim | Não vazio; único no arquivo, sem diferenciar maiúsculas |
 | `dificuldade` | texto ou `null` | não | `"facil"`, `"media"` ou `"dificil"` |
 | `questoesDaProva` | inteiro ou `null` | não | De 1 a 10000 |
-| `topicos` | lista de textos | não | Até 200; cada um com 1 a 120 caracteres; únicos na Matéria, sem diferenciar maiúsculas |
+| `topicos` | lista de textos | não | Lista ou campo ausente (não use `null`). Até 200; cada um com 1 a 120 caracteres; únicos na Matéria, sem diferenciar maiúsculas |
 
 Cada Etapa em `etapas`:
 
@@ -53,14 +53,15 @@ O app recusa o arquivo inteiro, sem criar nada, e mostra o primeiro problema que
 1. Arquivo maior que 1 MB.
 2. Texto que não é JSON (comentários `//`, vírgula sobrando, aspas simples, bloco de texto antes ou depois).
 3. `formato` diferente de `"estudo-livre-ciclo"` ou `versao` diferente de `1`.
-4. `nome` ausente ou vazio; `materias` ou `etapas` ausente ou que não é lista.
+4. `versao` ausente ou em texto (`"1"`); `nome` ausente ou vazio; `materias` ou `etapas` ausente ou que não é lista.
 5. Matéria sem `nome`, ou duas Matérias com o mesmo nome (ex.: "Português" e "PORTUGUÊS").
 6. `dificuldade` com outro valor (ex.: `"Média"`, `"alta"`); `questoesDaProva` fracionário, zero ou acima de 10000.
-7. Tópico vazio, com mais de 120 caracteres, ou repetido na mesma Matéria.
-8. Matéria sem nenhuma Etapa e sem nenhum Tópico.
-9. Etapa cuja `materia` não está em `materias` (confira a grafia, inclusive acentos).
-10. `cargaMinutos` que não é inteiro de 1 a 600000 (ex.: `1.5`, `"60"`, `0`).
-11. Mais de 50 Matérias, mais de 200 Etapas ou mais de 200 Tópicos numa Matéria.
+7. `topicos` que não é lista (inclusive `null`); Tópico vazio, com mais de 120 caracteres, ou repetido na mesma Matéria.
+8. Texto com o caractere nulo (`\u0000`).
+9. Matéria sem nenhuma Etapa e sem nenhum Tópico.
+10. Etapa cuja `materia` não está em `materias` (confira a grafia, inclusive acentos).
+11. `cargaMinutos` que não é inteiro de 1 a 600000 (ex.: `1.5`, `"60"`, `0`).
+12. Mais de 50 Matérias, mais de 200 Etapas ou mais de 200 Tópicos numa Matéria.
 
 ## Como montar Matérias e Tópicos
 
