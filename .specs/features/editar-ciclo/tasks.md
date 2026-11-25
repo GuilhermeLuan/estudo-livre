@@ -124,7 +124,7 @@ T6 → T7 → T8 → T9
 
 ---
 
-### T4: Gerar as Etapas no mesmo Ciclo
+### T4: Gerar as Etapas no mesmo Ciclo ✅
 
 **What**: caso de uso `gerarEtapas`
 **Where**: `src/casos-de-uso/ciclos.ts`

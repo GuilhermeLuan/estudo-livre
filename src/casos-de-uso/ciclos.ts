@@ -12,6 +12,7 @@ import {
   erroDaNovaMateria,
   LIMITES_DA_SUGESTAO,
   LISTA_CHEIA,
+  LISTA_VAZIA,
   QUESTOES_INVALIDAS,
   questoesDaProvaValidas,
   sugerirEtapas,
@@ -183,6 +184,39 @@ export async function obterSugestaoDoCiclo(db: Db, usuario: Usuario, cicloId: st
     duracaoEtapaMinutos: duracaoDaEdicao(duracaoEtapaMinutos, etapas.map((e) => e.cargaMinutos)),
     materias,
   };
+}
+
+/**
+ * "Gerar ciclo" na edição (AD-039, AD-040): refaz as Etapas do mesmo Ciclo a partir da Sugestão de ciclo. Matérias
+ * de mesmo nome são reaproveitadas (com Registros, Tópicos e Cartões); as novas são criadas; as que saíram da lista
+ * perdem as Etapas e seguem AD-008. A Volta aberta continua e pode fechar. Tudo numa transação, com o Ciclo travado.
+ */
+export async function gerarEtapas(
+  db: Db,
+  usuario: Usuario,
+  cicloId: string,
+  dados: { nome: string; duracaoEtapaMinutos: number; materias: MateriaParaSugerir[] },
+): Promise<{ voltaFechada: number | null }> {
+  const nome = nomeValido(dados.nome, "do ciclo");
+  const materias = materiasValidas(dados.materias ?? []);
+  if (!materias.length) throw new ValidacaoError(LISTA_VAZIA);
+  const duracao = cargaValida(dados.duracaoEtapaMinutos);
+  return db.transaction(async (tx) => {
+    await travarCiclo(tx, usuario, cicloId);
+    await tx.update(ciclo).set({ nome, duracaoEtapaMinutos: duracao }).where(eq(ciclo.id, cicloId));
+    const antes = await tx.selectDistinct({ materiaId: etapa.materiaId }).from(etapa).where(eq(etapa.cicloId, cicloId));
+    const idDe = new Map<string, string>();
+    for (const m of materias) {
+      const id = await materiaDoCiclo(tx, cicloId, m.nome);
+      await tx.update(materia).set({ questoesDaProva: m.questoesDaProva, dificuldade: m.dificuldade }).where(eq(materia.id, id));
+      idDe.set(m.nome.toLowerCase(), id);
+    }
+    await tx.delete(etapa).where(eq(etapa.cicloId, cicloId));
+    await tx.insert(etapa).values(sugerirEtapas(materias).map((e, posicao) => ({ cicloId, materiaId: idDe.get(e.nome.toLowerCase())!, cargaMinutos: duracao, posicao })));
+    const mantidas = new Set(idDe.values());
+    for (const { materiaId } of antes) if (!mantidas.has(materiaId)) await descartarMateriaSemUso(tx, materiaId);
+    return { voltaFechada: await avaliarFechamentoDaVolta(tx, cicloId) };
+  });
 }
 
 export async function renomearCiclo(db: Db, usuario: Usuario, cicloId: string, dados: { nome: string }) {

@@ -9,6 +9,7 @@ export {
   adicionarEtapa,
   criarCiclo,
   editarEtapa,
+  gerarEtapas,
   obterCiclo,
   obterSugestaoDoCiclo,
   removerEtapa,
