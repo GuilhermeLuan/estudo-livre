@@ -186,7 +186,7 @@ T6 → T7 → T8 → T9
 
 ---
 
-### T7: Modo edição da tela de sugestão
+### T7: Modo edição da tela de sugestão ✅
 
 **What**: `SugestaoDeCiclo` aceita valores iniciais, botão "Gerar ciclo" com `AlertDialog`, sem a frase de ciclo vazio e com botões desabilitados sem linhas
 **Where**: `src/app/sugestao-de-ciclo.tsx`
