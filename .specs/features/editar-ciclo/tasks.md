@@ -64,7 +64,7 @@ T6 → T7 → T8 → T9
 
 ## Task Breakdown
 
-### T1: Duração da edição no domínio
+### T1: Duração da edição no domínio ✅
 
 **What**: `duracaoDaEdicao(gravada, cargas)` e a mensagem `LISTA_VAZIA` em `src/dominio.ts`, com testes
 **Where**: `src/dominio.ts`
