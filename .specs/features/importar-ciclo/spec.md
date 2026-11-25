@@ -192,13 +192,13 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 Tarefas implícitas (3 passos, sem `tasks.md`):
 
 1. Caso de uso `importarCiclo` e testes → files: `src/casos-de-uso/importar-ciclo.ts`, `src/casos-de-uso/index.ts`, `src/dominio.ts`, `tests/importar-ciclo.test.ts` → verify: run unit → commit: `feat(ciclos): importar ciclo a partir de um JSON` ✅
-2. Instruções para a IA → files: `docs/importar-ciclo-com-ia.md`, `tests/instrucoes-para-ia.test.ts` → verify: run unit → commit: `docs(ciclos): instruções para a IA montar o JSON do ciclo`
+2. Instruções para a IA → files: `docs/importar-ciclo-com-ia.md`, `tests/instrucoes-para-ia.test.ts` → verify: run unit → commit: `docs(ciclos): instruções para a IA montar o JSON do ciclo` ✅
 3. Cartão "Importar ciclo" em `/ciclos/novo` → files: `src/app/acoes-ciclos.ts`, `src/app/importar-ciclo.tsx`, `src/app/(app)/ciclos/novo/page.tsx`, `docs/design-system.md` → verify: build + walk → commit: `feat(ciclos): cartão importar ciclo na página novo ciclo`
 
 ## Checks
 
 **Build**: `npm run typecheck; npm run build`
-**Run unit**: `npx vitest run tests/importar-ciclo.test.ts tests/instrucoes-para-ia.test.ts --reporter=verbose`
+**Run unit**: `TEST_DATABASE_URL=postgres://postgres:teste@localhost:54332/teste npx vitest run tests/importar-ciclo.test.ts tests/instrucoes-para-ia.test.ts --reporter=verbose`
 
 **C1** - /ciclos/novo mostra o cartão "Importar ciclo" com o texto, "Escolher arquivo" (.json), "Nenhum arquivo escolhido" e "Importar ciclo" (IMPC-01, AC 1)
 Proof: walk - /ciclos/novo mostra o cartão Importar ciclo com os textos da spec
@@ -336,6 +336,6 @@ Proof: run unit | ✓ tests/importar-ciclo.test.ts > importar ciclo > liga a eta
 
 ## Handoff
 
-**Settled mid-build:** none
+**Settled mid-build:** none. Os testes rodam num Postgres dedicado (`docker run -d --name estudo-livre-teste-pinfish -e POSTGRES_PASSWORD=teste -e POSTGRES_DB=teste -p 54332:5432 postgres:17-alpine`): o container padrão `estudo-livre-teste-pg` é recriado por outras sessões no meio da execução e derrubava testes ao acaso.
 **Dispatched:** none
 **Walked:** pending
