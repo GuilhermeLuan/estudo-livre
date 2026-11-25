@@ -227,6 +227,22 @@ describe("gerarEtapas", () => {
     expect(await db.select().from(materia).where(eq(materia.cicloId, id)).orderBy(asc(materia.nome))).toEqual(materiasAntes);
   });
 
+  it("gera com mais de 50 Matérias que já têm Etapa e só recusa acrescentar novas", async () => {
+    const ana = await cadastrar(db, "ana@exemplo.com");
+    const { id } = await criarCiclo(db, ana, { nome: "Grande" });
+    const nomes = Array.from({ length: 51 }, (_, i) => `Matéria ${i + 1}`);
+    for (const nome of nomes) await adicionarEtapa(db, ana, id, { nome, cargaMinutos: 60 });
+    const lista = (await obterSugestaoDoCiclo(db, ana, id)).materias.map((m) => M(m.nome, 5, "media"));
+    expect(lista).toHaveLength(51);
+    const antes = await etapasDo(id);
+    await expect(gerarEtapas(db, ana, id, { nome: "Grande", duracaoEtapaMinutos: 60, materias: [...lista, M("Nova", 5, "media")] })).rejects.toThrow(
+      new ValidacaoError("A sugestão aceita até 50 matérias."),
+    );
+    expect(await etapasDo(id)).toEqual(antes);
+    await gerarEtapas(db, ana, id, { nome: "Grande", duracaoEtapaMinutos: 60, materias: lista });
+    expect(new Set((await obterCiclo(db, ana, id)).etapas.map((e) => e.nome))).toEqual(new Set(nomes));
+  });
+
   it("recusa Ciclo arquivado sem mudar nada", async () => {
     const ana = await cadastrar(db, "ana@exemplo.com");
     const { id } = await cicloSugerido(ana);

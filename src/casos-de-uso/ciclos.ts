@@ -110,12 +110,13 @@ async function descartarMateriaSemUso(tx: Tx, materiaId: string) {
 }
 
 /** As Matérias da Sugestão de ciclo, já conferidas: nome, Questões da prova, Dificuldade, lista e repetição. */
-function materiasValidas(entrada: readonly MateriaParaSugerir[]): MateriaParaSugerir[] {
-  if (entrada.length > LIMITES_DA_SUGESTAO.materiasMaximas) throw new ValidacaoError(LISTA_CHEIA);
+function materiasValidas(entrada: readonly MateriaParaSugerir[], limite: number = LIMITES_DA_SUGESTAO.materiasMaximas): MateriaParaSugerir[] {
+  if (entrada.length > limite) throw new ValidacaoError(LISTA_CHEIA);
   const nomes: string[] = [];
   return entrada.map((m) => {
     const nome = nomeValido(m.nome, "da matéria");
-    const erro = erroDaNovaMateria(nomes, nome);
+    // O tamanho da lista já foi conferido contra `limite`; aqui só a repetição (sem diferenciar maiúsculas).
+    const erro = erroDaNovaMateria(nomes.filter((n) => n.toLowerCase() === nome.toLowerCase()), nome);
     if (erro) throw new ValidacaoError(erro);
     if (!questoesDaProvaValidas(m.questoesDaProva)) throw new ValidacaoError(QUESTOES_INVALIDAS);
     if (!DIFICULDADES.includes(m.dificuldade)) throw new ValidacaoError("Escolha a dificuldade da matéria.");
@@ -198,13 +199,14 @@ export async function gerarEtapas(
   dados: { nome: string; duracaoEtapaMinutos: number; materias: MateriaParaSugerir[] },
 ): Promise<{ voltaFechada: number | null }> {
   const nome = nomeValido(dados.nome, "do ciclo");
-  const materias = materiasValidas(dados.materias ?? []);
-  if (!materias.length) throw new ValidacaoError(LISTA_VAZIA);
+  if (!dados.materias?.length) throw new ValidacaoError(LISTA_VAZIA);
   const duracao = cargaValida(dados.duracaoEtapaMinutos);
   return db.transaction(async (tx) => {
     await travarCiclo(tx, usuario, cicloId);
-    await tx.update(ciclo).set({ nome, duracaoEtapaMinutos: duracao }).where(eq(ciclo.id, cicloId));
     const antes = await tx.selectDistinct({ materiaId: etapa.materiaId }).from(etapa).where(eq(etapa.cicloId, cicloId));
+    // Um Ciclo que já passa de 50 Matérias com Etapa gera com todas; só não cresce além disso (Edge Cases do spec).
+    const materias = materiasValidas(dados.materias, Math.max(LIMITES_DA_SUGESTAO.materiasMaximas, antes.length));
+    await tx.update(ciclo).set({ nome, duracaoEtapaMinutos: duracao }).where(eq(ciclo.id, cicloId));
     const idDe = new Map<string, string>();
     for (const m of materias) {
       const id = await materiaDoCiclo(tx, cicloId, m.nome);
