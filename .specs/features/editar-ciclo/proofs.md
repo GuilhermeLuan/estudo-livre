@@ -1,6 +1,6 @@
 # editar-ciclo proofs
 
-**HEAD**: 353440d
+**HEAD**: b741d48
 **Tree**: clean
 **Shell**: /bin/sh
 **Result**: 30 pass, 0 fail
@@ -45,17 +45,17 @@
 ```
 
 stderr | tests/editar-ciclo.test.ts > backup > exporta duracaoEtapaMinutos
-2026-11-25T23:38:07.147Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:38:26.849Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/editar-ciclo.test.ts > backup > importa duracaoEtapaMinutos ou nulo quando ausente
-2026-11-25T23:38:07.270Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:38:26.983Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/editar-ciclo.test.ts > backup > importa duracaoEtapaMinutos ou nulo quando ausente
-2026-11-25T23:38:07.355Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:38:27.070Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/editar-ciclo.test.ts > backup > recusa duracaoEtapaMinutos inválida sem substituir nada
-2026-11-25T23:38:07.486Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:38:27.202Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/editar-ciclo.test.ts > backup > recusa duracaoEtapaMinutos inválida sem substituir nada
-2026-11-25T23:38:07.577Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:38:27.289Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 ```
