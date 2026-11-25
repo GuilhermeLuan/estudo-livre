@@ -164,6 +164,25 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 
 ---
 
+### P1: Colar o JSON ⭐ MVP
+
+**User Story**: Como Usuário, quero colar o JSON que a IA me deu, sem salvar um arquivo antes.
+
+**Why P1**: Pedido do Usuário depois da primeira entrega ("quero a opção de colar um json da minha clipboard"); AD-045.
+
+**Acceptance Criteria** (substituem o texto e a posição do botão de IMPC-01 AC 1):
+
+1. WHEN o Usuário abre `/ciclos/novo` THEN the system SHALL mostrar no cartão "Importar ciclo" a frase "Crie um ciclo a partir de um JSON.", o seletor com "Arquivo" e "Colar JSON" (com "Arquivo" escolhido) e o botão "Importar ciclo" no rodapé do cartão, alinhado à direita
+2. WHEN o Usuário escolhe "Colar JSON" THEN the system SHALL trocar o campo de arquivo pela área de texto "JSON do ciclo", com o texto de apoio "Cole aqui o JSON do ciclo."
+3. WHEN o Usuário usa "Importar ciclo" com um JSON válido colado THEN the system SHALL criar o Ciclo e abrir `/ciclos/{id}`, como com o arquivo
+4. IF o JSON colado é recusado THEN the system SHALL mostrar a mesma mensagem que o arquivo mostraria, sob a área de texto
+5. IF o Usuário usa "Importar ciclo" em "Colar JSON" com a área vazia THEN the system SHALL mostrar "Cole o JSON do ciclo." e não criar nada
+6. The system SHALL importar o conteúdo da opção que está à vista: com "Colar JSON" escolhido, o arquivo escolhido antes é ignorado, e vice-versa
+
+**Independent Test**: Escolher "Colar JSON", colar o exemplo de `docs/importar-ciclo-com-ia.md`, usar "Importar ciclo" e chegar à página do Ciclo.
+
+---
+
 ## Edge Cases
 
 - WHEN `materias` e `etapas` são listas vazias THEN the system SHALL criar o Ciclo vazio, como a criação manual sem Matérias
@@ -186,8 +205,9 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 | IMPC-06 | P1: Recusa (Etapas, limites, ordem, falha, chaves extras) | Execute | Implementing |
 | IMPC-07 | P1: Instruções para a IA | Execute | Implementing |
 | IMPC-08 | P1: Recusa - achados da verificação | Execute | Implementing |
+| IMPC-09 | P1: Colar o JSON | Execute | Implementing |
 
-**Coverage:** 8 total, 8 mapped to checks, 0 unmapped
+**Coverage:** 9 total, 9 mapped to checks, 0 unmapped
 
 ---
 
@@ -221,7 +241,7 @@ Tarefas implícitas (3 passos, sem `tasks.md`):
 **Run unit**: `TEST_DATABASE_URL=postgres://postgres:teste@localhost:54332/teste npx vitest run tests/importar-ciclo.test.ts tests/instrucoes-para-ia.test.ts --reporter=verbose`
 
 **C1** - /ciclos/novo mostra o cartão "Importar ciclo" com o texto, "Escolher arquivo" (.json), "Nenhum arquivo escolhido" e "Importar ciclo" (IMPC-01, AC 1)
-Proof: walk - /ciclos/novo mostra o cartão Importar ciclo com os textos da spec
+Proof: walk - /ciclos/novo mostra o cartão Importar ciclo com os textos da spec (a frase e a posição do botão passam a ser as de C59, AD-045)
 
 **C2** - "Importar ciclo" sem arquivo mostra "Escolha um arquivo." e não cria nada (IMPC-01, AC 2)
 Proof: walk - Importar ciclo sem arquivo mostra Escolha um arquivo.
@@ -394,11 +414,29 @@ Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa mat�
 **C58** - Matéria vazia sai antes do problema de uma Etapa (IMPC-08, AC 6)
 Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes de etapa sem criar nada
 
+**C59** - O cartão mostra "Crie um ciclo a partir de um JSON.", o seletor "Arquivo" / "Colar JSON" com "Arquivo" escolhido e "Importar ciclo" no rodapé à direita, alinhado com "Escolher arquivo" sem desnível (IMPC-09, AC 1)
+Proof: walk - /ciclos/novo a 1440 e 390 mostra o seletor e o botão no rodapé à direita
+
+**C60** - "Colar JSON" troca o campo de arquivo pela área "JSON do ciclo" (IMPC-09, AC 2)
+Proof: walk - escolher Colar JSON mostra a área JSON do ciclo e esconde Escolher arquivo
+
+**C61** - JSON colado válido cria o Ciclo e abre /ciclos/{id} (IMPC-09, AC 3)
+Proof: walk - colar o exemplo do documento leva à página de "TRF 5 - Analista Judiciário"
+
+**C62** - JSON colado recusado mostra a mensagem do caso de uso sob a área (IMPC-09, AC 4)
+Proof: walk - colar o exemplo com a Etapa 3 em Direito Penal mostra a mensagem da Etapa 3
+
+**C63** - Área vazia mostra "Cole o JSON do ciclo." (IMPC-09, AC 5)
+Proof: walk - Importar ciclo com a área vazia mostra Cole o JSON do ciclo.
+
+**C64** - Vale o conteúdo da opção à vista (IMPC-09, AC 6)
+Proof: walk - com um arquivo inválido escolhido, Colar JSON com o exemplo válido importa; voltar a Arquivo usa o arquivo
+
 ---
 
 ## Handoff
 
-**Settled mid-build:** none. Os testes rodam num Postgres dedicado (`docker run -d --name estudo-livre-teste-pinfish -e POSTGRES_PASSWORD=teste -e POSTGRES_DB=teste -p 54332:5432 postgres:17-alpine`): o container padrão `estudo-livre-teste-pg` é recriado por outras sessões no meio da execução e derrubava testes ao acaso.
+**Settled mid-build:** user: "o botao escolher arquivo e importar ciclo esta desalinhado. Além disso, quero a opção de colar um json da minha clipboard." -> AD-045, IMPC-09. Os testes rodam num Postgres dedicado (`docker run -d --name estudo-livre-teste-pinfish -e POSTGRES_PASSWORD=teste -e POSTGRES_DB=teste -p 54332:5432 postgres:17-alpine`): o container padrão `estudo-livre-teste-pg` é recriado por outras sessões no meio da execução e derrubava testes ao acaso.
 **Dispatched:** Verifier (round 1) at `6799eac` - returned, 7 achados fechados em `36f7948`. Não há screens sub-agent: nenhum critério cita captura.
 **Walked:** `next start -H 0.0.0.0 -p 3120` com `DATABASE_URL=postgres://postgres:teste@localhost:54332/walk` (banco `walk` no container `estudo-livre-teste-pinfish`, migrações aplicadas) e `BETTER_AUTH_URL=http://100.83.47.57:3120` (tailnet; a 3100 estava ocupada). Cliques reais num Chromium headless (Playwright 1.49.1), 1440x960 tema claro e 390x844 com a classe `dark`; sessão por `POST /api/auth/sign-up/email` (`walk-<largura>-<timestamp>@exemplo.com`, senha `senha-de-teste-123`).
 - C1: em /ciclos/novo, abaixo da criação manual, o cartão mostra "Importar ciclo", "Crie um ciclo a partir de um arquivo JSON.", "Arquivo do ciclo", "Escolher arquivo", "Nenhum arquivo escolhido" e "Importar ciclo"; o campo aceita `.json,application/json`.
@@ -406,3 +444,9 @@ Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa mat�
 - Recusa: o exemplo do documento com a 3ª Etapa em "Direito Penal" mostra "Etapa 3: a matéria "Direito Penal" não está em materias." e a página continua em /ciclos/novo.
 - C3: o exemplo de `docs/importar-ciclo-com-ia.md` leva a /ciclos/{id}, com o título "TRF 5 - Analista Judiciário", 7 Etapas de 1h00 na ordem do arquivo, Volta 1, Matérias com 0/5, 0/4 e 0/2 Tópicos e Faixas padrão; a Sidebar mostra o Ciclo novo. Sem rolagem horizontal nas duas larguras.
 - C10: `POST /ciclos/novo` com `Next-Action` e sem cookie responde 307 para /entrar.
+- Colar o JSON (AD-045), refeito depois do pedido do Usuário, com o mesmo servidor reconstruído (`walk2-<largura>-<timestamp>@exemplo.com` e `walk3-<timestamp>@exemplo.com`, senha `senha-de-teste-123`), 1440x960 claro e 390x844 escuro:
+  - C59: o cartão diz "Crie um ciclo a partir de um JSON.", o seletor mostra "Arquivo" (escolhido) e "Colar JSON"; "Importar ciclo" fica no rodapé à direita (21px da borda do cartão) e tem a mesma altura de "Escolher arquivo".
+  - C60: "Colar JSON" esconde "Escolher arquivo" e mostra a área "JSON do ciclo".
+  - C63: "Importar ciclo" com a área vazia mostra "Cole o JSON do ciclo.".
+  - C62: colar o exemplo com a Etapa 3 em "Direito Penal" mostra "Etapa 3: a matéria "Direito Penal" não está em materias." sob a área.
+  - C64 e C61: com `ciclo-com-erro.json` escolhido em "Arquivo", colar o exemplo válido em "Colar JSON" importa e abre /ciclos/{id} de "TRF 5 - Analista Judiciário"; ao contrário, com o exemplo válido como arquivo e "isto não é JSON" colado, voltar a "Arquivo" e importar também abre o Ciclo. Sem rolagem horizontal nas duas larguras.

@@ -76,15 +76,25 @@ export async function novoCiclo(_: EstadoCiclo, dados: FormData): Promise<Estado
   redirect(`/ciclos/${id}`);
 }
 
-/** "Importar ciclo": o JSON vem no campo `arquivo`; cria um Ciclo novo (AD-041) e abre a página dele (AD-044). */
-export async function importarCicloDoArquivo(dados: FormData): Promise<EstadoCiclo> {
+/**
+ * "Importar ciclo": o JSON vem colado no campo `texto` ou como arquivo em `arquivo` (AD-045); cria um Ciclo novo
+ * (AD-041) e abre a página dele (AD-044).
+ */
+export async function importarCicloDoJson(dados: FormData): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
+  const texto = dados.get("texto");
   const arquivo = dados.get("arquivo");
-  // Um arquivo escolhido e vazio segue para o caso de uso, que o recusa como JSON inválido.
-  if (!(arquivo instanceof File) || arquivo.name === "") return { erro: "Escolha um arquivo." };
+  let conteudo: string;
+  if (typeof texto === "string") {
+    if (!texto.trim()) return { erro: "Cole o JSON do ciclo." };
+    conteudo = texto;
+  } else if (arquivo instanceof File && arquivo.name !== "") {
+    // Um arquivo escolhido e vazio segue para o caso de uso, que o recusa como JSON inválido.
+    conteudo = await arquivo.text();
+  } else return { erro: "Escolha um arquivo." };
   let id = "";
   const estado = await executar(async () => {
-    id = (await importarCiclo(obterDb(), usuario, await arquivo.text())).id;
+    id = (await importarCiclo(obterDb(), usuario, conteudo)).id;
   });
   if (estado.erro) return estado;
   revalidatePath("/", "layout");
