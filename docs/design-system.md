@@ -45,7 +45,7 @@ Cartões e painéis em `rounded-3xl`; campos e linhas de menu em `rounded-xl`; c
 
 Um único ponto de quebra: **1024px**.
 
-- **A partir de 1024px**: Sidebar flutuante de 260px à esquerda e conteúdo ao lado, com no máximo 1160px.
+- **A partir de 1024px**: Sidebar flutuante de 260px à esquerda e conteúdo centralizado no espaço ao lado, com no máximo 1160px (1440px a partir de 1920px, para telas 4K não ficarem com metade vazia).
 - **Abaixo de 1024px**: Sidebar oculta; cabeçalho com a marca, o título e o avatar (menu com Ciclos, Novo ciclo, Arquivados, Backup, Usuários, tema e Sair); barra de abas inferior com Hoje, o botão central "+" e Estatísticas. Os cartões das telas empilham em uma coluna.
 
 ## Componentes do BoardUI
