@@ -49,3 +49,4 @@ export {
   type TopicoDaMateria,
 } from "./topicos";
 export { exportarBackup, importarBackup, nomeDoArquivoDeBackup, type Backup } from "./backup";
+export { importarCiclo } from "./importar-ciclo";
