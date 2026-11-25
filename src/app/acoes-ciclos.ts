@@ -9,6 +9,7 @@ import {
   criarCiclo,
   importarCiclo,
   editarEtapa,
+  gerarEtapas,
   NaoEncontradoError,
   reativarCiclo,
   removerEtapa,
@@ -77,8 +78,8 @@ export async function novoCiclo(_: EstadoCiclo, dados: FormData): Promise<Estado
 }
 
 /**
- * "Importar ciclo": o JSON vem colado no campo `texto` ou como arquivo em `arquivo` (AD-045); cria um Ciclo novo
- * (AD-041) e abre a página dele (AD-044).
+ * "Importar ciclo": o JSON vem colado no campo `texto` ou como arquivo em `arquivo` (AD-050); cria um Ciclo novo
+ * (AD-046) e abre a página dele (AD-049).
  */
 export async function importarCicloDoJson(dados: FormData): Promise<EstadoCiclo> {
   const usuario = await exigirUsuario();
@@ -99,6 +100,19 @@ export async function importarCicloDoJson(dados: FormData): Promise<EstadoCiclo>
   if (estado.erro) return estado;
   revalidatePath("/", "layout");
   redirect(`/ciclos/${id}`);
+}
+
+/** "Gerar ciclo" na edição: refaz as Etapas do Ciclo e volta à página dele; a Volta que fechar vira aviso (AD-018). */
+export async function gerarCiclo(cicloId: string, _: EstadoCiclo, dados: FormData): Promise<EstadoCiclo> {
+  const usuario = await exigirUsuario();
+  let fechada: number | null = null;
+  const estado = await executar(async () => {
+    const materias = materiasDoFormulario(dados);
+    fechada = (await gerarEtapas(obterDb(), usuario, cicloId, { nome: texto(dados, "nome"), duracaoEtapaMinutos: minutos(dados), materias })).voltaFechada;
+  });
+  if (estado.erro) return estado;
+  revalidatePath("/", "layout");
+  redirect(fechada ? `/ciclos/${cicloId}?volta-concluida=${fechada}` : `/ciclos/${cicloId}`);
 }
 
 export async function renomear(cicloId: string, _: EstadoCiclo, dados: FormData): Promise<EstadoCiclo> {

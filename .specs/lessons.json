@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 18,
+  "next_id": 21,
   "lessons": [
     {
       "id": "L-001",
@@ -259,6 +259,60 @@
     },
     {
       "id": "L-015",
+      "key": "weak_test::conversoes feitas na pagina valor gravado texto do campo ficam fora dos testes extraia para uma funcao pura em src dominio ts e teste o texto que o criterio fixa",
+      "text": "Conversões feitas na página (valor gravado → texto do campo) ficam fora dos testes: extraia para uma função pura em src/dominio.ts e teste o texto que o critério fixa.",
+      "signal": "weak_test",
+      "scope": "src/app",
+      "status": "candidate",
+      "features": [
+        "editar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C4 (src/app)"
+      ],
+      "created": "2026-11-25T23:38:48Z",
+      "last_seen": "2026-11-25T23:38:48Z"
+    },
+    {
+      "id": "L-016",
+      "key": "ac_gap::ao reaproveitar uma validacao de criacao numa edicao confira os limites contra dados que ja existem um ciclo pode ja passar do teto e teste a borda",
+      "text": "Ao reaproveitar uma validação de criação numa edição, confira os limites contra dados que já existem (um Ciclo pode já passar do teto) e teste a borda.",
+      "signal": "ac_gap",
+      "scope": "src/casos-de-uso",
+      "status": "candidate",
+      "features": [
+        "editar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "Edge Cases EDIT-03 (src/casos-de-uso)"
+      ],
+      "created": "2026-11-25T23:38:48Z",
+      "last_seen": "2026-11-25T23:38:48Z"
+    },
+    {
+      "id": "L-017",
+      "key": "weak_test::no teste de falha no meio da transacao envie valores diferentes dos gravados e confira cada linha tocada senao um update fora da transacao passa despercebido",
+      "text": "No teste de falha no meio da transação, envie valores diferentes dos gravados e confira cada linha tocada, senão um update fora da transação passa despercebido.",
+      "signal": "weak_test",
+      "scope": "tests",
+      "status": "candidate",
+      "features": [
+        "editar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C16 (tests)"
+      ],
+      "created": "2026-11-25T23:38:48Z",
+      "last_seen": "2026-11-25T23:38:48Z"
+    },
+    {
+      "id": "L-018",
       "key": "weak_test::todo limite numerico tem dois testes o valor exato aceito e o seguinte recusado so o lado recusado deixa passar a troca de por",
       "text": "Todo limite numérico tem dois testes: o valor exato aceito e o seguinte recusado; só o lado recusado deixa passar a troca de > por >=.",
       "signal": "weak_test",
@@ -272,11 +326,11 @@
       "evidence": [
         "verification.md C27,C31-C35 (tests)"
       ],
-      "created": "2026-11-25T23:44:29Z",
-      "last_seen": "2026-11-25T23:44:29Z"
+      "created": "2026-11-25T23:55:08Z",
+      "last_seen": "2026-11-25T23:55:08Z"
     },
     {
-      "id": "L-016",
+      "id": "L-019",
       "key": "ac_gap::validar unicidade sem diferenciar maiusculas em js nao garante o indice lower do postgres capture a violacao 23505 pela constraint e recuse com mensagem",
       "text": "Validar unicidade sem diferenciar maiúsculas em JS não garante o índice lower() do Postgres; capture a violação 23505 pela constraint e recuse com mensagem.",
       "signal": "ac_gap",
@@ -290,11 +344,11 @@
       "evidence": [
         "verification.md - toLowerCase vs lower() (casos-de-uso)"
       ],
-      "created": "2026-11-25T23:44:29Z",
-      "last_seen": "2026-11-25T23:44:29Z"
+      "created": "2026-11-25T23:55:08Z",
+      "last_seen": "2026-11-25T23:55:08Z"
     },
     {
-      "id": "L-017",
+      "id": "L-020",
       "key": "gate_fail::no it each do vitest um campo interpolado com mais de 40 caracteres sai cortado com reticencias e a prova por linha nao acha o teste mantenha os nomes de caso curtos",
       "text": "No it.each do vitest, um $campo interpolado com mais de 40 caracteres sai cortado com reticências e a prova por linha não acha o teste; mantenha os nomes de caso curtos.",
       "signal": "gate_fail",
@@ -308,8 +362,8 @@
       "evidence": [
         "proofs C57 (tests)"
       ],
-      "created": "2026-11-25T23:44:29Z",
-      "last_seen": "2026-11-25T23:44:29Z"
+      "created": "2026-11-25T23:55:08Z",
+      "last_seen": "2026-11-25T23:55:08Z"
     }
   ]
 }

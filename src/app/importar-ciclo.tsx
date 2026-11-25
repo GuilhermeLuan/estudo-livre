@@ -11,8 +11,8 @@ import { importarCicloDoJson } from "./acoes-ciclos";
 type Origem = "arquivo" | "colar";
 
 /**
- * Cartão "Importar ciclo" de /ciclos/novo: o JSON enxuto (AD-039) vem de um arquivo ou colado (AD-045) e vira um
- * Ciclo novo, aberto em seguida (AD-044). Vale só o conteúdo da opção à vista.
+ * Cartão "Importar ciclo" de /ciclos/novo: o JSON enxuto (AD-044) vem de um arquivo ou colado (AD-050) e vira um
+ * Ciclo novo, aberto em seguida (AD-049). Vale só o conteúdo da opção à vista.
  */
 export function ImportarCiclo() {
   const campo = useRef<HTMLInputElement>(null);

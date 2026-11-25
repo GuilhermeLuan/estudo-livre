@@ -98,23 +98,41 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C10 verification finding 6 (domain)
 - last seen: 2026-11-22T22:01:56Z
 
-### L-015 - Todo limite numérico tem dois testes: o valor exato aceito e o seguinte recusado; só o lado recusado deixa passar a troca de > por >=.
+### L-015 - Conversões feitas na página (valor gravado → texto do campo) ficam fora dos testes: extraia para uma função pura em src/dominio.ts e teste o texto que o critério fixa.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `src/app` · harmful: 0
+- features: editar-ciclo
+- evidence: C4 (src/app)
+- last seen: 2026-11-25T23:38:48Z
+
+### L-016 - Ao reaproveitar uma validação de criação numa edição, confira os limites contra dados que já existem (um Ciclo pode já passar do teto) e teste a borda.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `src/casos-de-uso` · harmful: 0
+- features: editar-ciclo
+- evidence: Edge Cases EDIT-03 (src/casos-de-uso)
+- last seen: 2026-11-25T23:38:48Z
+
+### L-017 - No teste de falha no meio da transação, envie valores diferentes dos gravados e confira cada linha tocada, senão um update fora da transação passa despercebido.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: editar-ciclo
+- evidence: C16 (tests)
+- last seen: 2026-11-25T23:38:48Z
+
+### L-018 - Todo limite numérico tem dois testes: o valor exato aceito e o seguinte recusado; só o lado recusado deixa passar a troca de > por >=.
 - signal: `weak_test` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
 - features: importar-ciclo
 - evidence: verification.md C27,C31-C35 (tests)
-- last seen: 2026-11-25T23:44:29Z
+- last seen: 2026-11-25T23:55:08Z
 
-### L-016 - Validar unicidade sem diferenciar maiúsculas em JS não garante o índice lower() do Postgres; capture a violação 23505 pela constraint e recuse com mensagem.
+### L-019 - Validar unicidade sem diferenciar maiúsculas em JS não garante o índice lower() do Postgres; capture a violação 23505 pela constraint e recuse com mensagem.
 - signal: `ac_gap` · recurrence: 1 feature(s) · scope: `casos-de-uso` · harmful: 0
 - features: importar-ciclo
 - evidence: verification.md - toLowerCase vs lower() (casos-de-uso)
-- last seen: 2026-11-25T23:44:29Z
+- last seen: 2026-11-25T23:55:08Z
 
-### L-017 - No it.each do vitest, um $campo interpolado com mais de 40 caracteres sai cortado com reticências e a prova por linha não acha o teste; mantenha os nomes de caso curtos.
+### L-020 - No it.each do vitest, um $campo interpolado com mais de 40 caracteres sai cortado com reticências e a prova por linha não acha o teste; mantenha os nomes de caso curtos.
 - signal: `gate_fail` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
 - features: importar-ciclo
 - evidence: proofs C57 (tests)
-- last seen: 2026-11-25T23:44:29Z
+- last seen: 2026-11-25T23:55:08Z
 
 ## Quarantined (failed when applied - ignore)
 

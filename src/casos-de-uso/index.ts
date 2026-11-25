@@ -9,12 +9,15 @@ export {
   adicionarEtapa,
   criarCiclo,
   editarEtapa,
+  gerarEtapas,
   obterCiclo,
+  obterSugestaoDoCiclo,
   removerEtapa,
   renomearCiclo,
   reordenarEtapas,
   type CicloDetalhe,
   type EtapaDoCiclo,
+  type SugestaoDoCiclo,
 } from "./ciclos";
 export {
   descartarCronometro,

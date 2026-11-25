@@ -8,12 +8,15 @@ import {
   concluida,
   DIFICULDADES,
   DURACAO_PADRAO_DA_ETAPA_MINUTOS,
+  duracaoDaEdicao,
   erroDaNovaMateria,
   LIMITES_DA_SUGESTAO,
   LISTA_CHEIA,
+  LISTA_VAZIA,
   QUESTOES_INVALIDAS,
   questoesDaProvaValidas,
   sugerirEtapas,
+  type Dificuldade,
   type MateriaParaSugerir,
 } from "@/dominio";
 import { avaliarFechamentoDaVolta, progressoDosCiclos, type Executor, type MateriaComProgresso } from "./progresso";
@@ -107,12 +110,13 @@ async function descartarMateriaSemUso(tx: Tx, materiaId: string) {
 }
 
 /** As Matérias da Sugestão de ciclo, já conferidas: nome, Questões da prova, Dificuldade, lista e repetição. */
-function materiasValidas(entrada: readonly MateriaParaSugerir[]): MateriaParaSugerir[] {
-  if (entrada.length > LIMITES_DA_SUGESTAO.materiasMaximas) throw new ValidacaoError(LISTA_CHEIA);
+function materiasValidas(entrada: readonly MateriaParaSugerir[], limite: number = LIMITES_DA_SUGESTAO.materiasMaximas): MateriaParaSugerir[] {
+  if (entrada.length > limite) throw new ValidacaoError(LISTA_CHEIA);
   const nomes: string[] = [];
   return entrada.map((m) => {
     const nome = nomeValido(m.nome, "da matéria");
-    const erro = erroDaNovaMateria(nomes, nome);
+    // O tamanho da lista já foi conferido contra `limite`; aqui só a repetição (sem diferenciar maiúsculas).
+    const erro = erroDaNovaMateria(nomes.filter((n) => n.toLowerCase() === nome.toLowerCase()), nome);
     if (erro) throw new ValidacaoError(erro);
     if (!questoesDaProvaValidas(m.questoesDaProva)) throw new ValidacaoError(QUESTOES_INVALIDAS);
     if (!DIFICULDADES.includes(m.dificuldade)) throw new ValidacaoError("Escolha a dificuldade da matéria.");
@@ -135,7 +139,7 @@ export async function criarCiclo(
   const materias = materiasValidas(dados.materias ?? []);
   const duracao = cargaValida(dados.duracaoEtapaMinutos ?? DURACAO_PADRAO_DA_ETAPA_MINUTOS);
   return db.transaction(async (tx) => {
-    const [linha] = await tx.insert(ciclo).values({ usuarioId: usuario.id, nome }).returning({ id: ciclo.id });
+    const [linha] = await tx.insert(ciclo).values({ usuarioId: usuario.id, nome, duracaoEtapaMinutos: duracao }).returning({ id: ciclo.id });
     await tx.insert(volta).values({ cicloId: linha.id, numero: 1 });
     if (materias.length) {
       const criadas = await tx
@@ -146,6 +150,74 @@ export async function criarCiclo(
       await tx.insert(etapa).values(sugerirEtapas(materias).map((e, posicao) => ({ cicloId: linha.id, materiaId: idDe.get(e.nome.toLowerCase())!, cargaMinutos: duracao, posicao })));
     }
     return linha;
+  });
+}
+
+export type SugestaoDoCiclo = {
+  id: string;
+  nome: string;
+  arquivado: boolean;
+  duracaoEtapaMinutos: number;
+  /** Matérias com Etapa, na ordem da primeira Etapa de cada uma; nulos nas criadas à mão. */
+  materias: { nome: string; questoesDaProva: number | null; dificuldade: Dificuldade | null }[];
+};
+
+/** O Ciclo como a tela de edição da Sugestão de ciclo o mostra (EDIT-03 a EDIT-05). */
+export async function obterSugestaoDoCiclo(db: Db, usuario: Usuario, cicloId: string): Promise<SugestaoDoCiclo> {
+  const { id, nome, arquivadoEm, duracaoEtapaMinutos } = await exigirCiclo(db, usuario, cicloId);
+  const etapas = await db
+    .select({ materiaId: etapa.materiaId, cargaMinutos: etapa.cargaMinutos, nome: materia.nome, questoesDaProva: materia.questoesDaProva, dificuldade: materia.dificuldade })
+    .from(etapa)
+    .innerJoin(materia, eq(materia.id, etapa.materiaId))
+    .where(eq(etapa.cicloId, cicloId))
+    .orderBy(asc(etapa.posicao));
+  const vistas = new Set<string>();
+  const materias: SugestaoDoCiclo["materias"] = [];
+  for (const e of etapas) {
+    if (vistas.has(e.materiaId)) continue;
+    vistas.add(e.materiaId);
+    materias.push({ nome: e.nome, questoesDaProva: e.questoesDaProva, dificuldade: e.dificuldade });
+  }
+  return {
+    id,
+    nome,
+    arquivado: arquivadoEm !== null,
+    duracaoEtapaMinutos: duracaoDaEdicao(duracaoEtapaMinutos, etapas.map((e) => e.cargaMinutos)),
+    materias,
+  };
+}
+
+/**
+ * "Gerar ciclo" na edição (AD-039, AD-040): refaz as Etapas do mesmo Ciclo a partir da Sugestão de ciclo. Matérias
+ * de mesmo nome são reaproveitadas (com Registros, Tópicos e Cartões); as novas são criadas; as que saíram da lista
+ * perdem as Etapas e seguem AD-008. A Volta aberta continua e pode fechar. Tudo numa transação, com o Ciclo travado.
+ */
+export async function gerarEtapas(
+  db: Db,
+  usuario: Usuario,
+  cicloId: string,
+  dados: { nome: string; duracaoEtapaMinutos: number; materias: MateriaParaSugerir[] },
+): Promise<{ voltaFechada: number | null }> {
+  const nome = nomeValido(dados.nome, "do ciclo");
+  if (!dados.materias?.length) throw new ValidacaoError(LISTA_VAZIA);
+  const duracao = cargaValida(dados.duracaoEtapaMinutos);
+  return db.transaction(async (tx) => {
+    await travarCiclo(tx, usuario, cicloId);
+    const antes = await tx.selectDistinct({ materiaId: etapa.materiaId }).from(etapa).where(eq(etapa.cicloId, cicloId));
+    // Um Ciclo que já passa de 50 Matérias com Etapa gera com todas; só não cresce além disso (Edge Cases do spec).
+    const materias = materiasValidas(dados.materias, Math.max(LIMITES_DA_SUGESTAO.materiasMaximas, antes.length));
+    await tx.update(ciclo).set({ nome, duracaoEtapaMinutos: duracao }).where(eq(ciclo.id, cicloId));
+    const idDe = new Map<string, string>();
+    for (const m of materias) {
+      const id = await materiaDoCiclo(tx, cicloId, m.nome);
+      await tx.update(materia).set({ questoesDaProva: m.questoesDaProva, dificuldade: m.dificuldade }).where(eq(materia.id, id));
+      idDe.set(m.nome.toLowerCase(), id);
+    }
+    await tx.delete(etapa).where(eq(etapa.cicloId, cicloId));
+    await tx.insert(etapa).values(sugerirEtapas(materias).map((e, posicao) => ({ cicloId, materiaId: idDe.get(e.nome.toLowerCase())!, cargaMinutos: duracao, posicao })));
+    const mantidas = new Set(idDe.values());
+    for (const { materiaId } of antes) if (!mantidas.has(materiaId)) await descartarMateriaSemUso(tx, materiaId);
+    return { voltaFechada: await avaliarFechamentoDaVolta(tx, cicloId) };
   });
 }
 

@@ -39,7 +39,7 @@ const REPETIDO_NO_BANCO: Record<string, string> = {
 };
 
 /**
- * Lê o arquivo de ciclo enxuto (AD-039) e recusa no primeiro problema, dizendo onde ele está (AD-043), na ordem:
+ * Lê o arquivo de ciclo enxuto (AD-044) e recusa no primeiro problema, dizendo onde ele está (AD-048), na ordem:
  * tamanho, JSON, formato, versão, nome, listas, Matérias (com seus Tópicos) e Etapas. Chaves desconhecidas são ignoradas.
  */
 export function lerCicloImportado(conteudo: string): CicloLido {
@@ -106,7 +106,7 @@ export function lerCicloImportado(conteudo: string): CicloLido {
 }
 
 /**
- * Cria um Ciclo novo a partir do arquivo enxuto (AD-039, AD-041): Volta 1 aberta, Matérias, Etapas na ordem do
+ * Cria um Ciclo novo a partir do arquivo enxuto (AD-044, AD-046): Volta 1 aberta, Matérias, Etapas na ordem do
  * arquivo e Tópicos não estudados, numa transação. Nunca toca os Ciclos que o Usuário já tem.
  */
 export async function importarCiclo(db: Db, usuario: Usuario, conteudo: string): Promise<{ id: string }> {

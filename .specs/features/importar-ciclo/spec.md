@@ -16,12 +16,12 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 
 | Feature | Reason |
 | --- | --- |
-| Importar um Ciclo no formato do backup (com Voltas, Registros e revisões) | AD-039: formato enxuto, Ciclo nasce zerado |
-| Aplicar a Sugestão de ciclo às Matérias do arquivo | AD-040: as Etapas vêm explícitas |
+| Importar um Ciclo no formato do backup (com Voltas, Registros e revisões) | AD-044: formato enxuto, Ciclo nasce zerado |
+| Aplicar a Sugestão de ciclo às Matérias do arquivo | AD-045: as Etapas vêm explícitas |
 | Faixas de acerto e Mínimo de questões no arquivo | Não pedido; o Ciclo nasce com os padrões, editáveis depois |
 | Importar Ciclo arquivado ou importar vários Ciclos num arquivo | Um arquivo, um Ciclo novo e ativo |
-| Prévia antes de criar | AD-044 |
-| Servir as instruções para IA pelo app, ou um link para elas na tela | AD-042: só no repositório |
+| Prévia antes de criar | AD-049 |
+| Servir as instruções para IA pelo app, ou um link para elas na tela | AD-047: só no repositório |
 | Exportar um Ciclo neste formato | Não pedido |
 | Frame no Figma | Não há; a tela segue `docs/design-system.md`, atualizado no mesmo PR |
 
@@ -31,12 +31,12 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 
 | Assumption / decision | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Formato | AD-039; esquema em "Formato do arquivo" abaixo | Decidido | y - AD-039 |
-| Etapas | AD-040 | Decidido | y - AD-040 |
-| Local e efeito | AD-041: `/ciclos/novo`, sempre soma | Decidido | y - AD-041 |
-| Instruções | AD-042: `docs/importar-ciclo-com-ia.md` | Decidido | y - AD-042 |
-| Mensagens de erro | AD-043: o primeiro problema, com o lugar | Decidido | y - AD-043 |
-| Fluxo | AD-044: cria e abre | Decidido | y - AD-044 |
+| Formato | AD-044; esquema em "Formato do arquivo" abaixo | Decidido | y - AD-044 |
+| Etapas | AD-045 | Decidido | y - AD-045 |
+| Local e efeito | AD-046: `/ciclos/novo`, sempre soma | Decidido | y - AD-046 |
+| Instruções | AD-047: `docs/importar-ciclo-com-ia.md` | Decidido | y - AD-047 |
+| Mensagens de erro | AD-048: o primeiro problema, com o lugar | Decidido | y - AD-048 |
+| Fluxo | AD-049: cria e abre | Decidido | y - AD-049 |
 | Tamanho máximo do arquivo | 1 MB ("O arquivo passa de 1 MB.") | Um Ciclo com 50 Matérias × 200 Tópicos cabe com folga; o backup usa 50 MB porque leva histórico | y - aprovado com a spec |
 | Como a Etapa aponta a Matéria | Pelo nome, sem diferenciar maiúsculas, como o app já compara nomes de Matéria | Uma IA escreve nomes com mais acerto do que ids | y - aprovado com a spec |
 | Chaves desconhecidas no JSON | Ignoradas | IA costuma acrescentar comentários ou campos; recusar por isso só atrapalha | y - aprovado com a spec |
@@ -45,7 +45,7 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 | Nome de Ciclo repetido | Permitido, como na criação manual | Nome de Ciclo não é único no app | y - fato do schema |
 | Faixas, Mínimo, Tópico estudado | Padrões do app; Tópicos nascem não estudados, na ordem do arquivo | Ciclo novo, sem histórico | y - aprovado com a spec |
 
-**Open questions:** none - todas resolvidas acima ou nas AD-039 a AD-044.
+**Open questions:** none - todas resolvidas acima ou nas AD-044 a AD-049.
 
 ### Formato do arquivo
 
@@ -101,7 +101,7 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 
 **User Story**: Como Usuário, quero que um JSON errado seja recusado com uma mensagem que eu possa devolver à IA.
 
-**Why P1**: O arquivo vem de uma IA e vai errar às vezes (AD-043).
+**Why P1**: O arquivo vem de uma IA e vai errar às vezes (AD-048).
 
 **Acceptance Criteria** (cada recusa mostra a mensagem sob o campo, em `role="alert"`, e não cria nada):
 
@@ -149,7 +149,7 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 
 **User Story**: Como Usuário, quero que os arquivos que o Verifier achou (tópicos nulos, caractere nulo, nomes que o banco vê iguais, versão em texto) sejam recusados com mensagem, nunca com erro da tela.
 
-**Why P1**: Um erro sem mensagem quebra a tela e não diz à IA o que corrigir (AD-043).
+**Why P1**: Um erro sem mensagem quebra a tela e não diz à IA o que corrigir (AD-048).
 
 **Acceptance Criteria** (cada recusa mostra a mensagem sob o campo e não cria nada):
 
@@ -168,7 +168,7 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 
 **User Story**: Como Usuário, quero colar o JSON que a IA me deu, sem salvar um arquivo antes.
 
-**Why P1**: Pedido do Usuário depois da primeira entrega ("quero a opção de colar um json da minha clipboard"); AD-045.
+**Why P1**: Pedido do Usuário depois da primeira entrega ("quero a opção de colar um json da minha clipboard"); AD-050.
 
 **Acceptance Criteria** (substituem o texto e a posição do botão de IMPC-01 AC 1):
 
@@ -214,7 +214,7 @@ Montar um Ciclo a partir de um edital hoje é digitação manual: cada Matéria,
 ## Sources
 
 - Pedido do Usuário: "parecido com backup, quero uma funcionalidade de importar ciclo, esse import vai por um json. Além disso, quero um MD para instrucoes para IA como ela vai criar esse JSON."
-- AD-039 a AD-044 em `.specs/STATE.md`
+- AD-044 a AD-049 em `.specs/STATE.md`
 - Backup (`src/casos-de-uso/backup.ts`, `src/app/importar-backup.tsx`): padrão do campo de arquivo e da validação
 - Sem frame no Figma: o cartão segue `docs/design-system.md` (entrada "Novo ciclo"), atualizado no mesmo PR
 
@@ -241,7 +241,7 @@ Tarefas implícitas (3 passos, sem `tasks.md`):
 **Run unit**: `TEST_DATABASE_URL=postgres://postgres:teste@localhost:54332/teste npx vitest run tests/importar-ciclo.test.ts tests/instrucoes-para-ia.test.ts --reporter=verbose`
 
 **C1** - /ciclos/novo mostra o cartão "Importar ciclo" com o texto, "Escolher arquivo" (.json), "Nenhum arquivo escolhido" e "Importar ciclo" (IMPC-01, AC 1)
-Proof: walk - /ciclos/novo mostra o cartão Importar ciclo com os textos da spec (a frase e a posição do botão passam a ser as de C59, AD-045)
+Proof: walk - /ciclos/novo mostra o cartão Importar ciclo com os textos da spec (a frase e a posição do botão passam a ser as de C59, AD-050)
 
 **C2** - "Importar ciclo" sem arquivo mostra "Escolha um arquivo." e não cria nada (IMPC-01, AC 2)
 Proof: walk - Importar ciclo sem arquivo mostra Escolha um arquivo.
@@ -436,7 +436,7 @@ Proof: walk - com um arquivo inválido escolhido, Colar JSON com o exemplo váli
 
 ## Handoff
 
-**Settled mid-build:** user: "o botao escolher arquivo e importar ciclo esta desalinhado. Além disso, quero a opção de colar um json da minha clipboard." -> AD-045, IMPC-09. Os testes rodam num Postgres dedicado (`docker run -d --name estudo-livre-teste-pinfish -e POSTGRES_PASSWORD=teste -e POSTGRES_DB=teste -p 54332:5432 postgres:17-alpine`): o container padrão `estudo-livre-teste-pg` é recriado por outras sessões no meio da execução e derrubava testes ao acaso.
+**Settled mid-build:** user: "o botao escolher arquivo e importar ciclo esta desalinhado. Além disso, quero a opção de colar um json da minha clipboard." -> AD-050, IMPC-09. Os testes rodam num Postgres dedicado (`docker run -d --name estudo-livre-teste-pinfish -e POSTGRES_PASSWORD=teste -e POSTGRES_DB=teste -p 54332:5432 postgres:17-alpine`): o container padrão `estudo-livre-teste-pg` é recriado por outras sessões no meio da execução e derrubava testes ao acaso.
 **Dispatched:** Verifier (round 1) at `6799eac` - returned, 7 achados fechados em `36f7948`. Não há screens sub-agent: nenhum critério cita captura.
 **Walked:** `next start -H 0.0.0.0 -p 3120` com `DATABASE_URL=postgres://postgres:teste@localhost:54332/walk` (banco `walk` no container `estudo-livre-teste-pinfish`, migrações aplicadas) e `BETTER_AUTH_URL=http://100.83.47.57:3120` (tailnet; a 3100 estava ocupada). Cliques reais num Chromium headless (Playwright 1.49.1), 1440x960 tema claro e 390x844 com a classe `dark`; sessão por `POST /api/auth/sign-up/email` (`walk-<largura>-<timestamp>@exemplo.com`, senha `senha-de-teste-123`).
 - C1: em /ciclos/novo, abaixo da criação manual, o cartão mostra "Importar ciclo", "Crie um ciclo a partir de um arquivo JSON.", "Arquivo do ciclo", "Escolher arquivo", "Nenhum arquivo escolhido" e "Importar ciclo"; o campo aceita `.json,application/json`.
@@ -444,7 +444,7 @@ Proof: walk - com um arquivo inválido escolhido, Colar JSON com o exemplo váli
 - Recusa: o exemplo do documento com a 3ª Etapa em "Direito Penal" mostra "Etapa 3: a matéria "Direito Penal" não está em materias." e a página continua em /ciclos/novo.
 - C3: o exemplo de `docs/importar-ciclo-com-ia.md` leva a /ciclos/{id}, com o título "TRF 5 - Analista Judiciário", 7 Etapas de 1h00 na ordem do arquivo, Volta 1, Matérias com 0/5, 0/4 e 0/2 Tópicos e Faixas padrão; a Sidebar mostra o Ciclo novo. Sem rolagem horizontal nas duas larguras.
 - C10: `POST /ciclos/novo` com `Next-Action` e sem cookie responde 307 para /entrar.
-- Colar o JSON (AD-045), refeito depois do pedido do Usuário, com o mesmo servidor reconstruído (`walk2-<largura>-<timestamp>@exemplo.com` e `walk3-<timestamp>@exemplo.com`, senha `senha-de-teste-123`), 1440x960 claro e 390x844 escuro:
+- Colar o JSON (AD-050), refeito depois do pedido do Usuário, com o mesmo servidor reconstruído (`walk2-<largura>-<timestamp>@exemplo.com` e `walk3-<timestamp>@exemplo.com`, senha `senha-de-teste-123`), 1440x960 claro e 390x844 escuro:
   - C59: o cartão diz "Crie um ciclo a partir de um JSON.", o seletor mostra "Arquivo" (escolhido) e "Colar JSON"; "Importar ciclo" fica no rodapé à direita (21px da borda do cartão) e tem a mesma altura de "Escolher arquivo".
   - C60: "Colar JSON" esconde "Escolher arquivo" e mostra a área "JSON do ciclo".
   - C63: "Importar ciclo" com a área vazia mostra "Cole o JSON do ciclo.".
