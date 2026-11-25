@@ -46,7 +46,7 @@ function Linha({ etapa, posicao, proxima, somenteLeitura, aoEditar, aoRemover }:
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cx(
         "grid grid-cols-[auto_28px_1fr_auto] items-center gap-x-3 gap-y-1 px-3 py-3 max-lg:grid-rows-[auto_auto] lg:grid-cols-[auto_28px_minmax(0,1fr)_64px_minmax(120px,200px)_44px_112px_auto]",
-        proxima && "bg-accent-50",
+        proxima && "bg-pill-tab-blue-selected-background",
         isDragging && "relative z-10 rounded-xl bg-background-primary-default shadow-md",
       )}
     >

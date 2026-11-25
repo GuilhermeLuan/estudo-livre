@@ -24,7 +24,9 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
     <ProvedorDoCronometro ativo={ativo} materias={materias} materiasArquivadas={materiasArquivadas} materiaPadrao={ciclos[0]?.proxima?.materiaId ?? materias[0]?.id ?? ""}>
       <Sidebar {...menu} />
       <CabecalhoMovel {...menu} />
-      <main className="mx-auto max-w-[1160px] px-4 pt-2 pb-40 lg:ml-[284px] lg:px-6 lg:pt-8 lg:pb-12">{children}</main>
+      <main className="px-4 pt-2 pb-40 lg:ps-[308px] lg:pe-6 lg:pt-8 lg:pb-12">
+        <div className="mx-auto max-w-[1160px] min-[1920px]:max-w-[1440px]">{children}</div>
+      </main>
       <FaixaMovelDoCronometro />
       <BarraDeAbas />
     </ProvedorDoCronometro>
