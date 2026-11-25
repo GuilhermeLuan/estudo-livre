@@ -239,7 +239,7 @@ describe("recusar ciclo", () => {
     { caso: "topicos que não é lista", arquivo: com((a) => (a.materias[0].topicos = "Crase")), mensagem: 'Matéria "Português": "topicos" precisa ser uma lista.' },
     { caso: "topicos nulo", arquivo: com((a) => (a.materias[0].topicos = null)), mensagem: 'Matéria "Português": "topicos" precisa ser uma lista.' },
     { caso: "caractere nulo num texto", arquivo: com((a) => (a.materias[1].topicos = ["a\u0000b"])), mensagem: "O arquivo tem um texto com o caractere nulo (\\u0000), que o app não guarda." },
-    { caso: "matéria vazia antes da dificuldade de outra", arquivo: com((a) => a.materias.unshift({ nome: "TI" }) && (a.materias[2].dificuldade = "x")), mensagem: 'Matéria "TI": informe ao menos uma etapa ou um tópico.' },
+    { caso: "matéria vazia antes de outra matéria", arquivo: com((a) => a.materias.unshift({ nome: "TI" }) && (a.materias[2].dificuldade = "x")), mensagem: 'Matéria "TI": informe ao menos uma etapa ou um tópico.' },
     { caso: "matéria vazia antes de etapa", arquivo: com((a) => a.materias.push({ nome: "TI" }) && (a.etapas[0].cargaMinutos = 0)), mensagem: 'Matéria "TI": informe ao menos uma etapa ou um tópico.' },
     { caso: "matérias que o banco vê repetidas", arquivo: com((a) => ((a.materias = [{ nome: "AΣ", topicos: ["t"] }, { nome: "aσ", topicos: ["t"] }]), (a.etapas = []))), mensagem: "Duas matérias têm o mesmo nome sem diferenciar maiúsculas." },
     { caso: "tópicos que o banco vê repetidos", arquivo: com((a) => (a.materias[0].topicos = ["AΣ", "aσ"])), mensagem: "Uma matéria tem dois tópicos com o mesmo nome sem diferenciar maiúsculas." },

@@ -389,7 +389,7 @@ Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa vers
 Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa versão ausente sem criar nada
 
 **C57** - Matéria vazia sai antes da dificuldade inválida da Matéria seguinte (IMPC-08, AC 6)
-Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes da dificuldade de outra sem criar nada
+Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes de outra matéria sem criar nada
 
 **C58** - Matéria vazia sai antes do problema de uma Etapa (IMPC-08, AC 6)
 Proof: run unit | ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes de etapa sem criar nada
