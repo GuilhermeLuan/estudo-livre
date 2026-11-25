@@ -206,7 +206,7 @@ T6 → T7 → T8 → T9
 
 ---
 
-### T8: Página /ciclos/[id]/editar
+### T8: Página /ciclos/[id]/editar ✅
 
 **What**: página que carrega `obterSugestaoDoCiclo` e mostra "Editar ciclo" com a tela em modo edição; arquivado mostra a recusa sem formulário; não encontrado → 404
 **Where**: `src/app/(app)/ciclos/[id]/editar/page.tsx`
