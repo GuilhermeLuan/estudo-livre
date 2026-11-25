@@ -66,6 +66,12 @@
 | C56 | `importar-ciclo.test.ts` (round 2, autor) | yes - check novo que fecha um achado; provado em proofs.md |
 | C57 | `importar-ciclo.test.ts` (round 2, autor) | yes - check novo que fecha um achado; provado em proofs.md |
 | C58 | `importar-ciclo.test.ts` (round 2, autor) | yes - check novo que fecha um achado; provado em proofs.md |
+| C59 | walk (IMPC-09, autor, pedido do Usuário depois da verificação) | yes - seletor e botão no rodapé à direita, mesma altura de Escolher arquivo; ver **Walked:** na spec |
+| C60 | walk (IMPC-09, autor, pedido do Usuário depois da verificação) | yes - Colar JSON troca o campo pela área; ver **Walked:** na spec |
+| C61 | walk (IMPC-09, autor, pedido do Usuário depois da verificação) | yes - exemplo colado abre o Ciclo; ver **Walked:** na spec |
+| C62 | walk (IMPC-09, autor, pedido do Usuário depois da verificação) | yes - mensagem da Etapa 3 sob a área; ver **Walked:** na spec |
+| C63 | walk (IMPC-09, autor, pedido do Usuário depois da verificação) | yes - área vazia mostra Cole o JSON do ciclo.; ver **Walked:** na spec |
+| C64 | walk (IMPC-09, autor, pedido do Usuário depois da verificação) | yes - arquivo inválido + colado válido importa; arquivo válido + lixo colado, de volta em Arquivo, importa; ver **Walked:** na spec |
 
 ## Findings
 
