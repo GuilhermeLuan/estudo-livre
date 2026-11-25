@@ -135,3 +135,13 @@ export function duracaoDaEdicao(gravada: number | null, cargas: readonly number[
   for (const [carga, n] of vezes) if (n > maior || (n === maior && carga < escolhida)) [escolhida, maior] = [carga, n];
   return escolhida;
 }
+
+/** Minutos em horas como o campo "Duração da etapa (h)" mostra: 90 → "1,5", 60 → "1", 20 → "0,33". */
+export const horasDeMinutos = (minutos: number) => String(Number((minutos / 60).toFixed(2))).replace(".", ",");
+
+/** Uma Matéria do Ciclo como linha da tela de edição: sem valores gravados, "Questões" vazio e Dificuldade "Média" (EDIT-04). */
+export const linhaDaEdicao = (m: { nome: string; questoesDaProva: number | null; dificuldade: Dificuldade | null }) => ({
+  nome: m.nome,
+  questoes: m.questoesDaProva === null ? "" : String(m.questoesDaProva),
+  dificuldade: m.dificuldade ?? ("media" as Dificuldade),
+});

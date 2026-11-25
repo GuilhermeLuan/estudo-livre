@@ -5,6 +5,7 @@ import { gerarCiclo } from "@/app/acoes-ciclos";
 import { SugestaoDeCiclo } from "@/app/sugestao-de-ciclo";
 import { NaoEncontradoError, obterSugestaoDoCiclo } from "@/casos-de-uso";
 import { obterDb } from "@/db";
+import { horasDeMinutos, linhaDaEdicao } from "@/dominio";
 import { exigirUsuario } from "@/sessao";
 
 /** A tela da Sugestão de ciclo, preenchida com o Ciclo, para gerar de novo as Etapas (AD-039 a AD-043). */
@@ -31,8 +32,8 @@ export default async function EditarCiclo({ params }: { params: Promise<{ id: st
           edicao
           inicial={{
             nome: ciclo.nome,
-            horas: String(Number((ciclo.duracaoEtapaMinutos / 60).toFixed(2))).replace(".", ","),
-            materias: ciclo.materias.map((m) => ({ nome: m.nome, questoes: m.questoesDaProva === null ? "" : String(m.questoesDaProva), dificuldade: m.dificuldade ?? "media" })),
+            horas: horasDeMinutos(ciclo.duracaoEtapaMinutos),
+            materias: ciclo.materias.map(linhaDaEdicao),
           }}
         />
       )}

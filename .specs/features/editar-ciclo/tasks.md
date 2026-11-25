@@ -255,14 +255,14 @@ Proof: browser captures/editar-ciclo.running.png
 **C3** - A edição lista uma linha por Matéria com Etapa, na ordem da primeira Etapa, com Questões e Dificuldade gravadas; Matéria sem Etapa fica fora (EDIT-03, AC 3)
 Proof: run unit | ✓ tests/editar-ciclo.test.ts > obterSugestaoDoCiclo > lista as Matérias com Etapa na ordem da primeira Etapa
 
-**C4** - Matéria sem Questões ou Dificuldade gravadas vem com Questões nulo e Dificuldade nula (a tela mostra vazio e "Média") (EDIT-04, AC 4)
+**C4** - Matéria sem Questões ou Dificuldade gravadas vem com Questões nulo e Dificuldade nula e a tela a mostra com "Questões" vazio e "Média" (`linhaDaEdicao`) (EDIT-04, AC 4)
 Proof: run unit | ✓ tests/editar-ciclo.test.ts > obterSugestaoDoCiclo > Matéria criada à mão vem sem Questões nem Dificuldade
 
-**C5** - Duração: gravada 90 → 90; sem gravada 60,60,120 → 60; 60,120 → 60; sem Etapas → 60 (EDIT-05, AC 5)
-Proof: run unit | ✓ tests/editar-ciclo.test.ts > duracaoDaEdicao > usa a gravada, senão a carga mais comum (empate a menor), senão 1h
+**C5** - O campo mostra gravada 90 → "1,5"; sem gravada 60,60,120 → "1"; sem Etapas → "1" (EDIT-05, AC 5)
+Proof: run unit | ✓ tests/editar-ciclo.test.ts > duracaoDaEdicao > mostra a duração em horas no campo: gravada 90 → 1,5 e 60 → 1
 
 **C6** - Na edição valem as regras da criação: repetida, lista cheia, Questões inválidas e visualização (EDIT-06, AC 6)
-Proof: walk - acrescentar "português" com "Português" na lista recusa com "A matéria “português” já está na lista."; Questões "0" recusa com "Informe as questões da prova (inteiro de 1 a 10.000)."; "Visualizar ciclo" mostra as Etapas
+Proof: walk - acrescentar "portugues" com "Portugues" na lista recusa com "A matéria “portugues” já está na lista."; com 50 linhas a 51ª recusa com "A sugestão aceita até 50 matérias."; Questões "0" recusa com "Informe as questões da prova (inteiro de 1 a 10.000)."; "Visualizar ciclo" mostra as Etapas
 
 **C7** - "Gerar ciclo" abre o AlertDialog "Gerar ciclo?" com o texto e os botões "Cancelar" e "Gerar ciclo" (EDIT-07, AC 7)
 Proof: walk - o diálogo mostra "Gerar ciclo?", "As etapas atuais serão substituídas pelas da sugestão. Registros, tópicos e voltas continuam.", "Cancelar" e "Gerar ciclo"
@@ -285,7 +285,7 @@ Proof: run unit | ✓ tests/editar-ciclo.test.ts > gerarEtapas > Matéria fora d
 **C13** - A Volta aberta mantém número e início; 3h de Português em 2 Etapas de 1h → as duas 100% e 1h extra (EDIT-13, AC 13)
 Proof: run unit | ✓ tests/editar-ciclo.test.ts > gerarEtapas > mantém a Volta aberta e recalcula o progresso com as horas dela
 
-**C14** - Quando todas as novas Etapas ficam 100%, a Volta fecha e o número volta para o aviso (EDIT-14, AC 14)
+**C14** - Quando todas as novas Etapas ficam 100%, a Volta fecha e o número volta para o aviso (EDIT-14, AC 14; o aviso na tela depois de gerar pela tela está no walk)
 Proof: run unit | ✓ tests/editar-ciclo.test.ts > gerarEtapas > fecha a Volta quando todas as novas Etapas ficam completas
 
 **C15** - Lista vazia é recusada com "Adicione ao menos uma matéria para gerar as etapas." sem mudar nada (EDIT-15, AC 15)
@@ -318,6 +318,9 @@ Proof: run unit | ✓ tests/editar-ciclo.test.ts > criarCiclo > grava a duraçã
 **C24** - A edição a 390px não rola na horizontal e os botões ficam alcançáveis (EDIT-24, AC 24)
 Proof: walk - a 390px a tabela é usável, sem rolagem horizontal da página, e "Visualizar ciclo" e "Gerar ciclo" alcançáveis
 
+**C28** - Ciclo com 51 Matérias com Etapa gera com as 51 e só recusa acrescentar a 52ª (Edge Cases, EDIT-03)
+Proof: run unit | ✓ tests/editar-ciclo.test.ts > gerarEtapas > gera com mais de 50 Matérias que já têm Etapa e só recusa acrescentar novas
+
 **C25** - O backup exporta `duracaoEtapaMinutos` de cada Ciclo (EDIT-25, AC 1)
 Proof: run unit | ✓ tests/editar-ciclo.test.ts > backup > exporta duracaoEtapaMinutos
 
@@ -332,7 +335,7 @@ Proof: run unit | ✓ tests/editar-ciclo.test.ts > backup > recusa duracaoEtapaM
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** Verifier at 25b1074; screens round 1 at 25b1074 (returned, d24dfd6)
+**Dispatched:** Verifier at 25b1074 (returned, e8bf996); screens round 1 at 25b1074 (returned, d24dfd6)
 **Walked:** O app rodou em `http://100.83.47.57:3100` (tailnet, `next start -H 0.0.0.0`, banco dev `postgres://postgres:dev@localhost:54330/dev`, container `estudo-livre-dev-pg`, migrações aplicadas). Cliques reais num Chromium headless (Playwright 1.49.1, no scratchpad), janela de 1860x1143 (tamanho da captura) e de 390x844. Sessão: `walk3@exemplo.com` / `senha-de-teste-123`, criada por `POST /api/auth/sign-up/email`.
 - Criar como na captura: `/ciclos/novo` com "TESTE", duração 1, "Portugues" 12 Média → `/ciclos/{id}`; o Novo ciclo ainda mostra "Sem matérias, o ciclo nasce vazio.".
 - C1: "Editar ciclo" aparece no topo do Ciclo ativo e leva a `/ciclos/{id}/editar`; depois de "Arquivar", o botão some.

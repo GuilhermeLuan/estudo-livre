@@ -17,7 +17,7 @@ import {
   removerEtapa,
   ValidacaoError,
 } from "@/casos-de-uso";
-import { duracaoDaEdicao, minutosDeHoras, sugerirEtapas, type MateriaParaSugerir } from "@/dominio";
+import { duracaoDaEdicao, horasDeMinutos, linhaDaEdicao, minutosDeHoras, sugerirEtapas, type MateriaParaSugerir } from "@/dominio";
 import { ciclo, etapa, materia, registroDeEstudo, topico } from "@/db/schema";
 import { bancoDeTeste, cadastrar, limparBanco } from "./apoio";
 
@@ -32,6 +32,20 @@ describe("duracaoDaEdicao", () => {
     expect(duracaoDaEdicao(null, [120, 60])).toBe(60);
     expect(duracaoDaEdicao(null, [120, 120, 30])).toBe(120);
     expect(duracaoDaEdicao(null, [])).toBe(60);
+  });
+
+  it("mostra a duração em horas no campo: gravada 90 → 1,5 e 60 → 1", () => {
+    expect(horasDeMinutos(duracaoDaEdicao(90, [60]))).toBe("1,5");
+    expect(horasDeMinutos(duracaoDaEdicao(null, [60, 60, 120]))).toBe("1");
+    expect(horasDeMinutos(duracaoDaEdicao(null, []))).toBe("1");
+    for (const m of [1, 20, 45, 90, 600_000]) expect(minutosDeHoras(horasDeMinutos(m))).toBe(m);
+  });
+});
+
+describe("linhaDaEdicao", () => {
+  it("Matéria sem valores gravados vira linha com Questões vazio e Dificuldade Média", () => {
+    expect(linhaDaEdicao({ nome: "Direito", questoesDaProva: null, dificuldade: null })).toEqual({ nome: "Direito", questoes: "", dificuldade: "media" });
+    expect(linhaDaEdicao({ nome: "TI", questoesDaProva: 50, dificuldade: "dificil" })).toEqual({ nome: "TI", questoes: "50", dificuldade: "dificil" });
   });
 });
 
@@ -86,6 +100,12 @@ describe("obterSugestaoDoCiclo", () => {
     ]);
     // Sem duração gravada: a carga mais comum das Etapas (60, 120, 60).
     expect(sugestao.duracaoEtapaMinutos).toBe(60);
+    // E é assim que a tela de edição mostra as linhas e a duração.
+    expect(sugestao.materias.map(linhaDaEdicao)).toEqual([
+      { nome: "Direito", questoes: "", dificuldade: "media" },
+      { nome: "Português", questoes: "", dificuldade: "media" },
+    ]);
+    expect(horasDeMinutos(sugestao.duracaoEtapaMinutos)).toBe("1");
   });
 
   it("não lê Ciclo de outro Usuário", async () => {
@@ -222,8 +242,10 @@ describe("gerarEtapas", () => {
     ).rejects.toThrow(new ValidacaoError("A matéria “estatística” já está na lista."));
     expect(await etapasDo(id)).toEqual(antes);
     // Falha de verdade no meio da transação (byte nulo recusado pelo Postgres): nada muda.
-    await expect(gerarEtapas(db, ana, id, { nome: "Banco", duracaoEtapaMinutos: 60, materias: [M("Inglês", 9, "dificil"), M("Ruim\u0000", 5, "facil")] })).rejects.toThrow();
+    await expect(gerarEtapas(db, ana, id, { nome: "Outro nome", duracaoEtapaMinutos: 120, materias: [M("Inglês", 9, "dificil"), M("Ruim\u0000", 5, "facil")] })).rejects.toThrow();
     expect(await etapasDo(id)).toEqual(antes);
+    const [gravado] = await db.select().from(ciclo).where(eq(ciclo.id, id));
+    expect([gravado.nome, gravado.duracaoEtapaMinutos]).toEqual(["Banco", 60]);
     expect(await db.select().from(materia).where(eq(materia.cicloId, id)).orderBy(asc(materia.nome))).toEqual(materiasAntes);
   });
 
