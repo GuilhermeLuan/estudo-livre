@@ -1,9 +1,9 @@
 # importar-ciclo proofs
 
-**HEAD**: a4490f9
+**HEAD**: 3461b2c
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 59 pass, 1 fail
+**Result**: 60 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
@@ -63,7 +63,7 @@
 | C54 | `run unit / ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa tópicos que o banco vê repetidos sem criar ` | pass |
 | C55 | `run unit / ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa versão em texto sem criar nada` | pass |
 | C56 | `run unit / ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa versão ausente sem criar nada` | pass |
-| C57 | `run unit / ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes da dificuldade de outra` | **no test ran** |
+| C57 | `run unit / ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes de outra matéria sem cr` | pass |
 | C58 | `run unit / ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes de etapa sem criar nada` | pass |
 | Build | `npm run typecheck` | pass |
 | Build | `npm run build` | pass |
@@ -75,17 +75,17 @@
 ```
 
 stderr | tests/importar-ciclo.test.ts > recusar ciclo > recusa tópicos que o banco vê repetidos sem criar nada
-2026-11-25T23:43:23.857Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:44:09.409Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/importar-ciclo.test.ts > recusar ciclo > recusa tamanho antes de JSON sem criar nada
-2026-11-25T23:43:23.982Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:44:09.534Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/importar-ciclo.test.ts > recusar ciclo > aceita arquivo de exatamente 1 MB
-2026-11-25T23:43:24.104Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:44:09.655Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/importar-ciclo.test.ts > recusar ciclo > desfaz tudo quando a gravação falha no meio
-2026-11-25T23:43:24.230Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:44:09.775Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/instrucoes-para-ia.test.ts > instruções para a IA > o exemplo importa sem erro
-2026-11-25T23:43:25.263Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:44:10.794Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 ```
