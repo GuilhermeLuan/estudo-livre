@@ -1,0 +1,1 @@
+ALTER TABLE "ciclo" ADD COLUMN "duracao_etapa_minutos" integer;

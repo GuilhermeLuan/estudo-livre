@@ -71,6 +71,13 @@
       "when": 1795383973802,
       "tag": "0009_mixed_smiling_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795648573905,
+      "tag": "0010_solid_cerebro",
+      "breakpoints": true
     }
   ]
 }

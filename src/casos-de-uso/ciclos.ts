@@ -135,7 +135,7 @@ export async function criarCiclo(
   const materias = materiasValidas(dados.materias ?? []);
   const duracao = cargaValida(dados.duracaoEtapaMinutos ?? DURACAO_PADRAO_DA_ETAPA_MINUTOS);
   return db.transaction(async (tx) => {
-    const [linha] = await tx.insert(ciclo).values({ usuarioId: usuario.id, nome }).returning({ id: ciclo.id });
+    const [linha] = await tx.insert(ciclo).values({ usuarioId: usuario.id, nome, duracaoEtapaMinutos: duracao }).returning({ id: ciclo.id });
     await tx.insert(volta).values({ cicloId: linha.id, numero: 1 });
     if (materias.length) {
       const criadas = await tx

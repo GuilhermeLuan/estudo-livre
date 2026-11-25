@@ -84,7 +84,7 @@ T6 → T7 → T8 → T9
 
 ---
 
-### T2: Gravar a duração da Etapa no Ciclo
+### T2: Gravar a duração da Etapa no Ciclo ✅
 
 **What**: coluna `ciclo.duracao_etapa_minutos` com migração e `criarCiclo` gravando a duração informada
 **Where**: `src/db/schema.ts` (+ migração gerada em `drizzle/`), `src/casos-de-uso/ciclos.ts`
