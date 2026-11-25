@@ -1,13 +1,13 @@
 # importar-ciclo proofs
 
-**HEAD**: 3461b2c
+**HEAD**: ffb7212
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 60 pass, 0 fail
+**Result**: 66 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
-| C1 | `walk - /ciclos/novo mostra o cartão Importar ciclo com os textos da spec` | pass (Walked) |
+| C1 | `walk - /ciclos/novo mostra o cartão Importar ciclo com os textos da spec (a frase e a posição do botão passam ` | pass (Walked) |
 | C2 | `walk - Importar ciclo sem arquivo mostra Escolha um arquivo.` | pass (Walked) |
 | C3 | `walk - importar o exemplo leva a /ciclos/{id} do Ciclo "TRF 5 - Analista Judiciário"` | pass (Walked) |
 | C4 | `run unit / ✓ tests/importar-ciclo.test.ts > importar ciclo > cria o ciclo com matérias, etapas e tópicos do ar` | pass |
@@ -65,6 +65,12 @@
 | C56 | `run unit / ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa versão ausente sem criar nada` | pass |
 | C57 | `run unit / ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes de outra matéria sem cr` | pass |
 | C58 | `run unit / ✓ tests/importar-ciclo.test.ts > recusar ciclo > recusa matéria vazia antes de etapa sem criar nada` | pass |
+| C59 | `walk - /ciclos/novo a 1440 e 390 mostra o seletor e o botão no rodapé à direita` | pass (Walked) |
+| C60 | `walk - escolher Colar JSON mostra a área JSON do ciclo e esconde Escolher arquivo` | pass (Walked) |
+| C61 | `walk - colar o exemplo do documento leva à página de "TRF 5 - Analista Judiciário"` | pass (Walked) |
+| C62 | `walk - colar o exemplo com a Etapa 3 em Direito Penal mostra a mensagem da Etapa 3` | pass (Walked) |
+| C63 | `walk - Importar ciclo com a área vazia mostra Cole o JSON do ciclo.` | pass (Walked) |
+| C64 | `walk - com um arquivo inválido escolhido, Colar JSON com o exemplo válido importa; voltar a Arquivo usa o arqu` | pass (Walked) |
 | Build | `npm run typecheck` | pass |
 | Build | `npm run build` | pass |
 
@@ -75,17 +81,17 @@
 ```
 
 stderr | tests/importar-ciclo.test.ts > recusar ciclo > recusa tópicos que o banco vê repetidos sem criar nada
-2026-11-25T23:44:09.409Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:52:00.410Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/importar-ciclo.test.ts > recusar ciclo > recusa tamanho antes de JSON sem criar nada
-2026-11-25T23:44:09.534Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:52:00.536Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/importar-ciclo.test.ts > recusar ciclo > aceita arquivo de exatamente 1 MB
-2026-11-25T23:44:09.655Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:52:00.655Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/importar-ciclo.test.ts > recusar ciclo > desfaz tudo quando a gravação falha no meio
-2026-11-25T23:44:09.775Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:52:00.777Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 
 stderr | tests/instrucoes-para-ia.test.ts > instruções para a IA > o exemplo importa sem erro
-2026-11-25T23:44:10.794Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
+2026-11-25T23:52:01.793Z WARN [Better Auth]: [better-auth] Base URL is not set. Set the baseURL option or BETTER_AUTH_URL env, or use a dynamic baseURL with allowedHosts for multi-host setups. Without it the origin is derived from the incoming request, and callbacks and redirects may not work correctly.
 ```
