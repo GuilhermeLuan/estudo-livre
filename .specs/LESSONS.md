@@ -116,6 +116,24 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C16 (tests)
 - last seen: 2026-11-25T23:38:48Z
 
+### L-018 - Todo limite numérico tem dois testes: o valor exato aceito e o seguinte recusado; só o lado recusado deixa passar a troca de > por >=.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: importar-ciclo
+- evidence: verification.md C27,C31-C35 (tests)
+- last seen: 2026-11-25T23:55:08Z
+
+### L-019 - Validar unicidade sem diferenciar maiúsculas em JS não garante o índice lower() do Postgres; capture a violação 23505 pela constraint e recuse com mensagem.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `casos-de-uso` · harmful: 0
+- features: importar-ciclo
+- evidence: verification.md - toLowerCase vs lower() (casos-de-uso)
+- last seen: 2026-11-25T23:55:08Z
+
+### L-020 - No it.each do vitest, um $campo interpolado com mais de 40 caracteres sai cortado com reticências e a prova por linha não acha o teste; mantenha os nomes de caso curtos.
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: importar-ciclo
+- evidence: proofs C57 (tests)
+- last seen: 2026-11-25T23:55:08Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

@@ -14,6 +14,10 @@ export const LIMITES_DO_REGISTRO = {
 export const LIMITE_DO_BACKUP_BYTES = 50 * 1024 * 1024;
 export const BACKUP_GRANDE = "O arquivo passa de 50 MB.";
 
+/** Importar ciclo (AD-044): o arquivo enxuto tem no máximo 1 MB. */
+export const LIMITE_DO_CICLO_IMPORTADO_BYTES = 1024 * 1024;
+export const CICLO_IMPORTADO_GRANDE = "O arquivo passa de 1 MB.";
+
 export const LIMITES_DO_TOPICO = { nomeMaximo: 120, importacaoMaxima: 200 } as const;
 
 /** Carga horária e progresso de uma Etapa ou de uma Matéria: a mesma regra de 100% vale para as duas. */

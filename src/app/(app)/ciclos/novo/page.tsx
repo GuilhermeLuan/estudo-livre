@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { novoCiclo } from "@/app/acoes-ciclos";
+import { ImportarCiclo } from "@/app/importar-ciclo";
 import { SugestaoDeCiclo } from "@/app/sugestao-de-ciclo";
 
 export default function NovoCiclo() {
@@ -10,6 +11,7 @@ export default function NovoCiclo() {
         Novo ciclo
       </h1>
       <SugestaoDeCiclo acao={novoCiclo} />
+      <ImportarCiclo />
     </section>
   );
 }

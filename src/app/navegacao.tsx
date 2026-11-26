@@ -45,11 +45,12 @@ const iniciais = (nome: string) =>
 const ativoEm = (caminho: string, href: string) => caminho === href || (href !== "/" && caminho.startsWith(`${href}/`));
 
 /** O item da Sidebar: selecionado, ganha o gradiente do botão primário e `aria-current="page"`. */
-function ItemDeNavegacao({ href, selecionado, icone: Icone, contador, children }: { href: string; selecionado: boolean; icone: typeof RiHome5Line; contador?: number; children: ReactNode }) {
+function ItemDeNavegacao({ href, selecionado, icone: Icone, contador, titulo, children }: { href: string; selecionado: boolean; icone: typeof RiHome5Line; contador?: number; titulo?: string; children: ReactNode }) {
   return (
     <Link
       href={href}
       aria-current={selecionado ? "page" : undefined}
+      title={titulo}
       className={cx(
         "flex h-9 items-center gap-2 rounded-xl px-2 text-body-medium outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
         selecionado ? "bg-button-primary text-text-white shadow-xs" : "text-text-secondary hover:bg-background-secondary-hover",
@@ -96,7 +97,7 @@ export function Sidebar({ usuario, ciclos, arquivados, revisoes }: DadosDoMenu) 
         <IconeDaMarca className="size-8 rounded-lg" />
         Estudo Livre
       </Link>
-      <nav aria-label="Principal" className="grid gap-1">
+      <nav aria-label="Principal" className="grid grid-cols-[minmax(0,1fr)] gap-1">
         <ItemDeNavegacao href="/" selecionado={caminho === "/"} icone={RiHome5Line}>
           Hoje
         </ItemDeNavegacao>
@@ -110,7 +111,7 @@ export function Sidebar({ usuario, ciclos, arquivados, revisoes }: DadosDoMenu) 
           Estatísticas
         </ItemDeNavegacao>
       </nav>
-      <nav aria-label="Ciclos" className="mt-3 grid gap-1">
+      <nav aria-label="Ciclos" className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-1">
         <div className="flex items-center justify-between px-2 text-body-regular text-text-tertiary">
           Ciclos
           <Link href="/ciclos/novo" aria-label="Novo ciclo" className="grid size-6 place-items-center rounded-md hover:bg-background-secondary-hover">
@@ -118,7 +119,7 @@ export function Sidebar({ usuario, ciclos, arquivados, revisoes }: DadosDoMenu) 
           </Link>
         </div>
         {ciclos.map((c) => (
-          <ItemDeNavegacao key={c.id} href={`/ciclos/${c.id}`} selecionado={caminho === `/ciclos/${c.id}`} icone={RiFlag2Line}>
+          <ItemDeNavegacao key={c.id} href={`/ciclos/${c.id}`} selecionado={caminho === `/ciclos/${c.id}`} icone={RiFlag2Line} titulo={c.nome}>
             {c.nome}
           </ItemDeNavegacao>
         ))}
@@ -128,7 +129,7 @@ export function Sidebar({ usuario, ciclos, arquivados, revisoes }: DadosDoMenu) 
       </nav>
       <div className="mt-auto grid gap-2 pt-3">
         <CartaoDoCronometro variante="cartao" />
-        <nav aria-label="Conta" className="grid gap-1">
+        <nav aria-label="Conta" className="grid grid-cols-[minmax(0,1fr)] gap-1">
           <ItemDeNavegacao href="/backup" selecionado={caminho === "/backup"} icone={RiDatabase2Line}>
             Backup
           </ItemDeNavegacao>

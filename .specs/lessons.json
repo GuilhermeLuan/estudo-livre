@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 18,
+  "next_id": 21,
   "lessons": [
     {
       "id": "L-001",
@@ -310,6 +310,60 @@
       ],
       "created": "2026-11-25T23:38:48Z",
       "last_seen": "2026-11-25T23:38:48Z"
+    },
+    {
+      "id": "L-018",
+      "key": "weak_test::todo limite numerico tem dois testes o valor exato aceito e o seguinte recusado so o lado recusado deixa passar a troca de por",
+      "text": "Todo limite numérico tem dois testes: o valor exato aceito e o seguinte recusado; só o lado recusado deixa passar a troca de > por >=.",
+      "signal": "weak_test",
+      "scope": "tests",
+      "status": "candidate",
+      "features": [
+        "importar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md C27,C31-C35 (tests)"
+      ],
+      "created": "2026-11-25T23:55:08Z",
+      "last_seen": "2026-11-25T23:55:08Z"
+    },
+    {
+      "id": "L-019",
+      "key": "ac_gap::validar unicidade sem diferenciar maiusculas em js nao garante o indice lower do postgres capture a violacao 23505 pela constraint e recuse com mensagem",
+      "text": "Validar unicidade sem diferenciar maiúsculas em JS não garante o índice lower() do Postgres; capture a violação 23505 pela constraint e recuse com mensagem.",
+      "signal": "ac_gap",
+      "scope": "casos-de-uso",
+      "status": "candidate",
+      "features": [
+        "importar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md - toLowerCase vs lower() (casos-de-uso)"
+      ],
+      "created": "2026-11-25T23:55:08Z",
+      "last_seen": "2026-11-25T23:55:08Z"
+    },
+    {
+      "id": "L-020",
+      "key": "gate_fail::no it each do vitest um campo interpolado com mais de 40 caracteres sai cortado com reticencias e a prova por linha nao acha o teste mantenha os nomes de caso curtos",
+      "text": "No it.each do vitest, um $campo interpolado com mais de 40 caracteres sai cortado com reticências e a prova por linha não acha o teste; mantenha os nomes de caso curtos.",
+      "signal": "gate_fail",
+      "scope": "tests",
+      "status": "candidate",
+      "features": [
+        "importar-ciclo"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "proofs C57 (tests)"
+      ],
+      "created": "2026-11-25T23:55:08Z",
+      "last_seen": "2026-11-25T23:55:08Z"
     }
   ]
 }
