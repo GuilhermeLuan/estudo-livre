@@ -1,0 +1,6 @@
+# Produção: usa a imagem publicada pelo CI em vez de buildar no servidor.
+# Uso: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+services:
+  app:
+    image: ghcr.io/guilhermeluan/estudo-livre:main
+    build: !reset null
